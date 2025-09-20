@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/core/config.dart';
+import 'package:quran_app_2025/core/config.dart' as core_config;
 import 'package:quran_app_2025/models/surahs.dart';
 import 'package:quran_app_2025/screens/surah_details_screen.dart';
 import 'package:quran_app_2025/widgets/quran_tile.dart';
@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       // logic fect
       final response = await http.get(
-        Uri.parse('${Config.baseApiUrl}/surah.json'),
+        Uri.parse('${core_config.Config.baseApiUrl}/surah.json'),
       );
 
       //success -> nganu

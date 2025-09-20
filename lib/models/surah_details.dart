@@ -1,6 +1,6 @@
 // To parse this JSON data, do
 //
-//     final surahDetails = surahDetailsFromJson(jsonString);
+//     final surahDetails = surahDetailsFromJson(jsonString);
 
 import 'dart:convert';
 
@@ -17,7 +17,7 @@ class SurahDetails {
   String? revelationPlace;
   int? totalAyah;
   int? surahNo;
-  Map<String, Audio>? audio;
+  Map<String, Audio>? audio; // Audio is now a Map for multiple reciters
   List<String>? english;
   List<String>? arabic1;
   List<String>? arabic2;
@@ -50,9 +50,11 @@ class SurahDetails {
     revelationPlace: json["revelationPlace"],
     totalAyah: json["totalAyah"],
     surahNo: json["surahNo"],
-    audio: Map.from(
-      json["audio"]!,
-    ).map((k, v) => MapEntry<String, Audio>(k, Audio.fromJson(v))),
+    audio: json["audio"] == null
+        ? null
+        : Map.from(
+            json["audio"]!,
+          ).map((k, v) => MapEntry<String, Audio>(k, Audio.fromJson(v))),
     english: json["english"] == null
         ? []
         : List<String>.from(json["english"]!.map((x) => x)),
@@ -73,8 +75,6 @@ class SurahDetails {
         : List<String>.from(json["uzbek"]!.map((x) => x)),
   );
 
-  get name => null;
-
   Map<String, dynamic> toJson() => {
     "surahName": surahName,
     "surahNameArabic": surahNameArabic,
@@ -83,9 +83,11 @@ class SurahDetails {
     "revelationPlace": revelationPlace,
     "totalAyah": totalAyah,
     "surahNo": surahNo,
-    "audio": Map.from(
-      audio!,
-    ).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())),
+    "audio": audio == null
+        ? null
+        : Map.from(
+            audio!,
+          ).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())),
     "english": english == null
         ? []
         : List<dynamic>.from(english!.map((x) => x)),
