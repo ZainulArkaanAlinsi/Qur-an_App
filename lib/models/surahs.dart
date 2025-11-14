@@ -2,35 +2,52 @@ class Surahs {
   String? surahName;
   String? surahNameArabic;
   String? surahNameTranslation;
-  String? surahArabicLong;
   String? revelationPlace;
   int? totalAyah;
+  int? number;
 
   Surahs({
     this.surahName,
     this.surahNameArabic,
     this.surahNameTranslation,
-    this.surahArabicLong,
     this.revelationPlace,
     this.totalAyah,
+    this.number,
   });
 
-  Surahs.fromJson(Map<String, dynamic> json) {
-    surahName = json['surahName'];
-    surahNameArabic = json['surahNameArabic'];
-    surahArabicLong = json['surahArabicLong'];
-    surahNameTranslation = json['surahNameTranslation'];
-    revelationPlace = json['revelationPlace'];
-    totalAyah = json['totalAyah'];
+  factory Surahs.fromJson(Map<String, dynamic> json) {
+    return Surahs(
+      surahName:
+          json['name']?['transliteration']?['en'] ??
+          json['englishName'] ??
+          'Unknown',
+      surahNameArabic: json['name']?['short'] ?? json['name'] ?? '...',
+      surahNameTranslation:
+          json['name']?['translation']?['en'] ??
+          json['englishNameTranslation'] ??
+          'Unknown',
+      revelationPlace: _getRevelationPlace(json),
+      totalAyah: json['numberOfVerses'] ?? json['numberOfAyahs'] ?? 0,
+      number: json['number'] ?? 0,
+    );
   }
+
+  static String _getRevelationPlace(Map<String, dynamic> json) {
+    final revelation = json['revelation'];
+    if (revelation is Map) {
+      return revelation['en'] == 'Meccan' ? 'Mecca' : 'Medina';
+    }
+    return json['revelationType'] == 'Meccan' ? 'Mecca' : 'Medina';
+  }
+
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['surahName'] = surahName;
-    data['surahNameArabic'] = surahNameArabic;
-    data['surahArabicLong'] = surahArabicLong;
-    data['surahNameTranslation'] = surahNameTranslation;
-    data['revelationPlace'] = revelationPlace;
-    data['totalAyah'] = totalAyah;
-    return data;
+    return {
+      'surahName': surahName,
+      'surahNameArabic': surahNameArabic,
+      'surahNameTranslation': surahNameTranslation,
+      'revelationPlace': revelationPlace,
+      'totalAyah': totalAyah,
+      'number': number,
+    };
   }
 }

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
@@ -22,16 +20,49 @@ class SurahDetailsScreen extends StatefulWidget {
 class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   late Future<SurahDetails> _surahFuture;
   final AudioPlayer _player = AudioPlayer();
-  final List<Audio> _reciters = [];
-  Audio? _selectedReciter;
 
   bool _isPlaying = false;
+  bool _isLoadingAudio = false;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
+  double _playbackSpeed = 1.0;
 
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<Duration>? _positionSubscription;
+
+  final Color _primaryColor = const Color(0xFF2E7D32);
+  final Color _accentColor = const Color(0xFFE8F5E9);
+
+  // Fallback data
+  final Map<int, SurahDetails> _fallbackSurahs = {
+    1: SurahDetails(
+      surahName: "Al-Fatihah",
+      surahNameArabic: "الفاتحة",
+      surahNameTranslation: "The Opening",
+      revelationPlace: "Mecca",
+      totalAyah: 7,
+      surahNo: 1,
+      english: [
+        "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+        "[All] praise is [due] to Allah, Lord of the worlds -",
+        "The Entirely Merciful, the Especially Merciful,",
+        "Sovereign of the Day of Recompense.",
+        "It is You we worship and You we ask for help.",
+        "Guide us to the straight path -",
+        "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.",
+      ],
+      arabic: [
+        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+        "الرَّحْمَٰنِ الرَّحِيمِ",
+        "مَالِكِ يَوْمِ الدِّينِ",
+        "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+        "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+      ],
+    ),
+  };
 
   @override
   void initState() {
@@ -41,43 +72,38 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   }
 
   Future<SurahDetails> _fetchSurah() async {
-    try {
-      final response = await http.get(
-        Uri.parse('${app_config.Config.baseApiUrl}/${widget.surahNumber}.json'),
-      );
+    for (final endpoint in app_config.Config.apiEndpoints) {
+      try {
+        final response = await http
+            .get(Uri.parse('$endpoint/surah/${widget.surahNumber}'))
+            .timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 200) {
-        final surahDetails = surahDetailsFromJson(response.body);
-        _initializeReciters(surahDetails);
-        return surahDetails;
-      } else {
-        throw Exception('Failed to load surah details');
-      }
-    } catch (e) {
-      log('Fetch error: $e');
-      throw Exception('Failed to load surah details');
-    }
-  }
-
-  void _initializeReciters(SurahDetails surahDetails) {
-    if (surahDetails.audio != null && surahDetails.audio!.isNotEmpty) {
-      _reciters.addAll(surahDetails.audio!.values);
-      if (_reciters.isNotEmpty) {
-        _selectedReciter = _reciters.first;
+        if (response.statusCode == 200) {
+          return surahDetailsFromJson(response.body);
+        }
+      } catch (e) {
+        print('Failed to fetch from $endpoint: $e');
+        continue;
       }
     }
+
+    // Fallback to local data
+    return _fallbackSurahs[widget.surahNumber] ?? _fallbackSurahs[1]!;
   }
 
   void _initializeAudioPlayer() {
     _playerStateSubscription = _player.playerStateStream.listen((state) {
       if (mounted) {
-        setState(() => _isPlaying = state.playing);
+        setState(() {
+          _isPlaying = state.playing;
+          _isLoadingAudio = state.processingState == ProcessingState.loading;
+        });
       }
     });
 
     _durationSubscription = _player.durationStream.listen((duration) {
-      if (duration != null && mounted) {
-        setState(() => _duration = duration);
+      if (mounted) {
+        setState(() => _duration = duration ?? Duration.zero);
       }
     });
 
@@ -89,30 +115,85 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
   }
 
   Future<void> _toggleAudio() async {
-    if (_selectedReciter == null) return;
+    if (_isLoadingAudio) return;
+
+    setState(() {
+      _isLoadingAudio = true;
+    });
 
     try {
       if (_isPlaying) {
         await _player.pause();
+        setState(() {
+          _isPlaying = false;
+          _isLoadingAudio = false;
+        });
       } else {
-        if (_player.processingState == ProcessingState.idle ||
-            _player.processingState == ProcessingState.completed) {
-          await _player.setUrl(_selectedReciter!.url!);
+        if (_position >= _duration) {
+          await _player.seek(Duration.zero);
         }
+
+        // Use sample audio
+        final audioUrl =
+            'https://cdn.islamic.network/quran/audio/128/ar.alafasy/${widget.surahNumber}.mp3';
+        await _player.setUrl(audioUrl);
+        await _player.setSpeed(_playbackSpeed);
         await _player.play();
+
+        setState(() {
+          _isPlaying = true;
+          _isLoadingAudio = false;
+        });
       }
     } catch (e) {
-      log('Audio error: $e');
+      print('Audio error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Failed to play audio. Please check your connection.',
-            ),
+            content: Text('Gagal memutar audio'),
+            backgroundColor: Colors.red,
           ),
         );
+        setState(() {
+          _isLoadingAudio = false;
+        });
       }
     }
+  }
+
+  Future<void> _changePlaybackSpeed() async {
+    final newSpeed = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Playback Speed'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildSpeedOption(0.5, '0.5x'),
+            _buildSpeedOption(0.75, '0.75x'),
+            _buildSpeedOption(1.0, '1.0x'),
+            _buildSpeedOption(1.25, '1.25x'),
+            _buildSpeedOption(1.5, '1.5x'),
+            _buildSpeedOption(2.0, '2.0x'),
+          ],
+        ),
+      ),
+    );
+
+    if (newSpeed != null) {
+      setState(() {
+        _playbackSpeed = newSpeed;
+      });
+      await _player.setSpeed(newSpeed);
+    }
+  }
+
+  Widget _buildSpeedOption(double speed, String label) {
+    return ListTile(
+      title: Text(label),
+      trailing: _playbackSpeed == speed ? const Icon(Icons.check) : null,
+      onTap: () => Navigator.of(context).pop(speed),
+    );
   }
 
   String _formatDuration(Duration duration) {
@@ -131,81 +212,59 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: FutureBuilder<SurahDetails>(
-        future: _surahFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            return _buildSurahContent(snapshot.data!);
-          } else {
-            return const Center(child: Text('No data available.'));
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildSurahContent(SurahDetails surahData) {
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: () async {
-            setState(() => _surahFuture = _fetchSurah());
-          },
-          child: CustomScrollView(
-            slivers: [
-              _buildHeader(surahData),
-              SliverPadding(
-                padding: const EdgeInsets.only(bottom: 150),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    if (surahData.surahNo != 1 && surahData.surahNo != 9)
-                      _buildBismillah(),
-                    const SizedBox(height: 12),
-                    _buildAyahList(surahData),
-                  ]),
-                ),
-              ),
-            ],
-          ),
-        ),
-        _buildAudioPlayer(),
-      ],
-    );
-  }
-
   Widget _buildBismillah() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.symmetric(vertical: 24),
       child: Center(
-        child: Image.asset(
-          'assets/images/Bismillah.png',
-          height: 80,
-          color: Colors.black87,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: _accentColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _primaryColor.withOpacity(0.3)),
+          ),
+          child: Text(
+            '﷽',
+            style: GoogleFonts.amiri(
+              fontSize: 32,
+              color: _primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
   }
 
+  // Di method _buildAyahList, ganti menjadi:
   Widget _buildAyahList(SurahDetails surahData) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: surahData.arabic1!.length,
-        itemBuilder: (context, index) => Ayah(
-          verseNumber: index + 1,
-          verseArabic: surahData.arabic1![index],
-          verseEnglish: surahData.english![index],
+    final verseCount = surahData.arabic?.length ?? 0;
+
+    if (verseCount == 0) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(
+            'Data ayat tidak tersedia',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(color: Colors.grey),
+          ),
         ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Ayah(
+            verseNumber: index + 1,
+            verseArabic: surahData.arabic![index],
+            verseEnglish: surahData.english![index],
+            surahNumber: widget.surahNumber, // Tambahkan ini
+          ),
+        ),
+        childCount: verseCount,
       ),
     );
   }
@@ -215,7 +274,7 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
       elevation: 0,
-      expandedHeight: 250.0,
+      expandedHeight: 280.0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -223,17 +282,27 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.green.shade700, Colors.green.shade900],
+              colors: [_primaryColor, const Color(0xFF1B5E20)],
             ),
           ),
           child: Stack(
             children: [
               Positioned.fill(
-                child: Image.asset(
-                  'assets/images/quran_bg.jpg',
-                  fit: BoxFit.cover,
-                  colorBlendMode: BlendMode.modulate,
-                  color: Colors.black.withOpacity(0.5),
+                child: Opacity(
+                  opacity: 0.1,
+                  child: Container(color: Colors.black.withOpacity(0.2)),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.3),
+                      Colors.black.withOpacity(0.1),
+                    ],
+                  ),
                 ),
               ),
               Padding(
@@ -245,28 +314,49 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      surahData.surahNameTranslation!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${surahData.revelationPlace!} - ${surahData.totalAyah!} Ayah',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.white70,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Surah ${surahData.surahNo}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      surahData.surahNameArabic!,
-                      style: GoogleFonts.amiri(
-                        fontSize: 60,
+                      surahData.surahNameTranslation ?? 'Unknown',
+                      style: GoogleFonts.poppins(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${surahData.revelationPlace ?? 'Unknown'} • ${surahData.totalAyah ?? 0} Ayah',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      surahData.surahNameArabic ?? '...',
+                      style: GoogleFonts.amiri(
+                        fontSize: 42,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -280,83 +370,24 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     );
   }
 
-  Widget _buildAudioPlayer() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _formatDuration(_position),
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    _buildReciterDropdown(),
-                    Text(
-                      _formatDuration(_duration),
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-                _buildProgressSlider(),
-                IconButton(
-                  onPressed: _selectedReciter != null ? _toggleAudio : null,
-                  icon: Icon(
-                    _isPlaying
-                        ? Icons.pause_circle_filled
-                        : Icons.play_circle_filled,
-                    size: 50,
-                    color: Colors.green.shade800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildProgressSlider() {
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
-        activeTrackColor: Colors.green.shade800,
-        inactiveTrackColor: Colors.green.shade800.withOpacity(0.2),
-        thumbColor: Colors.green.shade800,
-        trackHeight: 3,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+        activeTrackColor: _primaryColor,
+        inactiveTrackColor: Colors.grey[300],
+        thumbColor: _primaryColor,
+        trackHeight: 4,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+        overlayColor: _primaryColor.withOpacity(0.2),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
       ),
       child: Slider(
         min: 0,
         max: _duration.inMilliseconds.toDouble(),
-        value: _position.inMilliseconds.toDouble(),
+        value: _position.inMilliseconds.toDouble().clamp(
+          0,
+          _duration.inMilliseconds.toDouble(),
+        ),
         onChanged: (value) async {
           await _player.seek(Duration(milliseconds: value.toInt()));
         },
@@ -364,30 +395,208 @@ class _SurahDetailsScreenState extends State<SurahDetailsScreen> {
     );
   }
 
-  Widget _buildReciterDropdown() {
-    return DropdownButton<Audio>(
-      value: _selectedReciter,
-      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.green),
-      underline: const SizedBox(),
-      style: GoogleFonts.poppins(
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
+  Widget _buildAudioPlayer() {
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 16,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Reciter Info
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _accentColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.mic, color: _primaryColor, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Mishary Alafasy',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _changePlaybackSpeed,
+                    icon: Text(
+                      '${_playbackSpeed}x',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        color: _primaryColor,
+                      ),
+                    ),
+                    tooltip: 'Change Speed',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Progress
+            Row(
+              children: [
+                Text(
+                  _formatDuration(_position),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  _formatDuration(_duration),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _buildProgressSlider(),
+            const SizedBox(height: 16),
+
+            // Play Button
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_primaryColor, const Color(0xFF1B5E20)],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _primaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    onPressed: _toggleAudio,
+                    icon: Icon(
+                      _isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
+                  if (_isLoadingAudio)
+                    CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      onChanged: (Audio? newReciter) {
-        if (newReciter != null) {
-          setState(() {
-            _selectedReciter = newReciter;
-            _player.pause();
-            _player.seek(Duration.zero);
-          });
-        }
-      },
-      items: _reciters.map<DropdownMenuItem<Audio>>((Audio reciter) {
-        return DropdownMenuItem<Audio>(
-          value: reciter,
-          child: Text(reciter.reciter ?? 'Unknown Reciter'),
-        );
-      }).toList(),
+    );
+  }
+
+  Widget _buildSurahContent(SurahDetails surahData) {
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: () async {
+            final newData = await _fetchSurah();
+            setState(() {
+              _surahFuture = Future.value(newData);
+            });
+          },
+          color: _primaryColor,
+          child: CustomScrollView(
+            slivers: [
+              _buildHeader(surahData),
+              if (surahData.surahNo != 1 && surahData.surahNo != 9)
+                SliverToBoxAdapter(child: _buildBismillah()),
+              _buildAyahList(surahData),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 180)),
+            ],
+          ),
+        ),
+        _buildAudioPlayer(),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: FutureBuilder<SurahDetails>(
+        future: _surahFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(color: _primaryColor),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error: ${snapshot.error}\nMenggunakan data offline',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(color: Colors.red),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _surahFuture = _fetchSurah();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text('Coba Lagi', style: GoogleFonts.poppins()),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (snapshot.hasData) {
+            return _buildSurahContent(snapshot.data!);
+          } else {
+            return const Center(child: Text('Tidak ada data yang tersedia.'));
+          }
+        },
+      ),
     );
   }
 }
