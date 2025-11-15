@@ -97,20 +97,18 @@ class _AyahState extends State<Ayah> with SingleTickerProviderStateMixin {
 
   void _handleShare() async {
     final text =
-        '''
-${widget.verseArabic}
+        '''${widget.verseArabic}
 
 ${widget.verseEnglish}
 
-— Quran App 2025
-    ''';
+— Quran App 2025''';
 
     await Share.share(text);
   }
 
   void _handleCopy() {
-    final text = '${widget.verseArabic}\n\n${widget.verseEnglish}';
-    // Implement copy to clipboard
+    final _ = '${widget.verseArabic}\n\n${widget.verseEnglish}';
+    // Untuk sementara, kita tunjukkan snackbar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Ayat ${widget.verseNumber} disalin!'),

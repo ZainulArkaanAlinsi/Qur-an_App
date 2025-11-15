@@ -16,12 +16,20 @@ class Routes {
     return {
       initialRoute: (context) => const HomeScreen(),
       surahDetails: (context) {
-        final surahNumber = ModalRoute.of(context)!.settings.arguments as int;
+        final args = ModalRoute.of(context)!.settings.arguments;
+        final surahNumber = args is int ? args : 1;
         return SurahDetailsScreen(surahNumber: surahNumber);
       },
       search: (context) => const SearchScreen(),
       bookmarks: (context) => const BookmarkScreen(),
       settings: (context) => const SettingsScreen(),
     };
+  }
+
+  static Future<void> navigateToSurahDetails(
+    BuildContext context,
+    int surahNumber,
+  ) async {
+    await Navigator.of(context).pushNamed(surahDetails, arguments: surahNumber);
   }
 }
