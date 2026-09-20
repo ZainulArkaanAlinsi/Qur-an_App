@@ -8,8 +8,9 @@ import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onOpenQuran});
+  const HomeScreen({super.key, required this.onOpenQuran, required this.onOpenQibla});
   final VoidCallback onOpenQuran;
+  final VoidCallback onOpenQibla;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -154,24 +155,35 @@ class _HomeScreenState extends State<HomeScreen> {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
           sliver: SliverToBoxAdapter(
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: _QuickAction(
-                    icon: Icons.menu_book_rounded,
-                    label: 'Daftar surah',
-                    caption: '114 surah',
-                    onTap: widget.onOpenQuran,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.menu_book_rounded,
+                        label: 'Daftar surah',
+                        caption: '114 surah',
+                        onTap: widget.onOpenQuran,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.bookmark_outline_rounded,
+                        label: 'Tersimpan',
+                        caption: '${SharedPreferencesService.getBookmarks().length} bookmark',
+                        onTap: () => openBookmarks(context),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickAction(
-                    icon: Icons.bookmark_outline_rounded,
-                    label: 'Tersimpan',
-                    caption: '${SharedPreferencesService.getBookmarks().length} bookmark',
-                    onTap: () => openBookmarks(context),
-                  ),
+                const SizedBox(height: 12),
+                _QuickAction(
+                  icon: Icons.explore_rounded,
+                  label: 'Arah kiblat',
+                  caption: 'Lokasi presisi dan kompas perangkat',
+                  onTap: widget.onOpenQibla,
                 ),
               ],
             ),

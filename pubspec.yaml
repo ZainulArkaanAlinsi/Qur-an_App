@@ -23,6 +23,8 @@ dependencies:
   flutter_dotenv: ^5.0.2
   package_info_plus: ^4.2.0
   flutter_native_splash: ^2.4.4
+  geolocator: ^14.0.1
+  flutter_compass: ^0.8.1
 
 dev_dependencies:
   flutter_test:

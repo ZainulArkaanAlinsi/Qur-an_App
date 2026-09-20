@@ -3,6 +3,7 @@ import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
 import 'package:quran_app_2025/screens/progress_screen.dart';
+import 'package:quran_app_2025/screens/qibla_screen.dart';
 import 'package:quran_app_2025/screens/quran_library_screen.dart';
 import 'package:quran_app_2025/screens/settings_screen.dart';
 
@@ -19,7 +20,12 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomeScreen(onOpenQuran: () => setState(() => _index = 1)),
+      HomeScreen(
+        onOpenQuran: () => setState(() => _index = 1),
+        onOpenQibla: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const QiblaScreen()),
+        ),
+      ),
       const QuranLibraryScreen(),
       const ProgressScreen(),
       const SettingsScreen(),
