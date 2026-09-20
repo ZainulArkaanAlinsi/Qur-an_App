@@ -3,7 +3,8 @@
 ## Selesai dan terhubung ke aplikasi
 
 - Shell Flutter native dengan navigasi Beranda, Qur’an, Progres, dan Pengaturan.
-- Sacred Serenity diterapkan pada Beranda, daftar surah, Reader, Progres, dan navigasi: token resmi emerald/ivory/gold, layering tonal, garis batas lembut, spacing mobile 20 px, serta light/dark mode.
+- Sacred Serenity diterapkan pada Beranda, daftar surah, Reader, Progres, Pengaturan, Bookmark, dan navigasi: token resmi emerald/ivory/gold, layering tonal, garis batas lembut, spacing mobile 20 px, serta light/dark mode.
+- Liquid glass native dipakai terbatas pada navigation bar dan panel statis Pengaturan/Bookmark. Blur tidak dipakai untuk list ayat/surah agar scrolling tetap ringan.
 - Katalog navigasi 114 surah dengan pencarian nama/nomor dan filter tempat turunnya.
 - Teks Arab Uthmani Tanzil offline (6.236 ayat) dengan font Amiri, manifest runtime, checksum, dan atribusi di `DATASET_ATTRIBUTION.md`.
 - Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal, lanjut baca per surah, mode fokus, serta status offline/error yang jelas.
@@ -15,6 +16,7 @@
 - `dart format` dijalankan pada file UI dan test yang diubah.
 - `dart analyze lib/app lib/data lib/models lib/screens lib/services test` selesai dengan 26 info lint pada layar legacy `surah_details_screen.dart`; tidak ada error/warning pada jalur UI aktif yang diubah.
 - `flutter pub get` berhasil setelah perbaikan registrasi plugin splash Android.
+- `dart analyze` untuk komponen liquid glass, navigation, Pengaturan, dan Bookmark selesai dengan `No issues found`.
 - `assembleRelease` sukses; 232 task diproses dan artefak APK release terbentuk.
 - Widget test telah diperbarui untuk pencarian/filter dan integritas tampilan nama surah. Eksekusinya belum dapat direkam: proses `flutter test` pada terminal otomasi ini tidak menulis hasil dan dihentikan agar tidak menahan toolchain.
 
