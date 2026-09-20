@@ -1,27 +1,35 @@
 # Progres implementasi
 
-## Selesai dalam tahap lokal awal
+## Selesai dan terhubung ke aplikasi
 
-- Shell native Flutter: Beranda, Qur’an, Progres, Pengaturan.
-- Tema Sacred Serenity terang/gelap memakai token yang ditentukan.
-- Katalog navigasi 114 surah, pencarian nama/nomor, bookmark lokal, dan lanjut baca lokal.
-- Reader RTL Arab offline dengan ukuran teks tersimpan, loading/retry/error yang jelas.
-- Tes widget pencarian menggantikan tes counter bawaan yang salah (masih menunggu eksekusi test yang berhasil direkam).
-- Teks Arab Uthmani lokal (6.236 ayat), manifest runtime, checksum, atribusi dan font Amiri offline.
-- Target 5/10/15/30 menit, tracker reader foreground lokal, progres harian dan streak lokal dasar.
-- Analisis seluruh jalur kode aktif (app, data, layar aktif, dan layanan aktif) selesai dengan `No issues found` pada 20 September 2026.
-- Reader memakai render lazily melalui `ListView.separated`, batas repaint per kartu ayat, dan parsing aset pada isolate agar pembukaan surah tidak memblokir UI thread.
+- Shell Flutter native dengan navigasi Beranda, Qur’an, Progres, dan Pengaturan.
+- Sacred Serenity diterapkan pada Beranda, daftar surah, Reader, Progres, dan navigasi: token resmi emerald/ivory/gold, layering tonal, garis batas lembut, spacing mobile 20 px, serta light/dark mode.
+- Katalog navigasi 114 surah dengan pencarian nama/nomor dan filter tempat turunnya.
+- Teks Arab Uthmani Tanzil offline (6.236 ayat) dengan font Amiri, manifest runtime, checksum, dan atribusi di `DATASET_ATTRIBUTION.md`.
+- Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal, lanjut baca per surah, mode fokus, serta status offline/error yang jelas.
+- Target 5/10/15/30 menit, tracker foreground lokal, dan tampilan statistik/streak lokal dasar.
+- APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
-## Belum diverifikasi / belum selesai
+## Bukti pemeriksaan terbaru
 
-- Dataset terjemahan offline, lisensi font/audio, dan review konten manusia. Teks Arab offline + manifest 6.236 ayat + checksum sudah ada; lihat `DATASET_ATTRIBUTION.md`.
-- Audio yang dipasangkan per `verseKey`, queue, repeat, lifecycle background, dan hak offline.
-- Sesi membaca, streak, target, fake-clock test, database/migrasi, khatam, sync/auth.
-- Uji perangkat, accessibility 200%, dan hasil `flutter test` yang dapat direkam. `flutter analyze` sudah 0 error, dengan 46 info legacy/non-blocking.
-- Build APK belum terverifikasi: perintah build berhenti tanpa status akhir pada terminal otomasi ini dan tidak membentuk `app-debug.apk`.
-- Target 60 FPS harus divalidasi dengan Flutter DevTools pada perangkat fisik target; belum ada angka FPS perangkat yang boleh diklaim.
-- Streak saat ini belum memiliki UUID session, snapshot target, zona IANA, rekonsiliasi lintas tengah malam yang diuji, atau sync idempoten. Jangan anggap fitur ini siap cloud.
+- `dart format` dijalankan pada file UI dan test yang diubah.
+- `dart analyze lib/app lib/data lib/models lib/screens lib/services test` selesai dengan 26 info lint pada layar legacy `surah_details_screen.dart`; tidak ada error/warning pada jalur UI aktif yang diubah.
+- `flutter pub get` berhasil setelah perbaikan registrasi plugin splash Android.
+- `assembleRelease` sukses; 232 task diproses dan artefak APK release terbentuk.
+- Widget test telah diperbarui untuk pencarian/filter dan integritas tampilan nama surah. Eksekusinya belum dapat direkam: proses `flutter test` pada terminal otomasi ini tidak menulis hasil dan dihentikan agar tidak menahan toolchain.
 
-## Langkah berikutnya
+## Belum selesai / blocker yang tidak boleh diklaim selesai
 
-Tambahkan dataset berlisensi dan tervalidasi sebagai sumber read-only sebelum menyatakan reader offline/produksi. Sesudah itu, migrasikan reader dari endpoint jaringan sementara ke repository konten lokal dan tambah test integritas 114 surah.
+- Tab Juz dengan batas ayat tervalidasi, navigasi ke ayat awal, dan pencarian terjemahan/Arab.
+- Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
+- Audio per `verseKey`, queue, repeat, background lifecycle, interruption, dan pemeriksaan hak offline. UI saat ini tidak menampilkan kontrol audio palsu.
+- Sesi reading lengkap: UUID, snapshot target, zona IANA, split tengah malam, rekonsiliasi dan fake-clock test.
+- Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
+- Uji perangkat nyata: 200% font, screen reader, airplane mode, reader panjang, dan metrik profile/release 60 FPS.
+- applicationId produksi, keystore sendiri, signing release, privacy policy, store data safety, serta persetujuan rilis.
+
+## Tahap berikutnya
+
+1. Bangun indeks Juz dengan boundary yang tervalidasi dan reader posisi ayat.
+2. Tambahkan test deterministik untuk bookmark, last read, streak, dan aksesibilitas Reader.
+3. Integrasikan terjemahan/audio hanya setelah sumber, lisensi, dan resource ID telah disetujui.

@@ -14,6 +14,11 @@ void main() {
     expect(surahCatalog[8].ayahCount, 129);
   });
 
+  test('nama surah untuk tampilan tidak memuat artefak encoding', () {
+    expect(surahCatalog[2].displayName, 'Ali ‘Imran');
+    expect(surahCatalog[4].displayName, 'Al-Ma’idah');
+  });
+
   test('aset Tanzil memuat 6236 baris ayat', () {
     final lines = File('assets/quran/raw/tanzil_uthmani_v1.0.2.txt')
         .readAsLinesSync()

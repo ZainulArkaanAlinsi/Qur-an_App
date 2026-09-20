@@ -4,4 +4,10 @@ class SurahMeta {
   final String name;
   final int ayahCount;
   final String revelation;
+
+  String get displayName => name
+      .replaceAll('â€™', '’')
+      .replaceAll('â€˜', '‘')
+      .replaceAll('â€“', '–')
+      .replaceAll('Â·', '·');
 }
