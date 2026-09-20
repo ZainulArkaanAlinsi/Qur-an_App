@@ -10,6 +10,7 @@
 - Teks Arab Uthmani lokal (6.236 ayat), manifest runtime, checksum, atribusi dan font Amiri offline.
 - Target 5/10/15/30 menit, tracker reader foreground lokal, progres harian dan streak lokal dasar.
 - Analisis seluruh jalur kode aktif (app, data, layar aktif, dan layanan aktif) selesai dengan `No issues found` pada 20 September 2026.
+- Reader memakai render lazily melalui `ListView.separated`, batas repaint per kartu ayat, dan parsing aset pada isolate agar pembukaan surah tidak memblokir UI thread.
 
 ## Belum diverifikasi / belum selesai
 
@@ -18,6 +19,7 @@
 - Sesi membaca, streak, target, fake-clock test, database/migrasi, khatam, sync/auth.
 - Uji perangkat, accessibility 200%, dan hasil `flutter test` yang dapat direkam. `flutter analyze` sudah 0 error, dengan 46 info legacy/non-blocking.
 - Build APK belum terverifikasi: perintah build berhenti tanpa status akhir pada terminal otomasi ini dan tidak membentuk `app-debug.apk`.
+- Target 60 FPS harus divalidasi dengan Flutter DevTools pada perangkat fisik target; belum ada angka FPS perangkat yang boleh diklaim.
 - Streak saat ini belum memiliki UUID session, snapshot target, zona IANA, rekonsiliasi lintas tengah malam yang diuji, atau sync idempoten. Jangan anggap fitur ini siap cloud.
 
 ## Langkah berikutnya

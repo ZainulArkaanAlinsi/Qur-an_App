@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 
@@ -19,11 +20,7 @@ class QuranTextRepository {
   Future<List<List<String>>> _load() async {
     if (_surahs != null) return _surahs!;
     final raw = await rootBundle.loadString(_asset);
-    final verses = raw
-        .split(RegExp(r'\r?\n'))
-        .map((line) => line.trim())
-        .where((line) => line.isNotEmpty && !line.startsWith('#'))
-        .toList(growable: false);
+    final verses = await compute(_parseTanzilVerses, raw);
     const expectedVerseCount = 6236;
     if (verses.length != expectedVerseCount) {
       throw StateError(
@@ -47,3 +44,9 @@ class QuranTextRepository {
     return _surahs!;
   }
 }
+
+List<String> _parseTanzilVerses(String raw) => raw
+    .split(RegExp(r'\r?\n'))
+    .map((line) => line.trim())
+    .where((line) => line.isNotEmpty && !line.startsWith('#'))
+    .toList(growable: false);

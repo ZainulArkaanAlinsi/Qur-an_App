@@ -172,67 +172,69 @@ class _VerseCardState extends State<_VerseCard> {
   @override
   Widget build(BuildContext context) {
     final arabicSize = SharedPreferencesService.getArabicFontSize();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                  ),
-                  child: Text(
-                    '${widget.verseNumber}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+    return RepaintBoundary(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                    ),
+                    child: Text(
+                      '${widget.verseNumber}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                     ),
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () async {
-                    if (bookmarked) {
-                      await SharedPreferencesService.removeBookmark(
-                        widget.surahNumber,
-                        widget.verseNumber,
-                      );
-                    } else {
-                      await SharedPreferencesService.saveBookmark(
-                        widget.surahNumber,
-                        widget.verseNumber,
-                      );
-                    }
-                    if (mounted) setState(() => bookmarked = !bookmarked);
-                  },
-                  icon: Icon(
-                    bookmarked ? Icons.bookmark : Icons.bookmark_outline,
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () async {
+                      if (bookmarked) {
+                        await SharedPreferencesService.removeBookmark(
+                          widget.surahNumber,
+                          widget.verseNumber,
+                        );
+                      } else {
+                        await SharedPreferencesService.saveBookmark(
+                          widget.surahNumber,
+                          widget.verseNumber,
+                        );
+                      }
+                      if (mounted) setState(() => bookmarked = !bookmarked);
+                    },
+                    icon: Icon(
+                      bookmarked ? Icons.bookmark : Icons.bookmark_outline,
+                    ),
+                    tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
                   ),
-                  tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(
-                widget.arabic,
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontFamily: 'Amiri',
-                  fontSize: arabicSize,
-                  height: 1.9,
+                ],
+              ),
+              const SizedBox(height: 16),
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text(
+                  widget.arabic,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontFamily: 'Amiri',
+                    fontSize: arabicSize,
+                    height: 1.9,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
