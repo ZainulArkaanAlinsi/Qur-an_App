@@ -81,6 +81,14 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                   'Ayat $verse',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
+                                Text(
+                                  SharedPreferencesService.getBookmarkCollection(
+                                    surahId,
+                                    verse,
+                                  ),
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(color: SacredTheme.primary),
+                                ),
                               ],
                             ),
                           ),
@@ -96,6 +104,28 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                           );
                           if (mounted) setState(() {});
                         },
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.folder_outlined),
+                        onSelected: (value) async {
+                          await SharedPreferencesService.setBookmarkCollection(
+                            surahId,
+                            verse,
+                            value,
+                          );
+                          if (mounted) setState(() {});
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'Umum', child: Text('Umum')),
+                          PopupMenuItem(
+                            value: 'Hafalan',
+                            child: Text('Hafalan'),
+                          ),
+                          PopupMenuItem(
+                            value: 'Favorit',
+                            child: Text('Favorit'),
+                          ),
+                        ],
                       ),
                     ],
                   ),

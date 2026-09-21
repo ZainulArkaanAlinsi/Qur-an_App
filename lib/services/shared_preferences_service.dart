@@ -13,11 +13,29 @@ class SharedPreferencesService {
       _prefs?.getBool('bookmark_${surahNumber}_$verseNumber') ?? false;
   static Future<void> saveBookmark(int surahNumber, int verseNumber) async {
     await _prefs?.setBool('bookmark_${surahNumber}_$verseNumber', true);
+    await _prefs?.setString(
+      'bookmark_collection_${surahNumber}_$verseNumber',
+      'Umum',
+    );
   }
 
   static Future<void> removeBookmark(int surahNumber, int verseNumber) async {
     await _prefs?.remove('bookmark_${surahNumber}_$verseNumber');
+    await _prefs?.remove('bookmark_collection_${surahNumber}_$verseNumber');
   }
+
+  static String getBookmarkCollection(int surahNumber, int verseNumber) =>
+      _prefs?.getString('bookmark_collection_${surahNumber}_$verseNumber') ??
+      'Umum';
+
+  static Future<void> setBookmarkCollection(
+    int surahNumber,
+    int verseNumber,
+    String collection,
+  ) async => _prefs?.setString(
+    'bookmark_collection_${surahNumber}_$verseNumber',
+    collection.trim().isEmpty ? 'Umum' : collection.trim(),
+  );
 
   static List<String> getBookmarks() =>
       (_prefs?.getKeys() ?? <String>{})
