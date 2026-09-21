@@ -11,15 +11,16 @@
 
 ## Baseline dan risiko
 
-- `flutter pub get` berhasil dijalankan dan mengubah lockfile/generator plugin sesuai resolusi dependency saat ini. `flutter analyze` selesai dengan **0 error**, tetapi masih melaporkan 46 info dari layar legacy yang belum dipakai dan beberapa API Flutter baru.
-- `flutter test test/widget_test.dart` tidak menghasilkan hasil akhir pada sesi terminal ini (proses Dart menjadi macet), sehingga test belum dapat dinyatakan lulus.
-- Konten reader saat ini tetap bergantung jaringan. Ini belum memenuhi syarat offline V1 dan tidak boleh disebut siap rilis.
-- Dataset, terjemahan, font, audio, dan lisensinya adalah blocker untuk rilis konten.
+- `flutter pub get` berhasil dijalankan. Analisis jalur UI aktif selesai tanpa error; info lint tersisa berada pada layar legacy yang tidak dipakai.
+- `flutter test --no-pub test/widget_test.dart --reporter expanded` lulus untuk pencarian/filter, metadata Juz, dan snapshot streak.
+- Reader memakai teks Arab Tanzil Uthmani offline dengan font Amiri, checksum, dan atribusi tercatat.
+- Terjemahan Indonesia berlisensi, audio per-ayat dengan resource yang tervalidasi, backend berita HTTPS, signing release, serta uji perangkat nyata masih menjadi blocker rilis publik.
 
 ## Tahap yang dikerjakan
 
 Tahap lokal awal: shell aplikasi, navigasi V1, tampilan Sacred Serenity, katalog navigasi, bookmark/last-read lokal, pengaturan tema dan ukuran teks, serta keadaan loading/error yang jujur.
 
 Pembaruan berikutnya menambahkan teks Arab offline Tanzil Uthmani versi 1.0.2,
-font Amiri berlisensi OFL, dan progres pembacaan lokal dasar. Detail sumber ada
-di `docs/DATASET_ATTRIBUTION.md`.
+font Amiri berlisensi OFL, Juz tervalidasi, progres pembacaan lokal, jadwal
+salat/kalendar Hijriah, serta reminder lokal. Detail sumber ada di
+`docs/DATASET_ATTRIBUTION.md`.
