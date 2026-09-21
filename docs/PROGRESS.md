@@ -11,7 +11,7 @@
 - Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal dengan koleksi Umum/Hafalan/Favorit, lanjut baca hingga ayat terakhir yang terlihat, tombol buka nomor ayat, mode fokus, serta status offline/error yang jelas.
 - Target 5/10/15/30 menit, tracker foreground lokal, snapshot target per tanggal, jeda saat tidak aktif, dan tampilan statistik/streak lokal dasar.
 - Jadwal lima waktu salat dan kalender Hijriah dari AlAdhan; kota dapat diubah pengguna. Pengingat salat dipasang hingga 14 hari ke depan dan pengingat tilawah berulang harian setelah izin notifikasi diberikan.
-- Layar berita Islam memakai endpoint backend yang dapat dikonfigurasi saat build; backend tersebut ditujukan memakai GNews bahasa Indonesia agar kunci API tidak dibundel dalam APK.
+- Layar berita Islam memakai GDELT DOC API gratis tanpa API key untuk artikel berbahasa Indonesia; endpoint backend yang lebih terkurasi tetap dapat dikonfigurasi saat build.
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
 ## Bukti pemeriksaan terbaru
@@ -27,7 +27,7 @@
 
 - Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
 - Audio per `verseKey`, queue, repeat, background lifecycle, interruption, dan pemeriksaan hak offline. UI saat ini tidak menampilkan kontrol audio palsu.
-- Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy, sehingga layar berita memberi status konfigurasi sampai URL backend diberikan saat build.
+- Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
 - Sesi reading lengkap: UUID, snapshot target, zona IANA, split tengah malam, rekonsiliasi dan fake-clock test.
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
 - Uji perangkat nyata: 200% font, screen reader, airplane mode, reader panjang, dan metrik profile/release 60 FPS.

@@ -81,7 +81,6 @@ class _NewsError extends StatelessWidget {
   final VoidCallback onRetry;
   @override
   Widget build(BuildContext context) {
-    final configMissing = error is StateError;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
@@ -91,18 +90,11 @@ class _NewsError extends StatelessWidget {
             const Icon(Icons.newspaper_outlined, size: 48),
             const SizedBox(height: 12),
             Text(
-              configMissing
-                  ? 'Berita belum dikonfigurasi'
-                  : 'Berita belum dapat dimuat',
+              'Berita belum dapat dimuat',
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            Text(
-              configMissing
-                  ? 'Tambahkan URL backend berita saat build. Kunci GNews disimpan aman di server.'
-                  : '$error',
-              textAlign: TextAlign.center,
-            ),
+            Text('$error', textAlign: TextAlign.center),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: onRetry,

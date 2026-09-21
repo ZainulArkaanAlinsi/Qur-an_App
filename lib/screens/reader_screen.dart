@@ -439,6 +439,45 @@ class _VerseCardState extends State<_VerseCard> {
                     tooltip: 'Putar murottal',
                   ),
                 ),
+                ValueListenableBuilder<String?>(
+                  valueListenable: QuranAudioService.instance.repeatingVerse,
+                  builder: (context, repeating, _) => IconButton(
+                    onPressed: () async {
+                      try {
+                        await QuranAudioService.instance.toggleRepeat(
+                          surah: widget.surahNumber,
+                          ayah: widget.verseNumber,
+                          globalAyah: surahCatalog
+                              .take(widget.surahNumber - 1)
+                              .fold<int>(
+                                widget.verseNumber,
+                                (sum, item) => sum + item.ayahCount,
+                              ),
+                        );
+                      } catch (_) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Pengulangan ayat belum dapat diaktifkan.',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    icon: Icon(
+                      repeating == '${widget.surahNumber}:${widget.verseNumber}'
+                          ? Icons.repeat_one_rounded
+                          : Icons.repeat_one_outlined,
+                    ),
+                    color:
+                        repeating ==
+                            '${widget.surahNumber}:${widget.verseNumber}'
+                        ? SacredTheme.primary
+                        : null,
+                    tooltip: 'Ulangi ayat ini',
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 18),
