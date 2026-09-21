@@ -106,6 +106,16 @@ class QuranAudioService {
     }
   }
 
+  // play() completes only when playback stops, and completes with an error
+  // if a later playlist item fails to load. That failure already reaches the
+  // UI through playbackEventStream, so it is consumed here instead of
+  // surfacing as an uncaught asynchronous error.
+  void _play() => unawaited(
+    _player.play().catchError(
+      (Object error) => debugPrint('Murottal gagal diputar: $error'),
+    ),
+  );
+
   static Uri urlFor(int surah, int ayah) => Uri.https(
     'cdn.islamic.network',
     '/quran/audio/128/$reciterEdition/${globalAyahNumber(surah, ayah)}.mp3',
@@ -158,7 +168,7 @@ class QuranAudioService {
   Future<void> togglePlayPause({bool? resume}) async {
     if (queue.value == null) return;
     if (resume ?? !_player.playing) {
-      unawaited(_player.play());
+      _play();
     } else {
       await _player.pause();
     }
@@ -240,7 +250,7 @@ class QuranAudioService {
       if (generation != _generation) return;
       _loading = false;
       _syncIndex(_player.currentIndex);
-      unawaited(_player.play());
+      _play();
     } catch (_) {
       // A newer request interrupted this load; its state is not ours to clear.
       if (generation != _generation) return;
