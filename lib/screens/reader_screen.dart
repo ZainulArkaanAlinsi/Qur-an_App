@@ -136,6 +136,39 @@ class _ReaderScreenState extends State<ReaderScreen> {
     _timerText.value = _timerLabel();
     _content = _load();
     _positions.itemPositions.addListener(_positionChanged);
+    QuranAudioService.instance.playingVerse.addListener(_followAudio);
+    QuranAudioService.instance.error.addListener(_showAudioError);
+  }
+
+  /// Keeps the verse the player is actually on in view.
+  void _followAudio() {
+    final key = QuranAudioService.instance.playingVerse.value;
+    final prefix = '${widget.surah.number}:';
+    if (key == null || !key.startsWith(prefix) || !_scroll.isAttached) return;
+    final index = int.parse(key.substring(prefix.length));
+    final visible = _positions.itemPositions.value.any(
+      (item) =>
+          item.index == index &&
+          item.itemLeadingEdge >= 0 &&
+          item.itemTrailingEdge <= .85,
+    );
+    if (visible) return;
+    unawaited(
+      _scroll.scrollTo(
+        index: index,
+        alignment: .08,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
+  void _showAudioError() {
+    final message = QuranAudioService.instance.error.value;
+    if (message == null || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -143,6 +176,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
     _saveTimer?.cancel();
     _savePosition();
     _positions.itemPositions.removeListener(_positionChanged);
+    QuranAudioService.instance.playingVerse.removeListener(_followAudio);
+    QuranAudioService.instance.error.removeListener(_showAudioError);
+    // Controls live in this screen only, so do not leave audio running
+    // without a way to stop it.
+    if (QuranAudioService.instance.queue.value?.surah == widget.surah.number) {
+      unawaited(QuranAudioService.instance.stop());
+    }
     _timerText.dispose();
     _tracker.dispose();
     super.dispose();
@@ -207,6 +247,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         const SizedBox(width: 4),
       ],
     ),
+    bottomNavigationBar: _MiniPlayer(surah: widget.surah),
     body: FutureBuilder<_ReaderContent>(
       future: _content,
       builder: (context, snapshot) {
@@ -275,7 +316,7 @@ class _SourceNotice extends StatelessWidget {
         SizedBox(width: 10),
         Expanded(
           child: Text(
-            'Teks Arab tersedia offline. Terjemahan Indonesia dan audio dimuat dari Al Quran Cloud saat internet tersedia.',
+            'Teks Arab tersedia offline. Terjemahan Indonesia dan murottal dimuat dari Al Quran Cloud saat internet tersedia. Tekan ▶ untuk memutar berurutan mulai ayat itu.',
             style: TextStyle(fontSize: 13),
           ),
         ),
@@ -350,16 +391,31 @@ class _VerseCardState extends State<_VerseCard> {
     final arabicSize = SharedPreferencesService.getArabicFontSize();
     final translationSize = SharedPreferencesService.getTranslationFontSize();
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final verseKey = '${widget.surahNumber}:${widget.verseNumber}';
     return RepaintBoundary(
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 16, 10, 20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: dark ? const Color(0xFF2A4036) : const Color(0xFFEEE5C8),
-          ),
-        ),
+      child: ValueListenableBuilder<String?>(
+        valueListenable: QuranAudioService.instance.playingVerse,
+        builder: (context, playing, child) {
+          final active = playing == verseKey;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.fromLTRB(18, 16, 10, 20),
+            decoration: BoxDecoration(
+              color: active
+                  ? SacredTheme.primary.withValues(alpha: dark ? .16 : .045)
+                  : Theme.of(context).colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: active
+                    ? SacredTheme.primary.withValues(alpha: dark ? .7 : .35)
+                    : dark
+                    ? const Color(0xFF2A4036)
+                    : const Color(0xFFEEE5C8),
+              ),
+            ),
+            child: child,
+          );
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -406,83 +462,9 @@ class _VerseCardState extends State<_VerseCard> {
                   color: bookmarked ? SacredTheme.primary : null,
                   tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
                 ),
-                ValueListenableBuilder<String?>(
-                  valueListenable: QuranAudioService.instance.playingVerse,
-                  builder: (context, playing, _) => IconButton(
-                    onPressed: () async {
-                      try {
-                        await QuranAudioService.instance.toggle(
-                          surah: widget.surahNumber,
-                          ayah: widget.verseNumber,
-                        );
-                      } catch (_) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Murottal belum dapat diputar. Periksa koneksi internet.',
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    icon: ValueListenableBuilder<bool>(
-                      valueListenable: QuranAudioService.instance.buffering,
-                      builder: (context, buffering, _) {
-                        final isThis =
-                            playing ==
-                            '${widget.surahNumber}:${widget.verseNumber}';
-                        if (isThis && buffering) {
-                          return const SizedBox.square(
-                            dimension: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2.4),
-                          );
-                        }
-                        return Icon(
-                          isThis
-                              ? Icons.pause_circle_filled_rounded
-                              : Icons.play_circle_outline_rounded,
-                        );
-                      },
-                    ),
-                    tooltip:
-                        playing == '${widget.surahNumber}:${widget.verseNumber}'
-                        ? 'Hentikan murottal'
-                        : 'Putar murottal',
-                  ),
-                ),
-                ValueListenableBuilder<String?>(
-                  valueListenable: QuranAudioService.instance.repeatingVerse,
-                  builder: (context, repeating, _) => IconButton(
-                    onPressed: () async {
-                      try {
-                        await QuranAudioService.instance.toggleRepeat(
-                          surah: widget.surahNumber,
-                          ayah: widget.verseNumber,
-                        );
-                      } catch (_) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Pengulangan ayat belum dapat diaktifkan.',
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    icon: Icon(
-                      repeating == '${widget.surahNumber}:${widget.verseNumber}'
-                          ? Icons.repeat_one_rounded
-                          : Icons.repeat_one_outlined,
-                    ),
-                    color:
-                        repeating ==
-                            '${widget.surahNumber}:${widget.verseNumber}'
-                        ? SacredTheme.primary
-                        : null,
-                    tooltip: 'Ulangi ayat ini',
-                  ),
+                _VersePlayButton(
+                  surah: widget.surahNumber,
+                  ayah: widget.verseNumber,
                 ),
               ],
             ),
@@ -545,4 +527,333 @@ class _ReaderContent {
   const _ReaderContent(this.arabic, this.translation);
   final List<String> arabic;
   final List<String>? translation;
+}
+
+class _VersePlayButton extends StatelessWidget {
+  const _VersePlayButton({required this.surah, required this.ayah});
+  final int surah;
+  final int ayah;
+
+  @override
+  Widget build(BuildContext context) {
+    final audio = QuranAudioService.instance;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        audio.playingVerse,
+        audio.isPlaying,
+        audio.buffering,
+      ]),
+      builder: (context, _) {
+        final current = audio.playingVerse.value == '$surah:$ayah';
+        final playing = current && audio.isPlaying.value;
+        return IconButton(
+          onPressed: () async {
+            try {
+              await audio.toggle(surah: surah, ayah: ayah);
+            } catch (_) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Murottal belum dapat diputar. Periksa koneksi internet.',
+                  ),
+                ),
+              );
+            }
+          },
+          icon: current && audio.buffering.value
+              ? const SizedBox.square(
+                  dimension: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.4),
+                )
+              : Icon(
+                  playing
+                      ? Icons.pause_circle_filled_rounded
+                      : Icons.play_circle_outline_rounded,
+                ),
+          color: current ? SacredTheme.primary : null,
+          tooltip: playing ? 'Jeda murottal' : 'Putar mulai ayat ini',
+        );
+      },
+    );
+  }
+}
+
+class _MiniPlayer extends StatelessWidget {
+  const _MiniPlayer({required this.surah});
+  final SurahMeta surah;
+
+  @override
+  Widget build(BuildContext context) {
+    final audio = QuranAudioService.instance;
+    final theme = Theme.of(context);
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        audio.queue,
+        audio.playingVerse,
+        audio.isPlaying,
+        audio.buffering,
+        audio.repeat,
+      ]),
+      builder: (context, _) {
+        final queue = audio.queue.value;
+        final key = audio.playingVerse.value;
+        if (queue == null || queue.surah != surah.number || key == null) {
+          return const SizedBox.shrink();
+        }
+        final ayah = int.parse(key.split(':').last);
+        final repeat = audio.repeat.value;
+        final subtitle = switch (repeat) {
+          AudioRepeat.off => QuranAudioService.reciterName,
+          AudioRepeat.verse => 'Mengulang ayat $ayah',
+          AudioRepeat.range =>
+            'Mengulang ayat ${queue.firstAyah}–${queue.lastAyah}',
+        };
+        return SafeArea(
+          top: false,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            padding: const EdgeInsets.fromLTRB(16, 6, 4, 6),
+            decoration: BoxDecoration(
+              color: SacredTheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .12),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: IconTheme.merge(
+              data: const IconThemeData(color: Colors.white),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Ayat $ayah',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: const Color(0xFFD7F0E4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: audio.previous,
+                    icon: const Icon(Icons.skip_previous_rounded),
+                    tooltip: 'Ayat sebelumnya',
+                  ),
+                  IconButton.filled(
+                    style: IconButton.styleFrom(
+                      backgroundColor: SacredTheme.gold,
+                      foregroundColor: SacredTheme.primary,
+                    ),
+                    onPressed: audio.togglePlayPause,
+                    icon: audio.buffering.value
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: SacredTheme.primary,
+                            ),
+                          )
+                        : Icon(
+                            audio.isPlaying.value
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                          ),
+                    tooltip: audio.isPlaying.value ? 'Jeda' : 'Putar',
+                  ),
+                  IconButton(
+                    onPressed: audio.next,
+                    icon: const Icon(Icons.skip_next_rounded),
+                    tooltip: 'Ayat berikutnya',
+                  ),
+                  PopupMenuButton<AudioRepeat>(
+                    tooltip: 'Pengulangan',
+                    icon: Icon(
+                      repeat == AudioRepeat.verse
+                          ? Icons.repeat_one_on_rounded
+                          : repeat == AudioRepeat.range
+                          ? Icons.repeat_on_rounded
+                          : Icons.repeat_rounded,
+                      color: repeat == AudioRepeat.off
+                          ? Colors.white
+                          : SacredTheme.gold,
+                    ),
+                    initialValue: repeat,
+                    onSelected: (mode) async {
+                      if (mode == AudioRepeat.range) {
+                        await _chooseRange(context, surah, ayah);
+                      } else {
+                        await audio.setRepeat(mode);
+                      }
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: AudioRepeat.off,
+                        child: Text('Putar berurutan'),
+                      ),
+                      PopupMenuItem(
+                        value: AudioRepeat.verse,
+                        child: Text('Ulangi ayat ini'),
+                      ),
+                      PopupMenuItem(
+                        value: AudioRepeat.range,
+                        child: Text('Ulangi rentang ayat…'),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: audio.stop,
+                    icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Tutup pemutar',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+Future<void> _chooseRange(
+  BuildContext context,
+  SurahMeta surah,
+  int currentAyah,
+) async {
+  final count = surah.ayahCount;
+  var from = currentAyah;
+  var to = (currentAyah + 4).clamp(1, count);
+  final picked = await showModalBottomSheet<(int, int)>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setSheetState) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Ulangi rentang ayat',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Cocok untuk murajaah hafalan. Rentang diputar terus sampai dihentikan.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _AyahDropdown(
+                      label: 'Dari ayat',
+                      value: from,
+                      min: 1,
+                      max: count,
+                      onChanged: (value) => setSheetState(() {
+                        from = value;
+                        if (to < from) to = from;
+                      }),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _AyahDropdown(
+                      // Rebuilt when the lower bound moves so a stale value
+                      // never falls outside the item list.
+                      key: ValueKey('to-$from'),
+                      label: 'Sampai ayat',
+                      value: to,
+                      min: from,
+                      max: count,
+                      onChanged: (value) => setSheetState(() => to = value),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(context, (from, to)),
+                icon: const Icon(Icons.repeat_rounded),
+                label: Text('Ulangi ayat $from–$to'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+  if (picked == null) return;
+  try {
+    await QuranAudioService.instance.playRange(
+      surah: surah.number,
+      fromAyah: picked.$1,
+      toAyah: picked.$2,
+    );
+  } catch (_) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Rentang belum dapat diputar. Periksa koneksi internet.'),
+      ),
+    );
+  }
+}
+
+class _AyahDropdown extends StatelessWidget {
+  const _AyahDropdown({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+  final String label;
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) => DropdownButtonFormField<int>(
+    initialValue: value,
+    isExpanded: true,
+    menuMaxHeight: 320,
+    decoration: InputDecoration(
+      labelText: label,
+      border: const OutlineInputBorder(),
+    ),
+    items: [
+      for (var ayah = min; ayah <= max; ayah++)
+        DropdownMenuItem(value: ayah, child: Text('$ayah')),
+    ],
+    onChanged: (ayah) {
+      if (ayah != null) onChanged(ayah);
+    },
+  );
 }

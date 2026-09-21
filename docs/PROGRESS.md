@@ -3,7 +3,7 @@
 ## Selesai dan terhubung ke aplikasi
 
 - Terjemahan Indonesia (`id.indonesian`, api.alquran.cloud) dimuat online per surah dan disembunyikan bila jumlah ayat tidak cocok. Nama penerjemah/lisensi belum diverifikasi, jadi belum layak rilis.
-- Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network) dengan putar/jeda dan ulangi satu ayat, dipetakan melalui `globalAyahNumber`.
+- Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network), dipetakan melalui `globalAyahNumber`. Satu player dengan playlist per surah (`AudioQueue`): ▶ pada kartu memutar berurutan mulai ayat itu; mini-player Reader berisi sebelumnya/putar-jeda/berikutnya, mode Putar berurutan / Ulangi ayat / Ulangi rentang (pilih dari–sampai), dan tutup. Ayat aktif diambil dari indeks player sebenarnya, disorot, dan layar mengikuti. Audio berhenti saat Reader ditutup karena kontrol belum ada di luar Reader.
 
 - Shell Flutter native dengan navigasi Beranda, Qur’an, Progres, dan Pengaturan.
 - Sacred Serenity diterapkan pada Beranda, daftar surah, Reader, Progres, Pengaturan, Bookmark, dan navigasi: token resmi emerald/ivory/gold, layering tonal, garis batas lembut, spacing mobile 20 px, serta light/dark mode.
@@ -20,6 +20,8 @@
 
 ## Bukti pemeriksaan terbaru
 
+- 21 September 2026 (antrean audio): `flutter test` lulus 29 test termasuk `test/audio_queue_test.dart`; `flutter analyze` tanpa error/warning (64 info lama); `flutter build apk --debug` sukses. Tidak ada perangkat Android tersambung, jadi playback berurutan, rentang, dan auto-scroll belum diuji di perangkat.
+
 - 21 September 2026 (audio): nomor ayat global diverifikasi ke `api.alquran.cloud` untuk 1:1, 2:1, 2:255, 9:1, 27:30, 114:6 dan dijadikan test `globalAyahNumber`. `QuranAudioService` diperbaiki: token generasi mencegah race antar-ayat, state mengikuti player saat dijeda sistem/selesai/error, batas waktu load 20 detik, indikator buffering di tombol putar. `flutter test` lulus 24 test. Belum diuji di perangkat.
 
 - 21 September 2026: `flutter test` lulus 23 test, termasuk `test/streak_test.dart` (299/300 detik, cicil 2+3 menit, contoh pending/putus panduan, kabisat, pergantian tahun, snapshot target, tanggal masa depan, split tengah malam, jam mundur). `dart analyze` pada file yang diubah: `No issues found`. Belum diuji di perangkat.
@@ -34,7 +36,7 @@
 ## Belum selesai / blocker yang tidak boleh diklaim selesai
 
 - Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
-- Audio: queue/next/previous/putar berurutan, repeat rentang, background service (`audio_service`), serta pemeriksaan hak unduh offline. Belum diuji di perangkat: panggilan masuk, headphone dicabut, layar mati.
+- Audio: background service (`audio_service`) dengan kontrol notifikasi/layar kunci dan mini-player global, serta pemeriksaan hak unduh offline. Belum diuji di perangkat: panggilan masuk, headphone dicabut, layar mati.
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
 - Sesi reading lengkap: UUID per sesi, zona IANA tersimpan, outbox dan rekonsiliasi multi-perangkat. (Snapshot target, split tengah malam, dan fake-clock test untuk perhitungan harian sudah ada.)
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
