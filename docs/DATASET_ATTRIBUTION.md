@@ -23,11 +23,56 @@ HTTP 404. Berkas diperoleh dari salinan publik yang menyertakan blok atribusi
 Tanzil utuh. Sebelum rilis, perbarui dari sumber resmi saat endpoint tersedia,
 bandingkan checksum/diff, lalu minta review konten manusia yang kompeten.
 
-## Sumber online (belum dibundel)
+## Sumber online (belum dibundel) — diperiksa 21 September 2026
 
-- Audio per ayat: Mishary Rashid Alafasy, edisi `ar.alafasy` 128 kbps dari
-  `https://cdn.islamic.network/quran/audio/128/ar.alafasy/{nomorGlobal}.mp3`
-  (katalog api.alquran.cloud). Hanya streaming; hak unduh/distribusi offline
-  belum diverifikasi.
-- Terjemahan Indonesia: edisi `id.indonesian` dari api.alquran.cloud. Nama
-  penerjemah, versi, dan lisensi harus dikonfirmasi sebelum rilis publik.
+### Terjemahan Indonesia (`id.indonesian`)
+
+- **Dimuat dari:** `https://api.alquran.cloud/v1/surah/{n}/id.indonesian`.
+- **Metadata API:** `name: "Bahasa Indonesia"`, `englishName: "Unknown"` —
+  Al Quran Cloud sendiri tidak mencantumkan penerjemah.
+- **Sumber hulu:** katalog [Tanzil Translations](https://tanzil.net/trans/)
+  mencantumkan edisi *Bahasa Indonesia* dengan penerjemah **Indonesian
+  Ministry of Religious Affairs** (Kementerian Agama RI).
+- **Ketentuan Tanzil:** "The translations provided at this page are for
+  non-commercial purposes only. If used otherwise, you need to obtain
+  necessary permission from the translator or the publisher."
+- **Ketentuan Al Quran Cloud (Section IV):** penerbit ulang terjemahan diminta
+  menyebut nama penerjemah.
+- **Belum diketahui:** edisi/tahun terjemahan Kemenag yang dipakai (misalnya
+  sebelum atau sesudah revisi 2019) dan apakah teks identik dengan rilis resmi
+  Kemenag. Kesamaan teks belum dibandingkan.
+
+### Murottal (`ar.alafasy`)
+
+- **URL:** `https://cdn.islamic.network/quran/audio/128/ar.alafasy/{nomorGlobal}.mp3`.
+- **Ketentuan Al Quran Cloud (Section IV):** "Recitations are licensed to us by
+  the reciters or their estates for free, non-commercial redistribution at the
+  bitrates we publish. You may stream, embed and download them for personal
+  and educational use. You may bundle them into a commercial product, but
+  please note that copyrights lie with the reciters and they may ask you to
+  remove the content."
+- **Section III:** CDN audio tanpa batas per klien; pengembang diminta
+  melakukan cache agresif. API teks memakai soft rate limit per IP.
+- **Kesimpulan:** streaming di aplikasi gratis tanpa iklan sesuai ketentuan.
+  Unduhan offline untuk pemakaian pribadi diizinkan; membundel audio di APK
+  tidak direkomendasikan karena qari dapat meminta penghapusan.
+
+### Status monetisasi aplikasi
+
+Pada commit ini tidak ada iklan, pembelian dalam aplikasi, atau langganan
+(`pubspec.yaml`/`lib` diperiksa). Menambahkan salah satunya mengubah status
+non-komersial dan mewajibkan izin dari Kemenag untuk terjemahan.
+
+### Regulasi Indonesia: tanda tashih
+
+Permenag No. 44 Tahun 2016 mendefinisikan mushaf Al-Qur'an sebagai media berisi
+ayat Al-Qur'an "baik cetak maupun digital" (Pasal 1) dan mewajibkan setiap
+mushaf yang diterbitkan/diedarkan di Indonesia memperoleh Surat Tanda Tashih
+atau Surat Izin Edar dari LPMQ (Pasal 2). Layanan tashih LPMQ menerima jenis
+naskah "Mushaf Al-Qur'an Digital" (biaya tercantum Rp1.000.000 per surat,
+tambahan materi seperti terjemah Rp500.000 per item). Sumber:
+[teks Permenag 44/2016](https://pasal.id/peraturan/permen/permenag-no-44-tahun-2016),
+[PDF resmi LPMQ](https://tashih.kemenag.go.id/uploads/1/2018-05/pma_nomor_44_tahun_2016.pdf)
+(hasil pindai, belum dibaca langsung), dan
+[standar pelayanan tashih](https://tashih.kemenag.go.id/info-layanan-pentashihan/read/standar-pelayanan-permohonan-surat-tanda-tashih).
+Ini bukan nasihat hukum; konfirmasi ke LPMQ sebelum publikasi.

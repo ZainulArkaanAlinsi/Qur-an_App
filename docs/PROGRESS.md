@@ -2,7 +2,7 @@
 
 ## Selesai dan terhubung ke aplikasi
 
-- Terjemahan Indonesia (`id.indonesian`, api.alquran.cloud) dimuat online per surah dan disembunyikan bila jumlah ayat tidak cocok. Nama penerjemah/lisensi belum diverifikasi, jadi belum layak rilis.
+- Terjemahan Indonesia (`id.indonesian`, api.alquran.cloud) dimuat online per surah dan disembunyikan bila jumlah ayat tidak cocok. Tanzil mencantumkan penerjemah Kementerian Agama RI dengan syarat non-komersial; edisi/tahun belum teridentifikasi. Atribusi tampil di Pengaturan > Konten & sumber.
 - Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network), dipetakan melalui `globalAyahNumber`. Satu player dengan playlist per surah (`AudioQueue`): ▶ pada kartu memutar berurutan mulai ayat itu; mini-player Reader berisi sebelumnya/putar-jeda/berikutnya, mode Putar berurutan / Ulangi ayat / Ulangi rentang (pilih dari–sampai), dan tutup. Ayat aktif diambil dari indeks player sebenarnya, disorot, dan layar mengikuti. Mini-player tampil juga di atas navigasi utama (ketuk judul untuk kembali ke ayat), dan `audio_service` 0.18.19 menyediakan kontrol notifikasi/layar kunci/headset serta playback saat layar mati melalui foreground service `mediaPlayback`.
 
 - Shell Flutter native dengan navigasi Beranda, Qur’an, Progres, dan Pengaturan.
@@ -38,7 +38,8 @@
 ## Belum selesai / blocker yang tidak boleh diklaim selesai
 
 - Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
-- Audio: pemeriksaan hak unduh offline. Belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
+- Lisensi (diperiksa 21 September 2026, rincian di `DATASET_ATTRIBUTION.md`): terjemahan hanya boleh non-komersial dan edisinya belum teridentifikasi; audio boleh di-streaming/unduh untuk pemakaian pribadi; tanda tashih LPMQ untuk mushaf digital perlu dikonfirmasi sebelum rilis di Indonesia.
+- Audio: belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
 - Sesi reading lengkap: UUID per sesi, zona IANA tersimpan, outbox dan rekonsiliasi multi-perangkat. (Snapshot target, split tengah malam, dan fake-clock test untuk perhitungan harian sudah ada.)
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
