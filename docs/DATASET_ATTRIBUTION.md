@@ -13,7 +13,14 @@
 - **SHA-256:** `8867C1D88191472ADEC9DB694B3CD9F135B1A2EF580574D32CF888DCB22C5C7A`
 - **Penggunaan:** batas awal 30 Juz untuk membuka surah dan ayat yang tepat.
 
-Teks disimpan verbatim. Berkas sumber membawa pemberitahuan hak cipta Tanzil
+Teks disimpan verbatim.
+
+**Penyimpanan byte-per-byte (21 September 2026):** `.gitattributes` menandai
+`assets/quran/raw/**` sebagai `-text` agar Git tidak menormalisasi akhir baris.
+Sebelumnya blob di Git telah dinormalisasi ke LF sehingga checkout baru tidak
+cocok dengan checksum di atas; blob sekarang disimpan ulang dari salinan asli
+(Uthmani: CRLF, XML: campuran) dan checksum index = checksum dokumen. Diff
+dengan CR diabaikan kosong, jadi isi teks tidak berubah. Berkas sumber membawa pemberitahuan hak cipta Tanzil
 dan lisensi Creative Commons Attribution 3.0. Syarat utamanya: teks tidak boleh
 diubah, sumber Tanzil harus ditampilkan, tautan ke Tanzil disediakan, serta
 pemberitahuan hak cipta harus ikut dalam salinan/substansi turunannya.
@@ -33,8 +40,6 @@ bandingkan checksum/diff, lalu minta review konten manusia yang kompeten.
   (identik dengan `https://tanzil.net/trans/id.indonesian`), 21 September 2026.
 - **SHA-256 berkas hulu (akhir baris LF, 1.159.449 byte):**
   `70428E875C50C3C42D3829654D2BD386E146F0FA68CC20C34FDD4EA3B53E21A8`.
-  Git di Windows dengan `core.autocrlf=true` dapat men-checkout CRLF sehingga
-  checksum salinan kerja berbeda; parser menerima keduanya.
 - **Header berkas:** Name: Bahasa Indonesia · Translator: Indonesian Ministry
   of Religious Affairs · ID: id.indonesian · Last Update: June 4, 2010 ·
   Source: Tanzil.net. Artinya edisi ini **sebelum** revisi terjemahan Kemenag

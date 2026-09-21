@@ -1,1 +1,4 @@
 graphify-out/graph.json merge=graphify
+# Quran source datasets are stored byte-for-byte so documented SHA-256 values
+# match every checkout; never normalise their line endings.
+assets/quran/raw/** -text
