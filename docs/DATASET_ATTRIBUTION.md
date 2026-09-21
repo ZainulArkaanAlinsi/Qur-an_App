@@ -22,3 +22,12 @@ Catatan: endpoint unduhan Tanzil yang dicoba pada 20 September 2026 memberikan
 HTTP 404. Berkas diperoleh dari salinan publik yang menyertakan blok atribusi
 Tanzil utuh. Sebelum rilis, perbarui dari sumber resmi saat endpoint tersedia,
 bandingkan checksum/diff, lalu minta review konten manusia yang kompeten.
+
+## Sumber online (belum dibundel)
+
+- Audio per ayat: Mishary Rashid Alafasy, edisi `ar.alafasy` 128 kbps dari
+  `https://cdn.islamic.network/quran/audio/128/ar.alafasy/{nomorGlobal}.mp3`
+  (katalog api.alquran.cloud). Hanya streaming; hak unduh/distribusi offline
+  belum diverifikasi.
+- Terjemahan Indonesia: edisi `id.indonesian` dari api.alquran.cloud. Nama
+  penerjemah, versi, dan lisensi harus dikonfirmasi sebelum rilis publik.

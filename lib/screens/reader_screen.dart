@@ -414,12 +414,6 @@ class _VerseCardState extends State<_VerseCard> {
                         await QuranAudioService.instance.toggle(
                           surah: widget.surahNumber,
                           ayah: widget.verseNumber,
-                          globalAyah: surahCatalog
-                              .take(widget.surahNumber - 1)
-                              .fold<int>(
-                                widget.verseNumber,
-                                (sum, item) => sum + item.ayahCount,
-                              ),
                         );
                       } catch (_) {
                         if (!context.mounted) return;
@@ -432,12 +426,29 @@ class _VerseCardState extends State<_VerseCard> {
                         );
                       }
                     },
-                    icon: Icon(
-                      playing == '${widget.surahNumber}:${widget.verseNumber}'
-                          ? Icons.pause_circle_filled_rounded
-                          : Icons.play_circle_outline_rounded,
+                    icon: ValueListenableBuilder<bool>(
+                      valueListenable: QuranAudioService.instance.buffering,
+                      builder: (context, buffering, _) {
+                        final isThis =
+                            playing ==
+                            '${widget.surahNumber}:${widget.verseNumber}';
+                        if (isThis && buffering) {
+                          return const SizedBox.square(
+                            dimension: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
+                          );
+                        }
+                        return Icon(
+                          isThis
+                              ? Icons.pause_circle_filled_rounded
+                              : Icons.play_circle_outline_rounded,
+                        );
+                      },
                     ),
-                    tooltip: 'Putar murottal',
+                    tooltip:
+                        playing == '${widget.surahNumber}:${widget.verseNumber}'
+                        ? 'Hentikan murottal'
+                        : 'Putar murottal',
                   ),
                 ),
                 ValueListenableBuilder<String?>(
@@ -448,12 +459,6 @@ class _VerseCardState extends State<_VerseCard> {
                         await QuranAudioService.instance.toggleRepeat(
                           surah: widget.surahNumber,
                           ayah: widget.verseNumber,
-                          globalAyah: surahCatalog
-                              .take(widget.surahNumber - 1)
-                              .fold<int>(
-                                widget.verseNumber,
-                                (sum, item) => sum + item.ayahCount,
-                              ),
                         );
                       } catch (_) {
                         if (!context.mounted) return;
