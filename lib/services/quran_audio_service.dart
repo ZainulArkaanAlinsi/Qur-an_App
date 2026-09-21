@@ -96,7 +96,7 @@ class QuranAudioService {
         config: const AudioServiceConfig(
           androidNotificationChannelId: 'quran_app.murottal',
           androidNotificationChannelName: 'Murottal',
-          androidNotificationIcon: 'mipmap/launcher_icon',
+          androidNotificationIcon: 'drawable/ic_stat_quran',
           androidNotificationOngoing: true,
           androidStopForegroundOnPause: true,
         ),

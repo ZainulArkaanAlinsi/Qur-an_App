@@ -10,7 +10,7 @@
 ## Audio latar belakang
 
 - [ ] Isi deklarasi *Foreground service permissions* di Play Console untuk `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (jenis Media playback) beserta video demo murottal diputar dengan layar mati.
-- [ ] Siapkan ikon notifikasi monokrom; saat ini notifikasi memakai `mipmap/launcher_icon` yang bisa tampil sebagai kotak putih di sebagian perangkat.
+- [x] Ikon notifikasi monokrom `drawable/ic_stat_quran` (Material Symbols menu_book, Apache 2.0) dipakai murottal dan pengingat. Cek tampilannya di status bar perangkat nyata.
 - [ ] Uji kontrol notifikasi, layar kunci, headset Bluetooth, panggilan masuk, dan layar mati lebih dari 10 menit pada Android 12+.
 
 ## Lisensi konten dan regulasi

@@ -20,6 +20,8 @@
 
 ## Bukti pemeriksaan terbaru
 
+- 21 September 2026 (ikon & legacy): `surah_details_screen.dart` dihapus (tidak diimpor di mana pun). Notifikasi murottal dan pengingat memakai ikon monokrom `ic_stat_quran` dengan `res/raw/keep.xml`. `flutter analyze` tanpa error/warning (36 info), `flutter test` lulus 38 test, `flutter build apk --debug` dan `--release` sukses; nama resource ada di `resources.arsc` APK release.
+
 - 21 September 2026 (terjemahan offline): `flutter test` lulus 38 test termasuk `test/translation_test.dart`; `dart analyze lib test` tanpa error/warning (62 info lama); `flutter build apk --debug` sukses dan APK memuat aset terjemahan 1.159.449 byte.
 
 - 21 September 2026 (audio latar belakang): `flutter test` lulus 29 test, `dart analyze lib test` tanpa error/warning (64 info lama), `flutter build apk --debug` sukses, dan manifest hasil merge memuat `WAKE_LOCK`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `AudioService`, dan `MediaButtonReceiver`. Belum diuji di perangkat.
@@ -31,7 +33,6 @@
 - 21 September 2026: `flutter test` lulus 23 test, termasuk `test/streak_test.dart` (299/300 detik, cicil 2+3 menit, contoh pending/putus panduan, kabisat, pergantian tahun, snapshot target, tanggal masa depan, split tengah malam, jam mundur). `dart analyze` pada file yang diubah: `No issues found`. Belum diuji di perangkat.
 
 - `dart format` dijalankan pada file UI dan test yang diubah.
-- `dart analyze lib/app lib/data lib/models lib/screens lib/services test` selesai dengan 26 info lint pada layar legacy `surah_details_screen.dart`; tidak ada error/warning pada jalur UI aktif yang diubah.
 - `flutter pub get` berhasil setelah perbaikan registrasi plugin splash Android.
 - `dart analyze` untuk komponen liquid glass, navigation, Pengaturan, dan Bookmark selesai dengan `No issues found`.
 - `assembleRelease` sukses; 232 task diproses dan artefak APK release terbentuk.

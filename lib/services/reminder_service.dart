@@ -17,7 +17,7 @@ class ReminderService {
     tz.setLocalLocation(tz.getLocation(zone));
     await _plugin.initialize(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/launcher_icon'),
+        android: AndroidInitializationSettings('@drawable/ic_stat_quran'),
       ),
     );
     _initialized = true;
