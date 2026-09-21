@@ -223,44 +223,54 @@ class ReadingSessionStore {
   }
 }
 
-/// Sums active seconds, subtracting wall-clock overlap between sessions
-/// from *different* devices so reading on two phones at once is not doubled.
+/// Sums active seconds, counting time read on several devices at once only
+/// once, so reading on two or more phones simultaneously is not multiplied.
 ///
-/// Sessions from one device are always summed in full: they are sequential,
-/// and their stored windows are approximate. The result never drops below
-/// the busiest single device's own total.
+/// Duplicate time is `sum of each device's own covered time - covered time
+/// of all devices together`, which stays correct for any number of
+/// overlapping devices. Sessions from one device are always summed in full,
+/// and the result never drops below the busiest single device's total.
 int mergedActiveSeconds(List<ReadingSession> sessions) {
-  final perDevice = <String, int>{};
+  final byDevice = <String, List<ReadingSession>>{};
   for (final s in sessions) {
-    perDevice.update(
-      s.deviceId,
-      (v) => v + s.activeSeconds,
-      ifAbsent: () => s.activeSeconds,
-    );
+    (byDevice[s.deviceId] ??= []).add(s);
   }
-  var total = perDevice.values.fold<int>(0, (a, b) => a + b);
-  if (perDevice.length < 2) return total;
-  DateTime endOf(ReadingSession s) =>
-      s.endedAtUtc ?? s.startedAtUtc.add(Duration(seconds: s.activeSeconds));
-  for (var i = 0; i < sessions.length; i++) {
-    for (var j = i + 1; j < sessions.length; j++) {
-      final a = sessions[i];
-      final b = sessions[j];
-      if (a.deviceId == b.deviceId) continue;
-      final start = a.startedAtUtc.isAfter(b.startedAtUtc)
-          ? a.startedAtUtc
-          : b.startedAtUtc;
-      final endA = endOf(a);
-      final endB = endOf(b);
-      final end = endA.isBefore(endB) ? endA : endB;
-      final overlap = end.difference(start).inSeconds;
-      if (overlap > 0) {
-        total -= min(overlap, min(a.activeSeconds, b.activeSeconds));
-      }
+  final active = sessions.fold<int>(0, (sum, s) => sum + s.activeSeconds);
+  if (byDevice.length < 2) return active;
+  final perDeviceCovered = byDevice.values.fold<int>(
+    0,
+    (sum, list) => sum + _coveredSeconds(list),
+  );
+  final duplicated = perDeviceCovered - _coveredSeconds(sessions);
+  final floor = byDevice.values
+      .map((list) => list.fold<int>(0, (sum, s) => sum + s.activeSeconds))
+      .reduce(max);
+  return max(active - duplicated, floor);
+}
+
+/// Length of the union of the sessions' wall-clock windows, in seconds.
+int _coveredSeconds(List<ReadingSession> sessions) {
+  final windows = [
+    for (final s in sessions)
+      (
+        s.startedAtUtc,
+        s.endedAtUtc ?? s.startedAtUtc.add(Duration(seconds: s.activeSeconds)),
+      ),
+  ]..sort((a, b) => a.$1.compareTo(b.$1));
+  var total = 0;
+  DateTime? start;
+  DateTime? end;
+  for (final (from, to) in windows) {
+    if (end == null || from.isAfter(end)) {
+      if (start != null) total += end!.difference(start).inSeconds;
+      start = from;
+      end = to;
+    } else if (to.isAfter(end)) {
+      end = to;
     }
   }
-  final floor = perDevice.values.reduce(max);
-  return max(total, floor);
+  if (start != null) total += end!.difference(start).inSeconds;
+  return total;
 }
 
 final _random = Random.secure();

@@ -39,18 +39,23 @@ klien.
 - **Tarik data:** berdasarkan `syncedAt` > cursor, dengan tumpang-tindih 5
   menit untuk menangkap penulisan yang terlambat commit. Menerapkan ulang
   item yang sama tidak berpengaruh.
-- **Dua perangkat bersamaan:** total harian memakai `mergedActiveSeconds`;
-  waktu tumpang-tindih antar perangkat berbeda dihitung sekali. Sesi dari satu
-  perangkat selalu dijumlahkan penuh.
-- **Bookmark:** last-write-wins berdasarkan `updatedAtMs` (jam klien). Hapus
-  meninggalkan tombstone (`deleted: true`) agar salinan lama tidak
-  menghidupkannya kembali.
+- **Beberapa perangkat bersamaan:** total harian memakai `mergedActiveSeconds`
+  berbasis gabungan interval, sehingga waktu yang tumpang-tindih di dua atau
+  lebih perangkat dihitung sekali. Sesi dari satu perangkat dijumlah penuh.
+- **Bookmark:** last-write-wins berdasarkan `updatedAtMs` (jam klien). Bookmark
+  ditarik sebelum diunggah, dan rules menolak update yang lebih tua dari
+  dokumen di server. Hapus meninggalkan tombstone (`deleted: true`) agar salinan
+  lama tidak menghidupkannya kembali.
 - **Tamu ke akun:** data lokal diklaim akun pertama yang masuk. Jika akun lain
   masuk kemudian, data cloud akun sebelumnya dihapus dari perangkat lebih dulu;
   data yang belum pernah diunggah tetap ada.
 - **Keluar:** data di perangkat tetap tersedia offline.
-- **Hapus akun:** menghapus semua dokumen pengguna di Firestore, lalu akun
-  Firebase. Data di perangkat tetap ada dan kembali menjadi lokal.
+- **Hapus akun:** pengguna mengonfirmasi dengan Google lebih dulu, sync
+  dijeda, dokumen di Firestore dihapus, lalu akun Firebase. Data di perangkat
+  tetap ada dan kembali menjadi lokal. Jika penghapusan akun gagal, data lokal
+  diantrekan ulang sehingga salinan cloud dipulihkan.
+- **Ganti/keluar akun saat sync berjalan:** putaran berikutnya selalu memakai
+  akun terbaru; keluar akun membatalkan putaran yang tertunda.
 - **Pemicu:** saat masuk, saat aplikasi kembali aktif (paling sering sekali per
   menit), saat keluar dari Reader, dan tombol **Sinkronkan** di Pengaturan.
 

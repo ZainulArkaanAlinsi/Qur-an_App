@@ -260,32 +260,58 @@ class AccountService with WidgetsBindingObserver {
 
   /// Signs out; data already on this device stays available offline.
   Future<void> signOut() async {
+    // Stop any queued pass so later guest changes never reach this account.
+    sync?.cancel();
     await FirebaseAuth.instance.signOut();
     await GoogleSignIn.instance.signOut();
   }
 
   /// Deletes cloud data and the Firebase account. Returns an error message,
   /// or null on success.
+  ///
+  /// The user confirms with Google first, so `user.delete()` cannot fail with
+  /// `requires-recent-login` after the cloud data is already gone. If it
+  /// still fails, local data is queued again so the cloud copy is restored.
   Future<String?> deleteAccount() async {
     final user = FirebaseAuth.instance.currentUser;
     final service = sync;
     if (user == null || service == null) return 'Belum masuk.';
     busy.value = true;
+    var deletionStarted = false;
+    var accountDeleted = false;
     try {
+      final google = await GoogleSignIn.instance.authenticate();
+      final idToken = google.authentication.idToken;
+      if (idToken == null) return 'Google tidak mengirim token masuk.';
+      await user.reauthenticateWithCredential(
+        GoogleAuthProvider.credential(idToken: idToken),
+      );
+      deletionStarted = true;
       await service.deleteCloudData(user.uid);
       await user.delete();
+      accountDeleted = true;
+      await service.finishAccountDeletion(user.uid);
       await GoogleSignIn.instance.signOut();
       return null;
+    } on GoogleSignInException catch (error) {
+      if (error.code == GoogleSignInExceptionCode.canceled) {
+        return 'Penghapusan dibatalkan.';
+      }
+      return 'Konfirmasi Google gagal. Akun tidak dihapus.';
     } on FirebaseAuthException catch (error) {
-      if (error.code == 'requires-recent-login') {
-        return 'Demi keamanan, keluar lalu masuk lagi, kemudian ulangi '
-            'penghapusan akun.';
+      if (error.code == 'user-mismatch') {
+        return 'Pilih akun Google yang sama dengan akun yang sedang masuk.';
       }
       return 'Akun gagal dihapus (${error.code}).';
     } on Object catch (error) {
       debugPrint('Hapus akun gagal: $error');
-      return 'Data cloud gagal dihapus. Periksa koneksi internet.';
+      return 'Akun gagal dihapus. Periksa koneksi internet.';
     } finally {
+      // Cloud data may be partly deleted while the account still exists:
+      // requeue local data so the next sync restores it, and resume sync.
+      if (deletionStarted && !accountDeleted) {
+        await service.restoreAfterFailedDeletion(user.uid);
+      }
       busy.value = false;
     }
   }

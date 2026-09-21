@@ -23,6 +23,8 @@
 
 ## Bukti pemeriksaan terbaru
 
+- 22 September 2026 (review PR #5): 4 temuan review diperbaiki: bookmark ditarik sebelum diunggah dan rules menolak update `updatedAtMs` yang lebih tua; hapus akun meminta konfirmasi Google dulu, menjeda sync, dan memulihkan data bila gagal; sync antrean selalu memakai akun terbaru dan berhenti saat keluar; waktu baca multi-perangkat memakai gabungan interval. `flutter test` 67 lulus, rules 31 lulus, rules ter-deploy ulang.
+
 - 22 September 2026 (sync cloud): `flutter test` lulus 61 test termasuk `test/cloud_sync_test.dart` (12 skenario sync dengan remote palsu); `firestore-tests` lulus 29 test rules di emulator (isolasi akun A/B, larangan stats klien, validasi sesi/bookmark); `flutter analyze` tanpa error/warning; `flutter build apk --debug` sukses (plugin Kotlin dinaikkan ke 2.3.21 karena firebase-auth 24.2). Rules dan index ter-deploy ke produksi. Provider Google diaktifkan di Console pada 22 September 2026 dan `google-services.json` diperbarui (memuat web OAuth client); login Google belum diuji di perangkat.
 
 - 21 September 2026 (sesi baca): `flutter test` lulus 49 test termasuk `test/reading_session_test.dart`; `flutter analyze` tanpa error/warning (27 info); `flutter build apk --debug` sukses. Tracker dengan jam nyata belum diuji di perangkat (pause/background/tengah malam).

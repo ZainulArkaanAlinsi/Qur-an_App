@@ -153,6 +153,19 @@ describe('validasi bookmark', () => {
     await assertSucceeds(setDoc(bookmarkRef('alice'), bookmark({ deleted: true })));
   });
 
+  test('versi lebih tua tidak boleh menimpa versi baru (termasuk tombstone)', async () => {
+    await assertSucceeds(
+      setDoc(bookmarkRef('alice'), bookmark({ deleted: true, updatedAtMs: 2000 })),
+    );
+    await assertFails(setDoc(bookmarkRef('alice'), bookmark({ updatedAtMs: 1000 })));
+  });
+
+  test('versi sama (retry) dan lebih baru diterima', async () => {
+    await assertSucceeds(setDoc(bookmarkRef('alice'), bookmark({ updatedAtMs: 2000 })));
+    await assertSucceeds(setDoc(bookmarkRef('alice'), bookmark({ updatedAtMs: 2000 })));
+    await assertSucceeds(setDoc(bookmarkRef('alice'), bookmark({ updatedAtMs: 3000 })));
+  });
+
   const rejects = {
     'ID tidak sama dengan surah_ayat': ['1_1', {}],
     'surah di luar 1..114': ['115_1', { surah: 115, ayah: 1 }],

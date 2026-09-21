@@ -65,7 +65,11 @@ service cloud.firestore {
 
       match /bookmarks/{bookmarkId} {
         allow read, delete: if isOwner(uid);
-        allow create, update: if isOwner(uid) && validBookmark(bookmarkId);
+        allow create: if isOwner(uid) && validBookmark(bookmarkId);
+        // Last write wins on the server too: a stale device can never
+        // overwrite a newer change or tombstone (equal allows retries).
+        allow update: if isOwner(uid) && validBookmark(bookmarkId)
+          && request.resource.data.updatedAtMs >= resource.data.updatedAtMs;
       }
     }
   }

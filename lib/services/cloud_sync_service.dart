@@ -56,24 +56,45 @@ class CloudSyncService {
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
   }
 
-  /// Runs one sync for [uid]; a call made while syncing schedules one more
-  /// pass instead of running concurrently.
+  // The account the next pass must sync; null after sign-out or while an
+  // account is being deleted. Passes always read the latest value, so a
+  // queued pass never syncs a previous account.
+  String? _target;
+  bool _paused = false;
+
+  /// Syncs [uid]. A call made while syncing retargets the queued pass to
+  /// [uid] instead of running concurrently.
   Future<void> sync(String uid) {
+    if (_paused) return Future<void>.value();
+    _target = uid;
     final running = _running;
     if (running != null) {
       _again = true;
       return running;
     }
-    final run = _loop(uid).whenComplete(() => _running = null);
+    final run = _loop().whenComplete(() => _running = null);
     _running = run;
     return run;
   }
 
-  Future<void> _loop(String uid) async {
+  /// Stops syncing any account (sign-out); a running pass aborts at its
+  /// next step and nothing is queued.
+  void cancel() {
+    _target = null;
+    _again = false;
+  }
+
+  Future<void> _loop() async {
     do {
       _again = false;
+      final uid = _target;
+      if (uid == null) break;
       await _syncOnce(uid);
     } while (_again);
+  }
+
+  void _ensureTarget(String uid) {
+    if (_target != uid || _paused) throw const _SyncCancelled();
   }
 
   Future<void> _syncOnce(String uid) async {
@@ -82,10 +103,13 @@ class CloudSyncService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final store = ReadingSessionStore(prefs);
+      _ensureTarget(uid);
       await _claimDevice(prefs, store, uid);
       await SharedPreferencesService.adoptLegacyBookmarks();
 
-      // Push first so a pull never overwrites unsent local changes.
+      // Sessions are append-only, so pushing before pulling cannot lose
+      // anything; the session ID makes a retried upload a no-op.
+      _ensureTarget(uid);
       final outbox = store.pendingUpload();
       if (outbox.isNotEmpty) {
         await remote.pushSessions(uid, outbox);
@@ -93,27 +117,11 @@ class CloudSyncService {
           for (final s in outbox) s.copyWith(syncStatus: 'synced'),
         ]);
       }
-      final dirty = SharedPreferencesService.dirtyBookmarks();
-      if (dirty.isNotEmpty) {
-        await remote.pushBookmarks(uid, dirty);
-        for (final record in dirty) {
-          await SharedPreferencesService.markBookmarkSynced(record);
-        }
-      }
 
-      final sessionsKey = 'sync_sessions_cursor_$uid';
-      final sessions = await remote.pullSessions(
-        uid,
-        _since(prefs.getInt(sessionsKey)),
-      );
-      for (final s in sessions.items) {
-        await SharedPreferencesService.ensureTargetSnapshot(s.localDate);
-      }
-      await store.saveAll([
-        for (final s in sessions.items) s.copyWith(syncStatus: 'synced'),
-      ]);
-      await _advance(prefs, sessionsKey, sessions.cursorMs);
-
+      // Bookmarks are pulled before pushing: a newer server copy replaces a
+      // stale local edit (clearing its dirty flag) instead of being
+      // overwritten by it. Security rules also reject older updates.
+      _ensureTarget(uid);
       final bookmarksKey = 'sync_bookmarks_cursor_$uid';
       final bookmarks = await remote.pullBookmarks(
         uid,
@@ -122,13 +130,39 @@ class CloudSyncService {
       for (final record in bookmarks.items) {
         await SharedPreferencesService.applyRemoteBookmark(record);
       }
+      _ensureTarget(uid);
+      final dirty = SharedPreferencesService.dirtyBookmarks();
+      if (dirty.isNotEmpty) {
+        await remote.pushBookmarks(uid, dirty);
+        for (final record in dirty) {
+          await SharedPreferencesService.markBookmarkSynced(record);
+        }
+      }
       await _advance(prefs, bookmarksKey, bookmarks.cursorMs);
+
+      _ensureTarget(uid);
+      final sessionsKey = 'sync_sessions_cursor_$uid';
+      final sessions = await remote.pullSessions(
+        uid,
+        _since(prefs.getInt(sessionsKey)),
+      );
+      _ensureTarget(uid);
+      for (final s in sessions.items) {
+        await SharedPreferencesService.ensureTargetSnapshot(s.localDate);
+      }
+      await store.saveAll([
+        for (final s in sessions.items) s.copyWith(syncStatus: 'synced'),
+      ]);
+      await _advance(prefs, sessionsKey, sessions.cursorMs);
 
       await prefs.setInt(
         _lastSuccessKey,
         DateTime.now().millisecondsSinceEpoch,
       );
       state.value = SyncState.done;
+    } on _SyncCancelled {
+      // Account changed or signed out mid-pass; not an error.
+      state.value = SyncState.idle;
     } on Object catch (error) {
       // Local data is untouched on failure; the outbox retries next time.
       debugPrint('Sinkronisasi gagal: $error');
@@ -167,10 +201,20 @@ class CloudSyncService {
     await prefs.setString(_ownerKey, uid);
   }
 
-  /// Deletes the user's cloud data. Local data stays on the device and
-  /// becomes local-only again.
+  /// Phase 1 of account deletion: pauses all syncing (so nothing is
+  /// re-uploaded meanwhile) and deletes the user's cloud documents.
+  /// Call [finishAccountDeletion] once the account itself is deleted, or
+  /// [resume] if that fails.
   Future<void> deleteCloudData(String uid) async {
+    _paused = true;
+    cancel();
+    await _running;
     await remote.deleteAll(uid);
+  }
+
+  /// Phase 2, only after the account is gone: local data stays on the device
+  /// and becomes local-only again, ready for a future account.
+  Future<void> finishAccountDeletion(String uid) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('sync_sessions_cursor_$uid');
     await prefs.remove('sync_bookmarks_cursor_$uid');
@@ -181,5 +225,25 @@ class CloudSyncService {
       for (final s in store.all())
         if (s.syncStatus == 'synced') s.copyWith(syncStatus: 'local'),
     ]);
+    _paused = false;
   }
+
+  /// Aborted deletion (the account still exists): marks local data unsent
+  /// again so the next sync restores the cloud copy, then resumes syncing.
+  Future<void> restoreAfterFailedDeletion(String uid) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('sync_sessions_cursor_$uid');
+    await prefs.remove('sync_bookmarks_cursor_$uid');
+    final store = ReadingSessionStore(prefs);
+    await store.saveAll([
+      for (final s in store.all())
+        if (s.syncStatus == 'synced') s.copyWith(syncStatus: 'local'),
+    ]);
+    await SharedPreferencesService.markAllBookmarksDirty();
+    _paused = false;
+  }
+}
+
+class _SyncCancelled implements Exception {
+  const _SyncCancelled();
 }

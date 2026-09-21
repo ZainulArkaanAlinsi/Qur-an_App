@@ -128,6 +128,17 @@ class SharedPreferencesService {
     }
   }
 
+  /// Queues every bookmark record (including tombstones) for upload again,
+  /// keeping its timestamp; used to restore a cloud copy.
+  static Future<void> markAllBookmarksDirty() async {
+    final pattern = RegExp(r'^bookmark_updated_(\d+)_(\d+)$');
+    for (final key in (_prefs?.getKeys() ?? const <String>{}).toList()) {
+      final match = pattern.firstMatch(key);
+      if (match == null) continue;
+      await _prefs?.setBool('bookmark_dirty_${match[1]}_${match[2]}', true);
+    }
+  }
+
   /// Marks bookmarks saved before sync metadata existed so the first sync
   /// uploads them; runs once.
   static Future<void> adoptLegacyBookmarks() async {

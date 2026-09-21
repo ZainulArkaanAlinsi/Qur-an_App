@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
 import 'package:quran_app_2025/services/reading_session_store.dart';
@@ -12,6 +14,10 @@ class FakeRemote implements SyncRemote {
   int sessionPushes = 0;
   bool fail = false;
 
+  /// When set, session pushes wait for it: simulates a slow network.
+  Completer<void>? gate;
+  final pushedUids = <String>[];
+
   void _check() {
     if (fail) throw StateError('offline');
   }
@@ -19,6 +25,8 @@ class FakeRemote implements SyncRemote {
   @override
   Future<void> pushSessions(String uid, List<ReadingSession> items) async {
     _check();
+    pushedUids.add(uid);
+    await gate?.future;
     sessionPushes += items.length;
     for (final s in items) {
       (sessions[uid] ??= {})[s.id] = (s, ++clock);
@@ -37,6 +45,13 @@ class FakeRemote implements SyncRemote {
   @override
   Future<void> pushBookmarks(String uid, List<BookmarkRecord> items) async {
     _check();
+    // Mirrors firestore.rules: an older update is rejected (whole batch).
+    for (final b in items) {
+      final existing = bookmarks[uid]?[b.id]?.$1;
+      if (existing != null && b.updatedAtMs < existing.updatedAtMs) {
+        throw StateError('permission-denied: stale bookmark');
+      }
+    }
     for (final b in items) {
       (bookmarks[uid] ??= {})[b.id] = (b, ++clock);
     }
@@ -242,7 +257,7 @@ void main() {
     expect(remote.sessions['user-a']!.keys, ['a-session']);
   });
 
-  test('hapus data cloud: server kosong, data lokal tetap ada', () async {
+  test('hapus akun sukses: server kosong, data lokal tetap ada', () async {
     final store = await _fresh();
     final remote = FakeRemote();
     final sync = CloudSyncService(remote);
@@ -250,9 +265,107 @@ void main() {
     await sync.sync('user-1');
 
     await sync.deleteCloudData('user-1');
+    await sync.finishAccountDeletion('user-1');
     expect(remote.sessions['user-1'], isNull);
     expect(store.forDate('2026-05-04').single.syncStatus, 'local');
     expect(SharedPreferencesService.getReadingSeconds('2026-05-04'), 300);
+  });
+
+  test('selama hapus akun, sync tidak mengunggah ulang data', () async {
+    final store = await _fresh();
+    final remote = FakeRemote();
+    final sync = CloudSyncService(remote);
+    await store.save(_session('a'));
+    await sync.sync('user-1');
+
+    await sync.deleteCloudData('user-1');
+    // Automatic triggers (app resume, reader exit) must be no-ops now.
+    await store.save(_session('b', date: '2026-05-05'));
+    await sync.sync('user-1');
+    expect(remote.sessions['user-1'], isNull);
+  });
+
+  test(
+    'hapus akun gagal: data cloud dipulihkan pada sync berikutnya',
+    () async {
+      final store = await _fresh();
+      final remote = FakeRemote();
+      final sync = CloudSyncService(remote);
+      await store.save(_session('a'));
+      await SharedPreferencesService.saveBookmark(2, 255);
+      await sync.sync('user-1');
+
+      await sync.deleteCloudData('user-1');
+      // user.delete() failed: the account still exists.
+      await sync.restoreAfterFailedDeletion('user-1');
+      await sync.sync('user-1');
+      expect(remote.sessions['user-1']!.keys, ['a']);
+      expect(remote.bookmarks['user-1']!.keys, ['2_255']);
+    },
+  );
+
+  test('bookmark lama dari HP offline tidak menimpa perubahan baru', () async {
+    await _fresh();
+    final remote = FakeRemote();
+    final sync = CloudSyncService(remote);
+    // This phone edited the bookmark earlier, then went offline.
+    await SharedPreferencesService.saveBookmark(2, 255);
+    // Another phone deleted it later.
+    await remote.pushBookmarks('user-1', [
+      BookmarkRecord(
+        surah: 2,
+        ayah: 255,
+        collection: 'Umum',
+        deleted: true,
+        updatedAtMs: DateTime.now().millisecondsSinceEpoch + 60000,
+      ),
+    ]);
+
+    await sync.sync('user-1');
+    expect(sync.state.value, SyncState.done);
+    expect(remote.bookmarks['user-1']!['2_255']!.$1.deleted, isTrue);
+    expect(SharedPreferencesService.isBookmarked(2, 255), isFalse);
+    expect(SharedPreferencesService.dirtyBookmarks(), isEmpty);
+  });
+
+  test(
+    'ganti akun saat sync berjalan: putaran berikutnya untuk akun baru',
+    () async {
+      final store = await _fresh();
+      final remote = FakeRemote()..gate = Completer<void>();
+      final sync = CloudSyncService(remote);
+      await store.save(_session('a-session'));
+
+      final first = sync.sync('user-a');
+      await Future<void>.delayed(Duration.zero);
+      // Account B signs in while A's upload is still in flight.
+      final second = sync.sync('user-b');
+      remote.gate!.complete();
+      await Future.wait([first, second]);
+
+      expect(remote.pushedUids.first, 'user-a');
+      expect(remote.sessions['user-a']!.keys, ['a-session']);
+      // The queued pass ran for B, never for A again.
+      expect(remote.pushedUids.where((u) => u == 'user-a'), hasLength(1));
+    },
+  );
+
+  test('keluar akun saat sync berjalan: tidak ada putaran lanjutan', () async {
+    final store = await _fresh();
+    final remote = FakeRemote()..gate = Completer<void>();
+    final sync = CloudSyncService(remote);
+    await store.save(_session('a-session'));
+
+    final first = sync.sync('user-a');
+    await Future<void>.delayed(Duration.zero);
+    sync.sync('user-a');
+    sync.cancel();
+    await store.save(_session('guest-later', date: '2026-05-05'));
+    remote.gate!.complete();
+    await first;
+
+    expect(remote.pushedUids, ['user-a']);
+    expect(store.pendingUpload().map((s) => s.id), contains('guest-later'));
   });
 
   group('mergedActiveSeconds', () {
@@ -273,6 +386,24 @@ void main() {
           _session('2', device: 'b', seconds: 300),
         ]),
         300,
+      );
+    });
+
+    test('tiga perangkat tumpang-tindih dihitung dari gabungan waktu', () {
+      // A [0,10m], B [0,10m], C [5,15m]: union is 15 minutes.
+      final t0 = DateTime.utc(2026, 5, 4, 1);
+      expect(
+        mergedActiveSeconds([
+          _session('1', device: 'a', seconds: 600, start: t0),
+          _session('2', device: 'b', seconds: 600, start: t0),
+          _session(
+            '3',
+            device: 'c',
+            seconds: 600,
+            start: t0.add(const Duration(minutes: 5)),
+          ),
+        ]),
+        900,
       );
     });
 
