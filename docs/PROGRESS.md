@@ -13,12 +13,15 @@
 - Teks Arab Uthmani Tanzil offline (6.236 ayat) dengan font Amiri, manifest runtime, checksum, dan atribusi di `DATASET_ATTRIBUTION.md`.
 - Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal dengan koleksi Umum/Hafalan/Favorit, lanjut baca hingga ayat terakhir yang terlihat, tombol buka nomor ayat, mode fokus, serta status offline/error yang jelas.
 - Target 5/10/15/30 menit, tracker foreground lokal, snapshot target per tanggal, jeda saat tidak aktif, dan tampilan statistik/streak lokal dasar.
+- Sesi baca lokal (`ReadingSession`): UUID v4, ID perangkat pseudonim, waktu mulai/selesai UTC, detik aktif monotonik, zona IANA, tanggal lokal, ayat terakhir, `syncStatus: local`. Satu sesi per rentang aktif per tanggal; berakhir saat jeda, aplikasi ke latar, konfirmasi "Masih membaca?", keluar Reader, atau lewat tengah malam. Total harian dihitung ulang dari total lama (dimigrasi sekali) + jumlah sesi, sehingga menyimpan ulang sesi yang sama idempoten.
 - Aturan streak bagian 6 dipisah menjadi `StreakCalculator` murni: satu kenaikan per hari, status *pending* hari ini bila kemarin tercapai, reset setelah hari terlewat, longest tetap. Split tengah malam memakai `splitActiveSeconds`. Beranda menampilkan chip rentetan + sisa menit saat pending; Progres menampilkan strip 7 hari terakhir.
 - Jadwal lima waktu salat dan kalender Hijriah dari AlAdhan; kota dapat diubah pengguna. Pengingat salat dipasang hingga 14 hari ke depan dan pengingat tilawah berulang harian setelah izin notifikasi diberikan.
 - Layar berita Islam memakai GDELT DOC API gratis tanpa API key untuk artikel berbahasa Indonesia; endpoint backend yang lebih terkurasi tetap dapat dikonfigurasi saat build.
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
 ## Bukti pemeriksaan terbaru
+
+- 21 September 2026 (sesi baca): `flutter test` lulus 49 test termasuk `test/reading_session_test.dart`; `flutter analyze` tanpa error/warning (27 info); `flutter build apk --debug` sukses. Tracker dengan jam nyata belum diuji di perangkat (pause/background/tengah malam).
 
 - 21 September 2026 (ikon & legacy): `surah_details_screen.dart` dihapus (tidak diimpor di mana pun). Notifikasi murottal dan pengingat memakai ikon monokrom `ic_stat_quran` dengan `res/raw/keep.xml`. `flutter analyze` tanpa error/warning (36 info), `flutter test` lulus 38 test, `flutter build apk --debug` dan `--release` sukses; nama resource ada di `resources.arsc` APK release.
 
@@ -44,7 +47,7 @@
 - Lisensi (diperiksa 21 September 2026, rincian di `DATASET_ATTRIBUTION.md`): terjemahan hanya boleh non-komersial dan edisinya belum teridentifikasi; audio boleh di-streaming/unduh untuk pemakaian pribadi; tanda tashih LPMQ untuk mushaf digital perlu dikonfirmasi sebelum rilis di Indonesia.
 - Audio: belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
-- Sesi reading lengkap: UUID per sesi, zona IANA tersimpan, outbox dan rekonsiliasi multi-perangkat. (Snapshot target, split tengah malam, dan fake-clock test untuk perhitungan harian sudah ada.)
+- Sync: outbox ke server, penggabungan interval tumpang-tindih antar perangkat, dan stats authoritative di server. Perubahan zona waktu belum ditunda ke hari berikutnya (hari mengikuti zona perangkat saat membaca).
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
 - Uji perangkat nyata: 200% font, screen reader, airplane mode, reader panjang, dan metrik profile/release 60 FPS.
 - applicationId produksi, keystore sendiri, signing release, privacy policy, store data safety, serta persetujuan rilis.

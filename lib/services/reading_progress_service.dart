@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:quran_app_2025/services/reading_session_store.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReadingProgress {
   const ReadingProgress({
@@ -117,19 +120,63 @@ class ReadingProgressService {
     return '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
   }
 
-  static Future<void> addSeconds(String date, int seconds) {
-    final write = _writes.then((_) async {
-      if (seconds <= 0) return;
-      await SharedPreferencesService.ensureTargetSnapshot(date);
-      final existing = SharedPreferencesService.getReadingSeconds(date);
-      await SharedPreferencesService.setReadingSeconds(
-        date,
-        existing + seconds,
-      );
-    });
-    _writes = write.catchError((Object _) {});
-    return write;
+  // SharedPreferences caches its own instance; a fresh store per call keeps
+  // tests that reset mock preferences isolated.
+  static Future<ReadingSessionStore> store() async =>
+      ReadingSessionStore(await SharedPreferences.getInstance());
+
+  static Future<T> _serial<T>(Future<T> Function() action) {
+    final result = _writes.then((_) => action());
+    _writes = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
   }
+
+  static Future<String> _timezone() async {
+    try {
+      return await FlutterTimezone.getLocalTimezone();
+    } on Object {
+      // Fallback keeps reading tracked where the plugin is unavailable.
+      return DateTime.now().timeZoneName;
+    }
+  }
+
+  /// Creates an empty, open session for [date]; nothing is stored until it
+  /// has active seconds.
+  static Future<ReadingSession> openSession(
+    String date, {
+    String? verseKey,
+  }) async => ReadingSession(
+    id: newUuid(),
+    deviceId: await (await store()).deviceId(),
+    startedAtUtc: DateTime.now().toUtc(),
+    endedAtUtc: null,
+    activeSeconds: 0,
+    timezone: await _timezone(),
+    localDate: date,
+    lastVerseKey: verseKey,
+  );
+
+  /// Stores [session] (replacing any earlier copy) and recomputes its day.
+  static Future<void> saveSession(ReadingSession session) =>
+      _serial(() => _save(session));
+
+  static Future<void> _save(ReadingSession session) async {
+    if (session.activeSeconds <= 0) return;
+    await SharedPreferencesService.ensureTargetSnapshot(session.localDate);
+    await (await store()).save(session);
+  }
+
+  /// Records [seconds] of reading on [date] as one closed session.
+  static Future<void> addSeconds(String date, int seconds) => _serial(() async {
+    if (seconds <= 0) return;
+    final session = await openSession(date);
+    await _save(
+      session.copyWith(
+        activeSeconds: seconds,
+        endedAtUtc: DateTime.now().toUtc(),
+      ),
+    );
+  });
 
   static ReadingProgress read({DateTime? now}) => StreakCalculator.compute(
     today: localDate(now),
@@ -151,6 +198,11 @@ class ReadingSessionTracker with WidgetsBindingObserver {
   bool _disposed = false;
   bool _paused = false;
   bool needsConfirmation = false;
+
+  /// Verse the reader is on, stored with the session as `lastVerseKey`.
+  String? verseKey;
+  ReadingSession? _session;
+  Future<void> _flushing = Future<void>.value();
   final Stopwatch _clock = Stopwatch();
   int _accounted = 0;
   int _lastInteraction = 0;
@@ -169,7 +221,7 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     interact();
     if (value) {
       _clock.stop();
-      unawaited(flush());
+      unawaited(flush(endSession: true));
     } else if (_active) {
       _lastWallTime = DateTime.now();
       _clock.start();
@@ -213,16 +265,52 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     }
     if (_pending.values.fold<int>(0, (a, b) => a + b) >= 5 ||
         needsConfirmation) {
-      unawaited(flush());
+      unawaited(flush(endSession: needsConfirmation));
     }
     if (!_disposed) onChanged();
   }
 
-  Future<void> flush() async {
+  /// Writes pending seconds into the open session, opening a new one per
+  /// local date. [endSession] closes it (pause, background, idle, exit).
+  /// Calls are queued so concurrent flushes never open two sessions.
+  Future<void> flush({bool endSession = false}) {
+    final result = _flushing.then((_) => _flush(endSession));
+    _flushing = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
+
+  Future<void> _flush(bool endSession) async {
     final entries = Map<String, int>.from(_pending);
     _pending.clear();
     for (final entry in entries.entries) {
-      await ReadingProgressService.addSeconds(entry.key, entry.value);
+      var session = _session;
+      if (session != null && session.localDate != entry.key) {
+        // Crossing midnight: the previous date's session ends here.
+        await ReadingProgressService.saveSession(
+          session.copyWith(endedAtUtc: DateTime.now().toUtc()),
+        );
+        session = null;
+      }
+      session ??= await ReadingProgressService.openSession(
+        entry.key,
+        verseKey: verseKey,
+      );
+      session = session.copyWith(
+        activeSeconds: session.activeSeconds + entry.value,
+        lastVerseKey: verseKey,
+      );
+      _session = session;
+      await ReadingProgressService.saveSession(session);
+    }
+    final open = _session;
+    if (endSession && open != null) {
+      _session = null;
+      await ReadingProgressService.saveSession(
+        open.copyWith(
+          endedAtUtc: DateTime.now().toUtc(),
+          lastVerseKey: verseKey,
+        ),
+      );
     }
     if (!_disposed) onChanged();
   }
@@ -233,7 +321,7 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     _active = state == AppLifecycleState.resumed;
     if (!_active) {
       _clock.stop();
-      unawaited(flush());
+      unawaited(flush(endSession: true));
     } else if (!paused) {
       _lastWallTime = DateTime.now();
       _clock.start();
@@ -246,6 +334,6 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     _clock.stop();
     _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    await flush();
+    await flush(endSession: true);
   }
 }
