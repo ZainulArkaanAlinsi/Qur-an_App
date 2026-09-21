@@ -159,4 +159,24 @@ class SharedPreferencesService {
       await _prefs?.setInt('quran_reminder_minutes', minutes);
     }
   }
+
+  static Set<int> getCompletedSurahs() =>
+      (_prefs?.getStringList('completed_surahs') ?? const <String>[])
+          .map(int.tryParse)
+          .whereType<int>()
+          .where((value) => value >= 1 && value <= 114)
+          .toSet();
+
+  static Future<void> setSurahCompleted(int surah, bool completed) async {
+    final values = getCompletedSurahs();
+    if (completed) {
+      values.add(surah);
+    } else {
+      values.remove(surah);
+    }
+    await _prefs?.setStringList(
+      'completed_surahs',
+      values.map((value) => '$value').toList()..sort(),
+    );
+  }
 }

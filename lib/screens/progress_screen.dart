@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
+import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -186,6 +187,21 @@ class _ProgressScreenState extends State<ProgressScreen>
                 ),
               ],
             ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.auto_stories_outlined),
+            title: const Text(
+              'Progres Khatam',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+            subtitle: const Text('Tandai surah yang telah selesai dibaca.'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const KhatamPlanScreen())),
           ),
         ),
         const SizedBox(height: 20),
