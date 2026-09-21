@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
+import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:quran_app_2025/services/quran_audio_service.dart';
 
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({super.key, required this.surah, this.initialVerse = 1});
@@ -17,7 +20,7 @@ class ReaderScreen extends StatefulWidget {
 }
 
 class _ReaderScreenState extends State<ReaderScreen> {
-  late Future<List<String>> _verses;
+  late Future<_ReaderContent> _content;
   late ReadingSessionTracker _tracker;
   bool _focusMode = false;
   final _scroll = ItemScrollController();
@@ -27,15 +30,22 @@ class _ReaderScreenState extends State<ReaderScreen> {
   int _currentVerse = 1;
   bool _ready = false;
 
-  Future<List<String>> _load() async {
-    final result = await QuranTextRepository.instance.versesForSurah(
+  Future<_ReaderContent> _load() async {
+    final arabic = await QuranTextRepository.instance.versesForSurah(
       widget.surah.number,
     );
+    List<String>? translation;
+    try {
+      translation = await TranslationRepository.instance.forSurah(
+        widget.surah.number,
+      );
+      if (translation.length != arabic.length) translation = null;
+    } catch (_) {}
     if (mounted) {
       _ready = true;
       _tracker.start();
     }
-    return result;
+    return _ReaderContent(arabic, translation);
   }
 
   void _positionChanged() {
@@ -124,7 +134,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       },
     );
     _timerText.value = _timerLabel();
-    _verses = _load();
+    _content = _load();
     _positions.itemPositions.addListener(_positionChanged);
   }
 
@@ -197,8 +207,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
         const SizedBox(width: 4),
       ],
     ),
-    body: FutureBuilder<List<String>>(
-      future: _verses,
+    body: FutureBuilder<_ReaderContent>(
+      future: _content,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
@@ -207,11 +217,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
           return _ReaderError(
             message: '${snapshot.error}',
             onRetry: () => setState(() {
-              _verses = _load();
+              _content = _load();
             }),
           );
         }
-        final verses = snapshot.data!;
+        final content = snapshot.data!;
+        final verses = content.arabic;
         return Listener(
           onPointerDown: (_) => _tracker.interact(),
           child: ScrollablePositionedList.separated(
@@ -231,6 +242,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 key: ValueKey('${widget.surah.number}:${verseIndex + 1}'),
                 verseNumber: verseIndex + 1,
                 arabic: verses[verseIndex],
+                translation: content.translation?[verseIndex],
                 surahNumber: widget.surah.number,
               );
             },
@@ -263,7 +275,7 @@ class _SourceNotice extends StatelessWidget {
         SizedBox(width: 10),
         Expanded(
           child: Text(
-            'Teks Arab tersedia offline. Terjemahan dan audio belum ditampilkan karena sumbernya masih diverifikasi.',
+            'Teks Arab tersedia offline. Terjemahan Indonesia dan audio dimuat dari Al Quran Cloud saat internet tersedia.',
             style: TextStyle(fontSize: 13),
           ),
         ),
@@ -309,10 +321,12 @@ class _VerseCard extends StatefulWidget {
     super.key,
     required this.verseNumber,
     required this.arabic,
+    required this.translation,
     required this.surahNumber,
   });
   final int verseNumber;
   final String arabic;
+  final String? translation;
   final int surahNumber;
 
   @override
@@ -390,6 +404,27 @@ class _VerseCardState extends State<_VerseCard> {
                   color: bookmarked ? SacredTheme.primary : null,
                   tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
                 ),
+                ValueListenableBuilder<String?>(
+                  valueListenable: QuranAudioService.instance.playingVerse,
+                  builder: (context, playing, _) => IconButton(
+                    onPressed: () => QuranAudioService.instance.toggle(
+                      surah: widget.surahNumber,
+                      ayah: widget.verseNumber,
+                      globalAyah: surahCatalog
+                          .take(widget.surahNumber - 1)
+                          .fold<int>(
+                            widget.verseNumber,
+                            (sum, item) => sum + item.ayahCount,
+                          ),
+                    ),
+                    icon: Icon(
+                      playing == '${widget.surahNumber}:${widget.verseNumber}'
+                          ? Icons.pause_circle_filled_rounded
+                          : Icons.play_circle_outline_rounded,
+                    ),
+                    tooltip: 'Putar murottal',
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 18),
@@ -405,9 +440,24 @@ class _VerseCardState extends State<_VerseCard> {
                 ),
               ),
             ),
+            if (widget.translation != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                widget.translation!,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(height: 1.55),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
+
+class _ReaderContent {
+  const _ReaderContent(this.arabic, this.translation);
+  final List<String> arabic;
+  final List<String>? translation;
 }
