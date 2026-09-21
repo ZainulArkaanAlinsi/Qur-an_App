@@ -13,12 +13,14 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late double _arabic;
+  late double _translation;
   late int _targetSeconds;
 
   @override
   void initState() {
     super.initState();
     _arabic = SharedPreferencesService.getArabicFontSize();
+    _translation = SharedPreferencesService.getTranslationFontSize();
     _targetSeconds = SharedPreferencesService.getDailyTargetSeconds();
   }
 
@@ -129,6 +131,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 'Gunakan mode fokus di Reader untuk pengalaman baca yang lebih hening.',
                 style: theme.textTheme.bodySmall,
+              ),
+              const Divider(height: 28),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Ukuran terjemahan',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: SacredTheme.primary.withValues(alpha: .10),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Text(
+                      '${_translation.round()} px',
+                      style: const TextStyle(
+                        color: SacredTheme.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Slider(
+                value: _translation,
+                min: 14,
+                max: 24,
+                divisions: 10,
+                onChanged: (value) {
+                  setState(() => _translation = value);
+                  SharedPreferencesService.setTranslationFontSize(value);
+                },
               ),
               const SizedBox(height: 6),
             ],

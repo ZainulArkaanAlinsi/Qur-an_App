@@ -348,6 +348,7 @@ class _VerseCardState extends State<_VerseCard> {
   @override
   Widget build(BuildContext context) {
     final arabicSize = SharedPreferencesService.getArabicFontSize();
+    final translationSize = SharedPreferencesService.getTranslationFontSize();
     final dark = Theme.of(context).brightness == Brightness.dark;
     return RepaintBoundary(
       child: Container(
@@ -497,9 +498,10 @@ class _VerseCardState extends State<_VerseCard> {
               const SizedBox(height: 16),
               Text(
                 widget.translation!,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(height: 1.55),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  height: 1.55,
+                  fontSize: translationSize,
+                ),
               ),
             ],
           ],
