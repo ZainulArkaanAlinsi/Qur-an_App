@@ -4,6 +4,8 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
+import 'package:quran_app_2025/screens/prayer_screen.dart';
+import 'package:quran_app_2025/screens/islamic_news_screen.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
@@ -193,6 +195,36 @@ class _HomeScreenState extends State<HomeScreen> {
                         caption:
                             '${SharedPreferencesService.getBookmarks().length} bookmark',
                         onTap: () => openBookmarks(context),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.mosque_outlined,
+                        label: 'Jadwal salat',
+                        caption: 'Hijriah & pengingat',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PrayerScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.newspaper_outlined,
+                        label: 'Berita Islam',
+                        caption: 'Update harian',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const IslamicNewsScreen(),
+                          ),
+                        ),
                       ),
                     ),
                   ],

@@ -10,6 +10,8 @@
 - Teks Arab Uthmani Tanzil offline (6.236 ayat) dengan font Amiri, manifest runtime, checksum, dan atribusi di `DATASET_ATTRIBUTION.md`.
 - Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal, lanjut baca hingga ayat terakhir yang terlihat, tombol buka nomor ayat, mode fokus, serta status offline/error yang jelas.
 - Target 5/10/15/30 menit, tracker foreground lokal, snapshot target per tanggal, jeda saat tidak aktif, dan tampilan statistik/streak lokal dasar.
+- Jadwal lima waktu salat dan kalender Hijriah dari AlAdhan; kota dapat diubah pengguna. Pengingat salat dan tilawah dapat dipilih per perangkat setelah izin notifikasi diberikan.
+- Layar berita Islam memakai endpoint backend yang dapat dikonfigurasi saat build; backend tersebut ditujukan memakai GNews bahasa Indonesia agar kunci API tidak dibundel dalam APK.
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
 ## Bukti pemeriksaan terbaru
@@ -25,6 +27,7 @@
 
 - Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
 - Audio per `verseKey`, queue, repeat, background lifecycle, interruption, dan pemeriksaan hak offline. UI saat ini tidak menampilkan kontrol audio palsu.
+- Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy, sehingga layar berita memberi status konfigurasi sampai URL backend diberikan saat build.
 - Sesi reading lengkap: UUID, snapshot target, zona IANA, split tengah malam, rekonsiliasi dan fake-clock test.
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
 - Uji perangkat nyata: 200% font, screen reader, airplane mode, reader panjang, dan metrik profile/release 60 FPS.

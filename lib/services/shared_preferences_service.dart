@@ -135,4 +135,28 @@ class SharedPreferencesService {
           .map((key) => key.substring('reading_seconds_'.length))
           .toList()
         ..sort();
+
+  static String getPrayerCity() =>
+      _prefs?.getString('prayer_city') ?? 'Jakarta';
+  static String getPrayerCountry() =>
+      _prefs?.getString('prayer_country') ?? 'Indonesia';
+  static Future<void> setPrayerPlace(String city, String country) async {
+    await _prefs?.setString('prayer_city', city.trim());
+    await _prefs?.setString('prayer_country', country.trim());
+  }
+
+  static Set<String> getPrayerReminders() =>
+      (_prefs?.getStringList('prayer_reminders') ?? const <String>[]).toSet();
+  static Future<void> setPrayerReminders(Set<String> names) async =>
+      _prefs?.setStringList('prayer_reminders', names.toList()..sort());
+
+  static int? getQuranReminderMinutes() =>
+      _prefs?.getInt('quran_reminder_minutes');
+  static Future<void> setQuranReminderMinutes(int? minutes) async {
+    if (minutes == null) {
+      await _prefs?.remove('quran_reminder_minutes');
+    } else {
+      await _prefs?.setInt('quran_reminder_minutes', minutes);
+    }
+  }
 }
