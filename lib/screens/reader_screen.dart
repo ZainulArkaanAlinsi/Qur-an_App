@@ -62,6 +62,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
           ..sort((a, b) => a.index.compareTo(b.index));
     if (visible.isEmpty || visible.first.index == _currentVerse) return;
     _currentVerse = visible.first.index;
+    _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 350), _savePosition);
   }
@@ -134,6 +135,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
               : _timerLabel();
       },
     );
+    _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
     _timerText.value = _timerLabel();
     _content = _load();
     _positions.itemPositions.addListener(_positionChanged);
