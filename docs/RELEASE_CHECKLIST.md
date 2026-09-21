@@ -23,7 +23,7 @@
 
 ## Sinkronisasi cloud
 
-- [ ] Aktifkan provider Google di Firebase Console lalu jalankan ulang `flutterfire configure` (lihat `docs/CLOUD_SYNC.md`).
+- [x] Provider Google aktif di Firebase Console dan `google-services.json` memuat web OAuth client (22 September 2026).
 - [ ] Buat keystore rilis, daftarkan SHA-1/SHA-256-nya ke aplikasi Firebase, dan jalankan ulang `flutterfire configure`; tanpa ini Google Sign-In gagal pada build rilis.
 - [ ] Batasi API key Android di Google Cloud Console ke package `com.zainularkaan.quran` dan SHA-1 yang terdaftar.
 - [ ] Perbarui kebijakan privasi dan formulir Data safety: aplikasi kini menyimpan UID, email akun Google, sesi baca (waktu, durasi, ayat terakhir, zona waktu, ID perangkat acak), dan bookmark di Firestore (Jakarta) bila pengguna masuk; ada fitur hapus akun beserta data.

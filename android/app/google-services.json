@@ -12,7 +12,20 @@
           "package_name": "com.zainularkaan.quran"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "171000332303-vjuiqlrc5b30q2qu7rumnrmh2l78r0ng.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zainularkaan.quran",
+            "certificate_hash": "41b257b14a1c915091cb3eb812683897c11d3b64"
+          }
+        },
+        {
+          "client_id": "171000332303-aofqdnkdi162l839alot299m1vv0382b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBJieO4SFJnlUSNXWYnUVx2XU7fSbyW5Q8"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "171000332303-aofqdnkdi162l839alot299m1vv0382b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

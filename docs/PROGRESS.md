@@ -23,7 +23,7 @@
 
 ## Bukti pemeriksaan terbaru
 
-- 22 September 2026 (sync cloud): `flutter test` lulus 61 test termasuk `test/cloud_sync_test.dart` (12 skenario sync dengan remote palsu); `firestore-tests` lulus 29 test rules di emulator (isolasi akun A/B, larangan stats klien, validasi sesi/bookmark); `flutter analyze` tanpa error/warning; `flutter build apk --debug` sukses (plugin Kotlin dinaikkan ke 2.3.21 karena firebase-auth 24.2). Rules dan index ter-deploy ke produksi. Login Google belum diuji di perangkat karena provider Google belum diaktifkan di Console.
+- 22 September 2026 (sync cloud): `flutter test` lulus 61 test termasuk `test/cloud_sync_test.dart` (12 skenario sync dengan remote palsu); `firestore-tests` lulus 29 test rules di emulator (isolasi akun A/B, larangan stats klien, validasi sesi/bookmark); `flutter analyze` tanpa error/warning; `flutter build apk --debug` sukses (plugin Kotlin dinaikkan ke 2.3.21 karena firebase-auth 24.2). Rules dan index ter-deploy ke produksi. Provider Google diaktifkan di Console pada 22 September 2026 dan `google-services.json` diperbarui (memuat web OAuth client); login Google belum diuji di perangkat.
 
 - 21 September 2026 (sesi baca): `flutter test` lulus 49 test termasuk `test/reading_session_test.dart`; `flutter analyze` tanpa error/warning (27 info); `flutter build apk --debug` sukses. Tracker dengan jam nyata belum diuji di perangkat (pause/background/tengah malam).
 
@@ -51,7 +51,7 @@
 - Lisensi (diperiksa 21 September 2026, rincian di `DATASET_ATTRIBUTION.md`): terjemahan hanya boleh non-komersial dan edisinya belum teridentifikasi; audio boleh di-streaming/unduh untuk pemakaian pribadi; tanda tashih LPMQ untuk mushaf digital perlu dikonfirmasi sebelum rilis di Indonesia.
 - Audio: belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
-- Sync: aktifkan provider Google di Firebase Console, perbarui `google-services.json`, lalu uji masuk/sinkron/keluar/hapus akun di dua perangkat nyata. Perubahan zona waktu belum ditunda ke hari berikutnya (hari mengikuti zona perangkat saat membaca).
+- Sync: uji masuk/sinkron/keluar/hapus akun di dua perangkat nyata. Perubahan zona waktu belum ditunda ke hari berikutnya (hari mengikuti zona perangkat saat membaca).
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
 - Uji perangkat nyata: 200% font, screen reader, airplane mode, reader panjang, dan metrik profile/release 60 FPS.
 - applicationId produksi, keystore sendiri, signing release, privacy policy, store data safety, serta persetujuan rilis.
