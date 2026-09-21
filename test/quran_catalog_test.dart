@@ -26,4 +26,16 @@ void main() {
         .where((line) => line.isNotEmpty && !line.startsWith('#'));
     expect(lines, hasLength(6236));
   });
+
+  test('nomor ayat global cocok dengan urutan sumber audio', () {
+    // Nilai diverifikasi terhadap api.alquran.cloud pada 21 September 2026.
+    expect(globalAyahNumber(1, 1), 1);
+    expect(globalAyahNumber(2, 1), 8);
+    expect(globalAyahNumber(2, 255), 262);
+    expect(globalAyahNumber(9, 1), 1236);
+    expect(globalAyahNumber(27, 30), 3189);
+    expect(globalAyahNumber(114, 6), 6236);
+    expect(() => globalAyahNumber(1, 8), throwsRangeError);
+    expect(() => globalAyahNumber(115, 1), throwsRangeError);
+  });
 }

@@ -117,3 +117,16 @@ const surahCatalog = <SurahMeta>[
   SurahMeta(113, 'Al-Falaq', 5, 'Makkah'),
   SurahMeta(114, 'An-Nas', 6, 'Makkah'),
 ];
+
+/// Sequential verse number across the mushaf (1:1 → 1, 114:6 → 6236), as
+/// used by per-verse audio resources that follow the Tanzil ordering.
+int globalAyahNumber(int surah, int ayah) {
+  if (surah < 1 || surah > surahCatalog.length) {
+    throw RangeError.range(surah, 1, surahCatalog.length, 'surah');
+  }
+  final count = surahCatalog[surah - 1].ayahCount;
+  if (ayah < 1 || ayah > count) throw RangeError.range(ayah, 1, count, 'ayah');
+  return surahCatalog
+      .take(surah - 1)
+      .fold<int>(ayah, (sum, item) => sum + item.ayahCount);
+}

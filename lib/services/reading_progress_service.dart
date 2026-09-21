@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:quran_app_2025/services/reading_session_store.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReadingProgress {
   const ReadingProgress({
@@ -10,13 +13,104 @@ class ReadingProgress {
     required this.currentStreak,
     required this.longestStreak,
     required this.totalSeconds,
+    this.pendingToday = false,
+    this.recentDays = const [],
   });
   final int todaySeconds;
   final int targetSeconds;
   final int currentStreak;
   final int longestStreak;
   final int totalSeconds;
+
+  /// True when yesterday qualified but today has not reached the target yet,
+  /// so [currentStreak] is still carried and will break after midnight.
+  final bool pendingToday;
+
+  /// Oldest-first qualifying flags for the last seven local dates.
+  final List<bool> recentDays;
   bool get completedToday => todaySeconds >= targetSeconds;
+  int get remainingSeconds => completedToday ? 0 : targetSeconds - todaySeconds;
+}
+
+/// Pure streak rules from the guide (section 6): one increment per qualifying
+/// day, today pending while yesterday qualified, reset after a missed day.
+class StreakCalculator {
+  static ReadingProgress compute({
+    required String today,
+    required Map<String, int> secondsByDate,
+    required int Function(String date) targetFor,
+  }) {
+    bool qualifies(String date) =>
+        (secondsByDate[date] ?? 0) >= targetFor(date);
+
+    final dates =
+        secondsByDate.keys.where((d) => d.compareTo(today) <= 0).toList()
+          ..sort();
+    var total = 0;
+    var longest = 0;
+    var run = 0;
+    DateTime? previous;
+    for (final date in dates) {
+      final day = _parse(date);
+      if (day == null) continue;
+      total += secondsByDate[date] ?? 0;
+      if (previous == null || day.difference(previous).inDays != 1) {
+        run = 0;
+      }
+      previous = day;
+      run = qualifies(date) ? run + 1 : 0;
+      if (run > longest) longest = run;
+    }
+
+    final todayDate = _parse(today)!;
+    final todayQualifies = qualifies(today);
+    var cursor = todayQualifies
+        ? todayDate
+        : todayDate.subtract(const Duration(days: 1));
+    var current = 0;
+    while (qualifies(_format(cursor))) {
+      current++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+
+    return ReadingProgress(
+      todaySeconds: secondsByDate[today] ?? 0,
+      targetSeconds: targetFor(today),
+      currentStreak: current,
+      longestStreak: longest,
+      totalSeconds: total,
+      pendingToday: !todayQualifies && current > 0,
+      recentDays: [
+        for (var offset = 6; offset >= 0; offset--)
+          qualifies(_format(todayDate.subtract(Duration(days: offset)))),
+      ],
+    );
+  }
+
+  // Calendar arithmetic runs in UTC so DST shifts never skip or repeat a date.
+  static DateTime? _parse(String date) =>
+      DateTime.tryParse('${date}T00:00:00Z');
+  static String _format(DateTime date) =>
+      ReadingProgressService.localDate(date);
+}
+
+/// Splits [activeSeconds] measured between [previous] and [now] into local
+/// dates, so a session crossing midnight credits both days separately.
+Map<String, int> splitActiveSeconds({
+  required DateTime previous,
+  required DateTime now,
+  required int activeSeconds,
+}) {
+  if (activeSeconds <= 0) return const {};
+  final date = ReadingProgressService.localDate(now);
+  final previousDate = ReadingProgressService.localDate(previous);
+  if (date == previousDate || !now.isAfter(previous)) {
+    return {date: activeSeconds};
+  }
+  final midnight = DateTime(now.year, now.month, now.day);
+  final after = now.difference(midnight).inSeconds.clamp(0, activeSeconds);
+  final before = activeSeconds - after;
+  return {if (before > 0) previousDate: before, if (after > 0) date: after};
 }
 
 class ReadingProgressService {
@@ -26,68 +120,72 @@ class ReadingProgressService {
     return '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
   }
 
-  static Future<void> addSeconds(String date, int seconds) {
-    final write = _writes.then((_) async {
-      if (seconds <= 0) return;
-      await SharedPreferencesService.ensureTargetSnapshot(date);
-      final existing = SharedPreferencesService.getReadingSeconds(date);
-      await SharedPreferencesService.setReadingSeconds(
-        date,
-        existing + seconds,
-      );
-    });
-    _writes = write.catchError((Object _) {});
-    return write;
+  // SharedPreferences caches its own instance; a fresh store per call keeps
+  // tests that reset mock preferences isolated.
+  static Future<ReadingSessionStore> store() async =>
+      ReadingSessionStore(await SharedPreferences.getInstance());
+
+  static Future<T> _serial<T>(Future<T> Function() action) {
+    final result = _writes.then((_) => action());
+    _writes = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
   }
 
-  static ReadingProgress read({DateTime? now}) {
-    final today = localDate(now);
-    final target = SharedPreferencesService.getTargetForDate(today);
-    final dates = SharedPreferencesService.getReadingDates();
-    var total = 0;
-    var longest = 0;
-    var run = 0;
-    DateTime? previous;
-    for (final date in dates) {
-      if (date.compareTo(today) > 0) continue;
-      final currentDate = DateTime.tryParse('${date}T00:00:00Z');
-      if (currentDate == null) continue;
-      if (previous == null || currentDate.difference(previous).inDays != 1)
-        run = 0;
-      previous = currentDate;
-      final seconds = SharedPreferencesService.getReadingSeconds(date);
-      total += seconds;
-      if (seconds >= SharedPreferencesService.getTargetForDate(date)) {
-        run++;
-        if (run > longest) longest = run;
-      } else {
-        run = 0;
-      }
+  static Future<String> _timezone() async {
+    try {
+      return await FlutterTimezone.getLocalTimezone();
+    } on Object {
+      // Fallback keeps reading tracked where the plugin is unavailable.
+      return DateTime.now().timeZoneName;
     }
-    final todaySeconds = SharedPreferencesService.getReadingSeconds(today);
-    final current = _currentStreak(today, target);
-    return ReadingProgress(
-      todaySeconds: todaySeconds,
-      targetSeconds: target,
-      currentStreak: current,
-      longestStreak: longest,
-      totalSeconds: total,
+  }
+
+  /// Creates an empty, open session for [date]; nothing is stored until it
+  /// has active seconds.
+  static Future<ReadingSession> openSession(
+    String date, {
+    String? verseKey,
+  }) async => ReadingSession(
+    id: newUuid(),
+    deviceId: await (await store()).deviceId(),
+    startedAtUtc: DateTime.now().toUtc(),
+    endedAtUtc: null,
+    activeSeconds: 0,
+    timezone: await _timezone(),
+    localDate: date,
+    lastVerseKey: verseKey,
+  );
+
+  /// Stores [session] (replacing any earlier copy) and recomputes its day.
+  static Future<void> saveSession(ReadingSession session) =>
+      _serial(() => _save(session));
+
+  static Future<void> _save(ReadingSession session) async {
+    if (session.activeSeconds <= 0) return;
+    await SharedPreferencesService.ensureTargetSnapshot(session.localDate);
+    await (await store()).save(session);
+  }
+
+  /// Records [seconds] of reading on [date] as one closed session.
+  static Future<void> addSeconds(String date, int seconds) => _serial(() async {
+    if (seconds <= 0) return;
+    final session = await openSession(date);
+    await _save(
+      session.copyWith(
+        activeSeconds: seconds,
+        endedAtUtc: DateTime.now().toUtc(),
+      ),
     );
-  }
+  });
 
-  static int _currentStreak(String today, int target) {
-    final todayDate = DateTime.parse('${today}T00:00:00Z');
-    var cursor = SharedPreferencesService.getReadingSeconds(today) >= target
-        ? todayDate
-        : todayDate.subtract(const Duration(days: 1));
-    var streak = 0;
-    while (SharedPreferencesService.getReadingSeconds(localDate(cursor)) >=
-        SharedPreferencesService.getTargetForDate(localDate(cursor))) {
-      streak++;
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
-    return streak;
-  }
+  static ReadingProgress read({DateTime? now}) => StreakCalculator.compute(
+    today: localDate(now),
+    secondsByDate: {
+      for (final date in SharedPreferencesService.getReadingDates())
+        date: SharedPreferencesService.getReadingSeconds(date),
+    },
+    targetFor: SharedPreferencesService.getTargetForDate,
+  );
 }
 
 class ReadingSessionTracker with WidgetsBindingObserver {
@@ -100,6 +198,11 @@ class ReadingSessionTracker with WidgetsBindingObserver {
   bool _disposed = false;
   bool _paused = false;
   bool needsConfirmation = false;
+
+  /// Verse the reader is on, stored with the session as `lastVerseKey`.
+  String? verseKey;
+  ReadingSession? _session;
+  Future<void> _flushing = Future<void>.value();
   final Stopwatch _clock = Stopwatch();
   int _accounted = 0;
   int _lastInteraction = 0;
@@ -118,7 +221,7 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     interact();
     if (value) {
       _clock.stop();
-      unawaited(flush());
+      unawaited(flush(endSession: true));
     } else if (_active) {
       _lastWallTime = DateTime.now();
       _clock.start();
@@ -144,26 +247,16 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     final delta = elapsed - _accounted;
     if (delta <= 0) return;
     final now = DateTime.now();
-    final previous = _lastWallTime ?? now;
-    final date = ReadingProgressService.localDate(now);
-    final previousDate = ReadingProgressService.localDate(previous);
     // A monotonic duration prevents wall-clock changes from granting extra time.
     // When a tick crosses midnight, split only the measured active duration.
-    var remaining = delta;
-    if (date != previousDate && now.isAfter(previous)) {
-      final midnight = DateTime(now.year, now.month, now.day);
-      final afterMidnight = now.difference(midnight).inSeconds.clamp(0, delta);
-      final beforeMidnight = delta - afterMidnight;
-      if (beforeMidnight > 0) {
-        _pending.update(
-          previousDate,
-          (v) => v + beforeMidnight,
-          ifAbsent: () => beforeMidnight,
-        );
-      }
-      remaining = afterMidnight;
-    }
-    _pending.update(date, (v) => v + remaining, ifAbsent: () => remaining);
+    splitActiveSeconds(
+      previous: _lastWallTime ?? now,
+      now: now,
+      activeSeconds: delta,
+    ).forEach(
+      (date, seconds) =>
+          _pending.update(date, (v) => v + seconds, ifAbsent: () => seconds),
+    );
     _accounted = elapsed;
     _lastWallTime = now;
     if (elapsed - _lastInteraction >= 300) {
@@ -172,16 +265,52 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     }
     if (_pending.values.fold<int>(0, (a, b) => a + b) >= 5 ||
         needsConfirmation) {
-      unawaited(flush());
+      unawaited(flush(endSession: needsConfirmation));
     }
     if (!_disposed) onChanged();
   }
 
-  Future<void> flush() async {
+  /// Writes pending seconds into the open session, opening a new one per
+  /// local date. [endSession] closes it (pause, background, idle, exit).
+  /// Calls are queued so concurrent flushes never open two sessions.
+  Future<void> flush({bool endSession = false}) {
+    final result = _flushing.then((_) => _flush(endSession));
+    _flushing = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
+
+  Future<void> _flush(bool endSession) async {
     final entries = Map<String, int>.from(_pending);
     _pending.clear();
     for (final entry in entries.entries) {
-      await ReadingProgressService.addSeconds(entry.key, entry.value);
+      var session = _session;
+      if (session != null && session.localDate != entry.key) {
+        // Crossing midnight: the previous date's session ends here.
+        await ReadingProgressService.saveSession(
+          session.copyWith(endedAtUtc: DateTime.now().toUtc()),
+        );
+        session = null;
+      }
+      session ??= await ReadingProgressService.openSession(
+        entry.key,
+        verseKey: verseKey,
+      );
+      session = session.copyWith(
+        activeSeconds: session.activeSeconds + entry.value,
+        lastVerseKey: verseKey,
+      );
+      _session = session;
+      await ReadingProgressService.saveSession(session);
+    }
+    final open = _session;
+    if (endSession && open != null) {
+      _session = null;
+      await ReadingProgressService.saveSession(
+        open.copyWith(
+          endedAtUtc: DateTime.now().toUtc(),
+          lastVerseKey: verseKey,
+        ),
+      );
     }
     if (!_disposed) onChanged();
   }
@@ -192,7 +321,7 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     _active = state == AppLifecycleState.resumed;
     if (!_active) {
       _clock.stop();
-      unawaited(flush());
+      unawaited(flush(endSession: true));
     } else if (!paused) {
       _lastWallTime = DateTime.now();
       _clock.start();
@@ -205,6 +334,6 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     _clock.stop();
     _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    await flush();
+    await flush(endSession: true);
   }
 }

@@ -134,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 progress.completedToday
                                     ? 'Target hari ini tercapai'
+                                    : progress.pendingToday
+                                    ? 'Jaga rentetanmu hari ini'
                                     : 'Sedikit demi sedikit',
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.w800,
@@ -141,11 +143,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${progress.todaySeconds ~/ 60} dari ${progress.targetSeconds ~/ 60} menit membaca',
+                                progress.pendingToday
+                                    ? 'Baca ${(progress.remainingSeconds / 60).ceil()} menit lagi agar tetap berlanjut'
+                                    : '${progress.todaySeconds ~/ 60} dari ${progress.targetSeconds ~/ 60} menit membaca',
                                 style: theme.textTheme.bodySmall,
                               ),
                             ],
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        _StreakChip(
+                          days: progress.currentStreak,
+                          active: progress.completedToday,
                         ),
                       ],
                     ),
@@ -379,6 +388,49 @@ class _ProgressRing extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _StreakChip extends StatelessWidget {
+  const _StreakChip({required this.days, required this.active});
+  final int days;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    // Gold is used as a fill only; text stays emerald for contrast on ivory.
+    final background = active
+        ? SacredTheme.gold
+        : SacredTheme.primary.withValues(alpha: .08);
+    final foreground = active
+        ? SacredTheme.primary
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    return Semantics(
+      label: 'Rentetan membaca $days hari',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(99),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.local_fire_department_rounded,
+              size: 16,
+              color: foreground,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$days',
+              style: TextStyle(color: foreground, fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _SectionHeader extends StatelessWidget {

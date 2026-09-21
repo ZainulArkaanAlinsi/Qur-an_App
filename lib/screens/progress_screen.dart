@@ -151,6 +151,8 @@ class _ProgressScreenState extends State<ProgressScreen>
           ],
         ),
         const SizedBox(height: 12),
+        _WeekStrip(days: progress.recentDays),
+        const SizedBox(height: 12),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(18),
@@ -217,6 +219,107 @@ class _ProgressScreenState extends State<ProgressScreen>
           ),
         ),
       ],
+    );
+  }
+}
+
+class _WeekStrip extends StatelessWidget {
+  const _WeekStrip({required this.days});
+
+  /// Oldest-first qualifying flags; the last entry is today.
+  final List<bool> days;
+  static const _labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+  @override
+  Widget build(BuildContext context) {
+    if (days.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final today = DateTime.now();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '7 hari terakhir',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                for (var i = 0; i < days.length; i++)
+                  Expanded(
+                    child: _DayDot(
+                      label:
+                          _labels[today
+                                  .subtract(Duration(days: days.length - 1 - i))
+                                  .weekday -
+                              1],
+                      done: days[i],
+                      isToday: i == days.length - 1,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DayDot extends StatelessWidget {
+  const _DayDot({
+    required this.label,
+    required this.done,
+    required this.isToday,
+  });
+  final String label;
+  final bool done;
+  final bool isToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      label: '$label, ${done ? 'target tercapai' : 'belum tercapai'}',
+      excludeSemantics: true,
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: done ? SacredTheme.primaryContainer : Colors.transparent,
+              border: Border.all(
+                color: isToday
+                    ? SacredTheme.gold
+                    : theme.colorScheme.outlineVariant,
+                width: isToday ? 2 : 1,
+              ),
+            ),
+            child: done
+                ? const Icon(
+                    Icons.check_rounded,
+                    size: 16,
+                    color: SacredTheme.gold,
+                  )
+                : null,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

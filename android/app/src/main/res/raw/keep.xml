@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification icons are looked up by name at runtime (audio_service,
+     flutter_local_notifications), so stop resource shrinking from removing them. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_quran" />

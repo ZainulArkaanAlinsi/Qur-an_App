@@ -3,6 +3,7 @@ import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -216,47 +217,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 26),
         const _SectionTitle('Konten & sumber'),
         const SizedBox(height: 10),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: SacredTheme.gold.withValues(alpha: .28),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Icon(
-                    Icons.verified_outlined,
-                    color: SacredTheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Teks Arab offline',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Tanzil Uthmani v1.0.2. Atribusi dan checksum tersimpan di dokumentasi proyek.',
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        const _SourceCard(
+          icon: Icons.verified_outlined,
+          title: 'Teks Arab offline',
+          body:
+              'Tanzil Quran Text, Uthmani v1.0.2 (CC BY 3.0). Disimpan tanpa perubahan.',
+          url: 'https://tanzil.net/',
+        ),
+        const SizedBox(height: 10),
+        const _SourceCard(
+          icon: Icons.translate_rounded,
+          title: 'Terjemahan Indonesia',
+          body:
+              'Edisi “Bahasa Indonesia” dari Tanzil (pembaruan 4 Juni 2010), penerjemah Kementerian Agama RI. Tersimpan offline tanpa perubahan; untuk penggunaan non-komersial.',
+          url: 'https://tanzil.net/trans/',
+        ),
+        const SizedBox(height: 10),
+        const _SourceCard(
+          icon: Icons.graphic_eq_rounded,
+          title: 'Murottal',
+          body:
+              'Mishary Rashid Alafasy, per ayat 128 kbps, di-streaming dari CDN Islamic Network (Al Quran Cloud). Hak cipta rekaman milik qari.',
+          url: 'https://alquran.cloud/terms-and-conditions',
         ),
       ],
     );
   }
+}
+
+class _SourceCard extends StatelessWidget {
+  const _SourceCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.url,
+  });
+  final IconData icon;
+  final String title;
+  final String body;
+  final String url;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
+      onTap: () =>
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: SacredTheme.gold.withValues(alpha: .28),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Icon(icon, color: SacredTheme.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(body),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.open_in_new_rounded,
+              size: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              semanticLabel: 'Buka sumber',
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _SectionTitle extends StatelessWidget {
