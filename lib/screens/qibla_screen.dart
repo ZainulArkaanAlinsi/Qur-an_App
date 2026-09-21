@@ -136,7 +136,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                     : 'Putar perangkat hingga penanda berada di atas',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: aligned ? SacredTheme.primary : null,
+                  color: aligned ? Theme.of(context).colorScheme.primary : null,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -175,14 +175,14 @@ class _QiblaScreenState extends State<QiblaScreen> {
               text: _heading == null
                   ? 'Sensor kompas tidak tersedia pada perangkat ini. Arah kiblat tetap dihitung setelah lokasi diperbarui.'
                   : 'Untuk hasil terbaik, jauhkan dari magnet atau casing logam dan gerakkan ponsel membentuk angka 8 bila arah belum stabil.',
-              color: SacredTheme.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: 12),
-            const _InfoPanel(
+            _InfoPanel(
               icon: Icons.lock_outline_rounded,
               text:
                   'Arah dihitung secara lokal ke koordinat Ka’bah (21.422487, 39.826206). Perangkat dan sensor menentukan ketelitian akhir.',
-              color: SacredTheme.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ],
         ),

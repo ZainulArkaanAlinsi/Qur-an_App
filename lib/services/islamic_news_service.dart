@@ -34,8 +34,9 @@ class IslamicNewsService {
   static Future<List<IslamicNewsArticle>> fetchLatest() async {
     final uri = _endpoint.isEmpty ? _freeEndpoint : Uri.parse(_endpoint);
     final response = await http.get(uri).timeout(const Duration(seconds: 12));
-    if (response.statusCode != 200)
+    if (response.statusCode != 200) {
       throw Exception('Berita belum dapat dimuat (${response.statusCode}).');
+    }
     final articles =
         (jsonDecode(response.body) as Map<String, dynamic>)['articles']
             as List<dynamic>? ??

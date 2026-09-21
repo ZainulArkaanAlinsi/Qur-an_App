@@ -33,8 +33,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
   Future<void> _saveReminders(PrayerDay day) async {
     final allowed = await ReminderService.instance.requestPermission();
     if (!allowed) {
-      if (mounted)
+      if (mounted) {
         setState(() => _message = 'Izin notifikasi belum diberikan.');
+      }
       return;
     }
     await SharedPreferencesService.setPrayerReminders(_enabled);
@@ -46,11 +47,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
       city: SharedPreferencesService.getPrayerCity(),
       country: SharedPreferencesService.getPrayerCountry(),
     );
-    if (mounted)
+    if (mounted) {
       setState(
         () => _message =
             'Pengingat salat untuk 14 hari dan tilawah harian telah diperbarui.',
       );
+    }
   }
 
   Future<void> _changePlace() async {
@@ -91,14 +93,16 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
     if (result != true ||
         city.text.trim().isEmpty ||
-        country.text.trim().isEmpty)
+        country.text.trim().isEmpty) {
       return;
+    }
     await SharedPreferencesService.setPrayerPlace(city.text, country.text);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _message = null;
         _day = _load();
       });
+    }
   }
 
   Future<void> _chooseQuranTime(PrayerDay day) async {
@@ -118,10 +122,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
     body: FutureBuilder<PrayerDay>(
       future: _day,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done)
+        if (snapshot.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError)
+        }
+        if (snapshot.hasError) {
           return _Error(onRetry: () => setState(() => _day = _load()));
+        }
         final day = snapshot.data!;
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -161,8 +167,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Salat berikutnya: ${day.nextLabel}',
-                      style: const TextStyle(
-                        color: SacredTheme.primary,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -199,9 +205,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
             const SizedBox(height: 16),
             Card(
               child: ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.menu_book_outlined,
-                  color: SacredTheme.primary,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 title: const Text(
                   'Pengingat tilawah',

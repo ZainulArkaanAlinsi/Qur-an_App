@@ -71,17 +71,26 @@ class _ProgressScreenState extends State<ProgressScreen>
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    CircularProgressIndicator(
-                      value: completion,
-                      strokeWidth: 8,
-                      color: SacredTheme.gold,
-                      backgroundColor: Colors.white.withValues(alpha: .18),
+                    // Fill the 88px box; the default indicator is only 36px.
+                    SizedBox.expand(
+                      child: CircularProgressIndicator(
+                        value: completion,
+                        strokeWidth: 8,
+                        color: SacredTheme.gold,
+                        backgroundColor: Colors.white.withValues(alpha: .18),
+                      ),
                     ),
-                    Text(
-                      '${(completion * 100).round()}%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '${(completion * 100).round()}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -165,9 +174,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                     color: SacredTheme.primary.withValues(alpha: .09),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.timelapse_rounded,
-                    color: SacredTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(width: 14),

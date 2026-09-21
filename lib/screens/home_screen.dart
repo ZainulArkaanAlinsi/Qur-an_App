@@ -62,9 +62,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Assalamu’alaikum',
-                        style: theme.textTheme.labelLarge,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
+                          'Assalamu’alaikum',
+                          maxLines: 1,
+                          style: theme.textTheme.labelLarge,
+                        ),
                       ),
                       Text(
                         'Ruang tilawahmu',
@@ -266,7 +271,6 @@ class _ContinueCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(24),
       child: Ink(
-        height: 216,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           gradient: const LinearGradient(
@@ -302,64 +306,72 @@ class _ContinueCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                    child: const Text(
-                      'LANJUTKAN BACA',
-                      style: TextStyle(
-                        color: SacredTheme.gold,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    surah.displayName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${surah.revelation} · ${surah.ayahCount} ayat',
-                    style: const TextStyle(color: Color(0xFFD7F0E4)),
-                  ),
-                  const SizedBox(height: 14),
-                  const Row(
+            // Grows with large text instead of clipping; keeps 216 at 1x.
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 216),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        color: SacredTheme.gold,
-                        size: 19,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Buka pembaca',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
                         ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: .12),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: const Text(
+                          'LANJUTKAN BACA',
+                          style: TextStyle(
+                            color: SacredTheme.gold,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        surah.displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${surah.revelation} · ${surah.ayahCount} ayat',
+                        style: const TextStyle(color: Color(0xFFD7F0E4)),
+                      ),
+                      const SizedBox(height: 14),
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            color: SacredTheme.gold,
+                            size: 19,
+                          ),
+                          SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'Buka pembaca',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -380,10 +392,18 @@ class _ProgressRing extends StatelessWidget {
     child: Stack(
       alignment: Alignment.center,
       children: [
-        CircularProgressIndicator(value: value, strokeWidth: 6),
-        Text(
-          '${(value * 100).round()}%',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        SizedBox.expand(
+          child: CircularProgressIndicator(value: value, strokeWidth: 6),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(9),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '${(value * 100).round()}%',
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+            ),
+          ),
         ),
       ],
     ),
@@ -440,20 +460,23 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.end,
     children: [
-      Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      Expanded(
+        child: Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
       ),
-      const Spacer(),
+      if (trailing != null) const SizedBox(width: 12),
       if (trailing != null)
         Text(
           trailing!,
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge?.copyWith(color: SacredTheme.primary),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
     ],
   );
@@ -488,10 +511,19 @@ class _QuickAction extends StatelessWidget {
                 color: SacredTheme.primary.withValues(alpha: .10),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: SacredTheme.primary),
+              child: Icon(icon, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(height: 18),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+            // Scales down instead of splitting a single word at large text.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
             const SizedBox(height: 3),
             Text(caption, style: Theme.of(context).textTheme.bodySmall),
           ],

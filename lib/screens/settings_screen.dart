@@ -62,18 +62,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 segments: const [
                   ButtonSegment(
                     value: ThemeMode.system,
-                    icon: Icon(Icons.brightness_auto_rounded),
-                    label: Text('Sistem'),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Sistem', maxLines: 1),
+                    ),
                   ),
                   ButtonSegment(
                     value: ThemeMode.light,
-                    icon: Icon(Icons.light_mode_outlined),
-                    label: Text('Terang'),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Terang', maxLines: 1),
+                    ),
                   ),
                   ButtonSegment(
                     value: ThemeMode.dark,
-                    icon: Icon(Icons.dark_mode_outlined),
-                    label: Text('Gelap'),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Gelap', maxLines: 1),
+                    ),
                   ),
                 ],
                 selected: {controller.themeMode},
@@ -111,8 +117,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Text(
                       '${_arabic.round()} px',
-                      style: const TextStyle(
-                        color: SacredTheme.primary,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -153,8 +159,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Text(
                       '${_translation.round()} px',
-                      style: const TextStyle(
-                        color: SacredTheme.primary,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -261,8 +267,17 @@ class _SourceCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: () =>
-          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      onTap: () async {
+        final opened = await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        ).catchError((Object _) => false);
+        if (!opened && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Tautan tidak dapat dibuka: $url')),
+          );
+        }
+      },
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -275,7 +290,7 @@ class _SourceCard extends StatelessWidget {
                 color: SacredTheme.gold.withValues(alpha: .28),
                 borderRadius: BorderRadius.circular(13),
               ),
-              child: Icon(icon, color: SacredTheme.primary),
+              child: Icon(icon, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(width: 12),
             Expanded(

@@ -29,14 +29,18 @@ class _QuranSearchScreenState extends State<QuranSearchScreen> {
     body: FutureBuilder<List<List<String>>>(
       future: _all,
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
         final results = <_SearchResult>[];
         if (_query.isNotEmpty)
-          for (var s = 0; s < snapshot.data!.length; s++)
-            for (var a = 0; a < snapshot.data![s].length; a++)
-              if (snapshot.data![s][a].contains(_query))
+          for (var s = 0; s < snapshot.data!.length; s++) {
+            for (var a = 0; a < snapshot.data![s].length; a++) {
+              if (snapshot.data![s][a].contains(_query)) {
                 results.add(_SearchResult(s + 1, a + 1, snapshot.data![s][a]));
+              }
+            }
+          }
         return Column(
           children: [
             Padding(
