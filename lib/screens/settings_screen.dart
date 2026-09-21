@@ -229,7 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: Icons.translate_rounded,
           title: 'Terjemahan Indonesia',
           body:
-              'Edisi “Bahasa Indonesia” dari Tanzil; Tanzil mencantumkan penerjemah Kementerian Agama RI. Dimuat melalui Al Quran Cloud untuk penggunaan non-komersial.',
+              'Edisi “Bahasa Indonesia” dari Tanzil (pembaruan 4 Juni 2010), penerjemah Kementerian Agama RI. Tersimpan offline tanpa perubahan; untuk penggunaan non-komersial.',
           url: 'https://tanzil.net/trans/',
         ),
         const SizedBox(height: 10),

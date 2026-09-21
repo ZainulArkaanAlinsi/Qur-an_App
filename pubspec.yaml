@@ -79,6 +79,7 @@ flutter:
     - assets/icons/
     - assets/quran/raw/tanzil_uthmani_v1.0.2.txt
     - assets/quran/raw/quran-data.xml
+    - assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt
 
   fonts:
     - family: Amiri

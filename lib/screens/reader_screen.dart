@@ -318,7 +318,7 @@ class _SourceNotice extends StatelessWidget {
         SizedBox(width: 10),
         Expanded(
           child: Text(
-            'Teks Arab tersedia offline. Terjemahan Indonesia dan murottal dimuat dari Al Quran Cloud saat internet tersedia. Tekan ▶ untuk memutar berurutan mulai ayat itu.',
+            'Teks Arab dan terjemahan Indonesia tersedia offline. Murottal di-streaming saat internet tersedia. Tekan ▶ untuk memutar berurutan mulai ayat itu.',
             style: TextStyle(fontSize: 13),
           ),
         ),

@@ -17,6 +17,6 @@
 
 - [ ] Konfirmasi ke LPMQ Kemenag apakah aplikasi memerlukan Surat Tanda Tashih (Permenag 44/2016 mencakup mushaf digital); ajukan melalui tashih.kemenag.go.id bila perlu. Status pemohon harus penerbit berbadan usaha/yayasan/lembaga.
 - [ ] Pastikan aplikasi tetap non-komersial (tanpa iklan/IAP/langganan) selama memakai terjemahan Tanzil/Kemenag, atau minta izin tertulis Kemenag sebelum monetisasi.
-- [ ] Identifikasi edisi/tahun terjemahan Kemenag yang dipakai dan bandingkan dengan rilis resmi, atau ganti ke sumber resmi Kemenag yang terversi.
+- [ ] Terjemahan terbundel adalah edisi Tanzil pembaruan 4 Juni 2010 (sebelum revisi Kemenag 2019). Putuskan apakah tetap memakai edisi ini atau beralih ke sumber resmi Kemenag yang terversi, lalu bandingkan dan minta review manusia.
 - [ ] Jangan membundel audio Alafasy di APK; unduhan offline hanya untuk pemakaian pribadi.
 - [ ] Tampilan atribusi di Pengaturan > Konten & sumber sudah sesuai rilis final.

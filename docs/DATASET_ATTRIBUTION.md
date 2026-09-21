@@ -23,24 +23,31 @@ HTTP 404. Berkas diperoleh dari salinan publik yang menyertakan blok atribusi
 Tanzil utuh. Sebelum rilis, perbarui dari sumber resmi saat endpoint tersedia,
 bandingkan checksum/diff, lalu minta review konten manusia yang kompeten.
 
-## Sumber online (belum dibundel) — diperiksa 21 September 2026
+## Terjemahan dan murottal — diperiksa 21 September 2026
 
-### Terjemahan Indonesia (`id.indonesian`)
+### Terjemahan Indonesia (`id.indonesian`) — dibundel offline
 
-- **Dimuat dari:** `https://api.alquran.cloud/v1/surah/{n}/id.indonesian`.
-- **Metadata API:** `name: "Bahasa Indonesia"`, `englishName: "Unknown"` —
-  Al Quran Cloud sendiri tidak mencantumkan penerjemah.
-- **Sumber hulu:** katalog [Tanzil Translations](https://tanzil.net/trans/)
-  mencantumkan edisi *Bahasa Indonesia* dengan penerjemah **Indonesian
-  Ministry of Religious Affairs** (Kementerian Agama RI).
+- **Berkas:** `assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt`, disalin
+  byte-per-byte tanpa perubahan.
+- **Unduhan:** `https://tanzil.net/trans/?transID=id.indonesian&type=txt-2`
+  (identik dengan `https://tanzil.net/trans/id.indonesian`), 21 September 2026.
+- **SHA-256 berkas hulu (akhir baris LF, 1.159.449 byte):**
+  `70428E875C50C3C42D3829654D2BD386E146F0FA68CC20C34FDD4EA3B53E21A8`.
+  Git di Windows dengan `core.autocrlf=true` dapat men-checkout CRLF sehingga
+  checksum salinan kerja berbeda; parser menerima keduanya.
+- **Header berkas:** Name: Bahasa Indonesia · Translator: Indonesian Ministry
+  of Religious Affairs · ID: id.indonesian · Last Update: June 4, 2010 ·
+  Source: Tanzil.net. Artinya edisi ini **sebelum** revisi terjemahan Kemenag
+  2019.
+- **Validasi:** 6.236 baris `surah|ayat|teks`, 114 surah, tanpa duplikat,
+  jumlah ayat per surah cocok dengan manifest (`test/translation_test.dart`).
+  Teks identik dengan respons `api.alquran.cloud` untuk surah 1, 2, 9, 27, dan
+  114 (0 perbedaan).
 - **Ketentuan Tanzil:** "The translations provided at this page are for
   non-commercial purposes only. If used otherwise, you need to obtain
   necessary permission from the translator or the publisher."
 - **Ketentuan Al Quran Cloud (Section IV):** penerbit ulang terjemahan diminta
-  menyebut nama penerjemah.
-- **Belum diketahui:** edisi/tahun terjemahan Kemenag yang dipakai (misalnya
-  sebelum atau sesudah revisi 2019) dan apakah teks identik dengan rilis resmi
-  Kemenag. Kesamaan teks belum dibandingkan.
+  menyebut nama penerjemah. Atribusi tampil di Pengaturan > Konten & sumber.
 
 ### Murottal (`ar.alafasy`)
 

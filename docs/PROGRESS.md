@@ -2,7 +2,7 @@
 
 ## Selesai dan terhubung ke aplikasi
 
-- Terjemahan Indonesia (`id.indonesian`, api.alquran.cloud) dimuat online per surah dan disembunyikan bila jumlah ayat tidak cocok. Tanzil mencantumkan penerjemah Kementerian Agama RI dengan syarat non-komersial; edisi/tahun belum teridentifikasi. Atribusi tampil di Pengaturan > Konten & sumber.
+- Terjemahan Indonesia `id.indonesian` dibundel offline dari Tanzil (penerjemah Kementerian Agama RI, pembaruan 4 Juni 2010, SHA-256 tercatat), divalidasi per verseKey terhadap manifest; Reader tidak lagi membutuhkan internet untuk terjemahan. Syarat Tanzil: non-komersial.
 - Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network), dipetakan melalui `globalAyahNumber`. Satu player dengan playlist per surah (`AudioQueue`): ▶ pada kartu memutar berurutan mulai ayat itu; mini-player Reader berisi sebelumnya/putar-jeda/berikutnya, mode Putar berurutan / Ulangi ayat / Ulangi rentang (pilih dari–sampai), dan tutup. Ayat aktif diambil dari indeks player sebenarnya, disorot, dan layar mengikuti. Mini-player tampil juga di atas navigasi utama (ketuk judul untuk kembali ke ayat), dan `audio_service` 0.18.19 menyediakan kontrol notifikasi/layar kunci/headset serta playback saat layar mati melalui foreground service `mediaPlayback`.
 
 - Shell Flutter native dengan navigasi Beranda, Qur’an, Progres, dan Pengaturan.
@@ -19,6 +19,8 @@
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
 ## Bukti pemeriksaan terbaru
+
+- 21 September 2026 (terjemahan offline): `flutter test` lulus 38 test termasuk `test/translation_test.dart`; `dart analyze lib test` tanpa error/warning (62 info lama); `flutter build apk --debug` sukses dan APK memuat aset terjemahan 1.159.449 byte.
 
 - 21 September 2026 (audio latar belakang): `flutter test` lulus 29 test, `dart analyze lib test` tanpa error/warning (64 info lama), `flutter build apk --debug` sukses, dan manifest hasil merge memuat `WAKE_LOCK`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `AudioService`, dan `MediaButtonReceiver`. Belum diuji di perangkat.
 
@@ -37,7 +39,7 @@
 
 ## Belum selesai / blocker yang tidak boleh diklaim selesai
 
-- Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
+- Keputusan edisi terjemahan (Tanzil 2010 vs revisi Kemenag 2019), izin bila aplikasi menjadi komersial, serta review konten manusia.
 - Lisensi (diperiksa 21 September 2026, rincian di `DATASET_ATTRIBUTION.md`): terjemahan hanya boleh non-komersial dan edisinya belum teridentifikasi; audio boleh di-streaming/unduh untuk pemakaian pribadi; tanda tashih LPMQ untuk mushaf digital perlu dikonfirmasi sebelum rilis di Indonesia.
 - Audio: belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
