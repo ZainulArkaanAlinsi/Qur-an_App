@@ -7,11 +7,13 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
 import 'package:quran_app_2025/services/app_update_service.dart';
+import 'package:quran_app_2025/services/quran_audio_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferencesService.init();
   await ReminderService.instance.initialize();
+  await QuranAudioService.instance.initSystemControls();
   final controller = AppController();
   await controller.load();
   runApp(QuranApp(controller: controller));

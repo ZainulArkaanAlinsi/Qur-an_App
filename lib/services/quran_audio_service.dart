@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 
@@ -85,6 +86,26 @@ class QuranAudioService {
   int _generation = 0;
   bool _loading = false;
 
+  /// Registers notification, lock-screen and headset controls and keeps
+  /// playback alive with the screen off. Failure leaves in-app playback
+  /// working, so it never blocks app start-up.
+  Future<void> initSystemControls() async {
+    try {
+      await AudioService.init(
+        builder: () => _SystemControls(this),
+        config: const AudioServiceConfig(
+          androidNotificationChannelId: 'quran_app.murottal',
+          androidNotificationChannelName: 'Murottal',
+          androidNotificationIcon: 'mipmap/launcher_icon',
+          androidNotificationOngoing: true,
+          androidStopForegroundOnPause: true,
+        ),
+      );
+    } catch (error) {
+      debugPrint('Kontrol murottal sistem tidak aktif: $error');
+    }
+  }
+
   static Uri urlFor(int surah, int ayah) => Uri.https(
     'cdn.islamic.network',
     '/quran/audio/128/$reciterEdition/${globalAyahNumber(surah, ayah)}.mp3',
@@ -132,12 +153,14 @@ class QuranAudioService {
     AudioRepeat.range,
   );
 
-  Future<void> togglePlayPause() async {
+  /// Toggles playback, or forces a direction when [resume] is given, as
+  /// media buttons do.
+  Future<void> togglePlayPause({bool? resume}) async {
     if (queue.value == null) return;
-    if (_player.playing) {
-      await _player.pause();
-    } else {
+    if (resume ?? !_player.playing) {
       unawaited(_player.play());
+    } else {
+      await _player.pause();
     }
   }
 
@@ -224,5 +247,83 @@ class QuranAudioService {
       await stop();
       rethrow;
     }
+  }
+}
+
+/// Mirrors [QuranAudioService] into the OS media session and routes its
+/// buttons back, so the service stays the single source of truth.
+class _SystemControls extends BaseAudioHandler {
+  _SystemControls(this._audio) {
+    final player = _audio._player;
+    player.playbackEventStream.listen(
+      (event) => playbackState.add(_state(event.currentIndex)),
+      onError: (Object _) => playbackState.add(_state(null)),
+    );
+    player.playingStream.listen(
+      (_) => playbackState.add(_state(player.currentIndex)),
+    );
+    _audio.playingVerse.addListener(_publishVerse);
+  }
+
+  final QuranAudioService _audio;
+
+  void _publishVerse() {
+    final key = _audio.playingVerse.value;
+    if (key == null) return;
+    final parts = key.split(':');
+    final surah = surahCatalog[int.parse(parts.first) - 1];
+    mediaItem.add(
+      MediaItem(
+        id: key,
+        title: '${surah.displayName} · Ayat ${parts.last}',
+        artist: QuranAudioService.reciterName,
+        album: 'Murottal Al-Qur’an',
+      ),
+    );
+  }
+
+  PlaybackState _state(int? index) {
+    final player = _audio._player;
+    final active = _audio.queue.value != null;
+    return PlaybackState(
+      controls: [
+        MediaControl.skipToPrevious,
+        if (player.playing) MediaControl.pause else MediaControl.play,
+        MediaControl.skipToNext,
+        MediaControl.stop,
+      ],
+      androidCompactActionIndices: const [0, 1, 2],
+      processingState: !active
+          ? AudioProcessingState.idle
+          : switch (player.processingState) {
+              ProcessingState.idle => AudioProcessingState.idle,
+              ProcessingState.loading => AudioProcessingState.loading,
+              ProcessingState.buffering => AudioProcessingState.buffering,
+              ProcessingState.ready => AudioProcessingState.ready,
+              ProcessingState.completed => AudioProcessingState.completed,
+            },
+      playing: active && player.playing,
+      updatePosition: player.position,
+      bufferedPosition: player.bufferedPosition,
+      queueIndex: index,
+    );
+  }
+
+  @override
+  Future<void> play() => _audio.togglePlayPause(resume: true);
+
+  @override
+  Future<void> pause() => _audio.togglePlayPause(resume: false);
+
+  @override
+  Future<void> skipToNext() => _audio.next();
+
+  @override
+  Future<void> skipToPrevious() => _audio.previous();
+
+  @override
+  Future<void> stop() async {
+    await _audio.stop();
+    playbackState.add(_state(null));
   }
 }

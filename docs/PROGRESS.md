@@ -3,7 +3,7 @@
 ## Selesai dan terhubung ke aplikasi
 
 - Terjemahan Indonesia (`id.indonesian`, api.alquran.cloud) dimuat online per surah dan disembunyikan bila jumlah ayat tidak cocok. Nama penerjemah/lisensi belum diverifikasi, jadi belum layak rilis.
-- Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network), dipetakan melalui `globalAyahNumber`. Satu player dengan playlist per surah (`AudioQueue`): ▶ pada kartu memutar berurutan mulai ayat itu; mini-player Reader berisi sebelumnya/putar-jeda/berikutnya, mode Putar berurutan / Ulangi ayat / Ulangi rentang (pilih dari–sampai), dan tutup. Ayat aktif diambil dari indeks player sebenarnya, disorot, dan layar mengikuti. Audio berhenti saat Reader ditutup karena kontrol belum ada di luar Reader.
+- Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network), dipetakan melalui `globalAyahNumber`. Satu player dengan playlist per surah (`AudioQueue`): ▶ pada kartu memutar berurutan mulai ayat itu; mini-player Reader berisi sebelumnya/putar-jeda/berikutnya, mode Putar berurutan / Ulangi ayat / Ulangi rentang (pilih dari–sampai), dan tutup. Ayat aktif diambil dari indeks player sebenarnya, disorot, dan layar mengikuti. Mini-player tampil juga di atas navigasi utama (ketuk judul untuk kembali ke ayat), dan `audio_service` 0.18.19 menyediakan kontrol notifikasi/layar kunci/headset serta playback saat layar mati melalui foreground service `mediaPlayback`.
 
 - Shell Flutter native dengan navigasi Beranda, Qur’an, Progres, dan Pengaturan.
 - Sacred Serenity diterapkan pada Beranda, daftar surah, Reader, Progres, Pengaturan, Bookmark, dan navigasi: token resmi emerald/ivory/gold, layering tonal, garis batas lembut, spacing mobile 20 px, serta light/dark mode.
@@ -19,6 +19,8 @@
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
 ## Bukti pemeriksaan terbaru
+
+- 21 September 2026 (audio latar belakang): `flutter test` lulus 29 test, `dart analyze lib test` tanpa error/warning (64 info lama), `flutter build apk --debug` sukses, dan manifest hasil merge memuat `WAKE_LOCK`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `AudioService`, dan `MediaButtonReceiver`. Belum diuji di perangkat.
 
 - 21 September 2026 (antrean audio): `flutter test` lulus 29 test termasuk `test/audio_queue_test.dart`; `flutter analyze` tanpa error/warning (64 info lama); `flutter build apk --debug` sukses. Tidak ada perangkat Android tersambung, jadi playback berurutan, rentang, dan auto-scroll belum diuji di perangkat.
 
@@ -36,7 +38,7 @@
 ## Belum selesai / blocker yang tidak boleh diklaim selesai
 
 - Terjemahan Indonesia berlisensi dan terversi, serta review konten manusia.
-- Audio: background service (`audio_service`) dengan kontrol notifikasi/layar kunci dan mini-player global, serta pemeriksaan hak unduh offline. Belum diuji di perangkat: panggilan masuk, headphone dicabut, layar mati.
+- Audio: pemeriksaan hak unduh offline. Belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
 - Sesi reading lengkap: UUID per sesi, zona IANA tersimpan, outbox dan rekonsiliasi multi-perangkat. (Snapshot target, split tengah malam, dan fake-clock test untuk perhitungan harian sudah ada.)
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
