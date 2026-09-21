@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/app_shell.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
+import 'package:quran_app_2025/services/app_update_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +15,7 @@ Future<void> main() async {
   final controller = AppController();
   await controller.load();
   runApp(QuranApp(controller: controller));
+  unawaited(AppUpdateService.checkOnLaunch());
 }
 
 class QuranApp extends StatelessWidget {
