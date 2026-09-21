@@ -8,9 +8,9 @@
 - Katalog navigasi 114 surah dengan pencarian nama/nomor dan filter tempat turunnya.
 - Tab Juz berisi 30 batas Tanzil tervalidasi; setiap pilihan membuka Reader pada surah dan ayat awal Juz.
 - Teks Arab Uthmani Tanzil offline (6.236 ayat) dengan font Amiri, manifest runtime, checksum, dan atribusi di `DATASET_ATTRIBUTION.md`.
-- Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal, lanjut baca hingga ayat terakhir yang terlihat, tombol buka nomor ayat, mode fokus, serta status offline/error yang jelas.
+- Reader RTL lazily rendered, ukuran huruf Arab tersimpan, bookmark lokal dengan koleksi Umum/Hafalan/Favorit, lanjut baca hingga ayat terakhir yang terlihat, tombol buka nomor ayat, mode fokus, serta status offline/error yang jelas.
 - Target 5/10/15/30 menit, tracker foreground lokal, snapshot target per tanggal, jeda saat tidak aktif, dan tampilan statistik/streak lokal dasar.
-- Jadwal lima waktu salat dan kalender Hijriah dari AlAdhan; kota dapat diubah pengguna. Pengingat salat dan tilawah dapat dipilih per perangkat setelah izin notifikasi diberikan.
+- Jadwal lima waktu salat dan kalender Hijriah dari AlAdhan; kota dapat diubah pengguna. Pengingat salat dipasang hingga 14 hari ke depan dan pengingat tilawah berulang harian setelah izin notifikasi diberikan.
 - Layar berita Islam memakai endpoint backend yang dapat dikonfigurasi saat build; backend tersebut ditujukan memakai GNews bahasa Indonesia agar kunci API tidak dibundel dalam APK.
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
@@ -35,6 +35,6 @@
 
 ## Tahap berikutnya
 
-1. Tambahkan jadwal salat, kalender Hijriah, dan pengingat lokal yang dapat dipilih pengguna.
-2. Tambahkan test deterministik untuk bookmark, last read, streak, dan aksesibilitas Reader.
-3. Integrasikan terjemahan/audio hanya setelah sumber, lisensi, dan resource ID telah disetujui.
+1. Tambahkan test deterministik untuk bookmark, last read, streak, dan aksesibilitas Reader.
+2. Uji pengingat pada perangkat nyata, termasuk setelah reboot dan mode hemat baterai.
+3. Siapkan backend berita HTTPS dan konfigurasi signing rilis saat kredensial tersedia.

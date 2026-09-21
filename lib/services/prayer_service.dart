@@ -50,7 +50,8 @@ class PrayerService {
     required String country,
     DateTime? date,
   }) async {
-    final day = date ?? DateTime.now();
+    final requested = date ?? DateTime.now();
+    final day = DateTime(requested.year, requested.month, requested.day);
     final formattedDate =
         '${day.day.toString().padLeft(2, '0')}-${day.month.toString().padLeft(2, '0')}-${day.year}';
     final uri = Uri.https(

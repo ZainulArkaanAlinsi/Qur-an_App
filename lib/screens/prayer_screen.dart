@@ -43,10 +43,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
       day: day,
       prayerNames: _enabled,
       quranReminderMinutes: _quranMinutes,
+      city: SharedPreferencesService.getPrayerCity(),
+      country: SharedPreferencesService.getPrayerCountry(),
     );
     if (mounted)
       setState(
-        () => _message = 'Pengingat untuk jadwal hari ini telah diperbarui.',
+        () => _message =
+            'Pengingat salat untuk 14 hari dan tilawah harian telah diperbarui.',
       );
   }
 
@@ -239,7 +242,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
             const Padding(
               padding: EdgeInsets.only(top: 20),
               child: Text(
-                'Jadwal dan pengingat diperbarui saat aplikasi dibuka. Ketepatan notifikasi bergantung pada pengaturan baterai perangkat.',
+                'Alarm salat disiapkan untuk 14 hari ke depan. Buka aplikasi kembali sebelum periode itu berakhir agar jadwal terbaru diperbarui. Ketepatan notifikasi bergantung pada pengaturan baterai perangkat.',
                 style: TextStyle(fontSize: 12),
               ),
             ),

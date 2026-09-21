@@ -393,6 +393,7 @@ class _VerseCardState extends State<_VerseCard> {
                         widget.surahNumber,
                         widget.verseNumber,
                       );
+                      if (mounted) await _chooseBookmarkCollection();
                     }
                     if (mounted) setState(() => bookmarked = !bookmarked);
                   },
@@ -407,16 +408,29 @@ class _VerseCardState extends State<_VerseCard> {
                 ValueListenableBuilder<String?>(
                   valueListenable: QuranAudioService.instance.playingVerse,
                   builder: (context, playing, _) => IconButton(
-                    onPressed: () => QuranAudioService.instance.toggle(
-                      surah: widget.surahNumber,
-                      ayah: widget.verseNumber,
-                      globalAyah: surahCatalog
-                          .take(widget.surahNumber - 1)
-                          .fold<int>(
-                            widget.verseNumber,
-                            (sum, item) => sum + item.ayahCount,
+                    onPressed: () async {
+                      try {
+                        await QuranAudioService.instance.toggle(
+                          surah: widget.surahNumber,
+                          ayah: widget.verseNumber,
+                          globalAyah: surahCatalog
+                              .take(widget.surahNumber - 1)
+                              .fold<int>(
+                                widget.verseNumber,
+                                (sum, item) => sum + item.ayahCount,
+                              ),
+                        );
+                      } catch (_) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Murottal belum dapat diputar. Periksa koneksi internet.',
+                            ),
                           ),
-                    ),
+                        );
+                      }
+                    },
                     icon: Icon(
                       playing == '${widget.surahNumber}:${widget.verseNumber}'
                           ? Icons.pause_circle_filled_rounded
@@ -452,6 +466,31 @@ class _VerseCardState extends State<_VerseCard> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _chooseBookmarkCollection() async {
+    final collection = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final option in const ['Umum', 'Hafalan', 'Favorit'])
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(option),
+                onTap: () => Navigator.pop(context, option),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (collection == null) return;
+    await SharedPreferencesService.setBookmarkCollection(
+      widget.surahNumber,
+      widget.verseNumber,
+      collection,
     );
   }
 }
