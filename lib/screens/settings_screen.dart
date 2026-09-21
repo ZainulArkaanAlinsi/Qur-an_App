@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/services/cloud_sync_service.dart';
+import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -221,6 +223,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 26),
+        const _SectionTitle('Akun & sinkronisasi'),
+        const SizedBox(height: 10),
+        const _SyncCard(),
+        const SizedBox(height: 26),
         const _SectionTitle('Konten & sumber'),
         const SizedBox(height: 10),
         const _SourceCard(
@@ -318,6 +324,199 @@ class _SourceCard extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _SyncCard extends StatefulWidget {
+  const _SyncCard();
+
+  @override
+  State<_SyncCard> createState() => _SyncCardState();
+}
+
+class _SyncCardState extends State<_SyncCard> {
+  DateTime? _lastSync;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshLastSync();
+    AccountService.instance.sync?.state.addListener(_refreshLastSync);
+  }
+
+  @override
+  void dispose() {
+    AccountService.instance.sync?.state.removeListener(_refreshLastSync);
+    super.dispose();
+  }
+
+  Future<void> _refreshLastSync() async {
+    final last = await AccountService.instance.sync?.lastSuccess();
+    if (mounted) setState(() => _lastSync = last);
+  }
+
+  void _show(String? message) {
+    if (message == null || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus akun & data cloud?'),
+        content: const Text(
+          'Sesi baca dan bookmark di server akan dihapus permanen, lalu akun '
+          'sinkronisasi ditutup. Data di perangkat ini tetap tersimpan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      _show(
+        await AccountService.instance.deleteAccount() ??
+            'Akun dan data cloud telah dihapus.',
+      );
+    }
+  }
+
+  String _lastSyncLabel() {
+    final last = _lastSync;
+    if (last == null) return 'Belum pernah disinkronkan.';
+    final time =
+        '${last.hour.toString().padLeft(2, '0')}:${last.minute.toString().padLeft(2, '0')}';
+    return 'Terakhir disinkronkan ${last.day}/${last.month}/${last.year} $time.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final service = AccountService.instance;
+    final theme = Theme.of(context);
+    final sync = service.sync;
+    if (!service.available || sync == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            'Sinkronisasi cloud tidak tersedia di perangkat ini. Semua data '
+            'tetap tersimpan secara lokal.',
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
+      );
+    }
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        service.account,
+        service.busy,
+        sync.state,
+        sync.message,
+      ]),
+      builder: (context, _) {
+        final account = service.account.value;
+        final busy = service.busy.value;
+        final syncing = sync.state.value == SyncState.syncing;
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (account == null) ...[
+                  const Text(
+                    'Simpan progres baca dan bookmark',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Masuk agar data bisa dipakai di HP lain. Membaca tetap '
+                    'bisa tanpa masuk; data di perangkat ini ikut diunggah.',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 14),
+                  FilledButton.icon(
+                    onPressed: busy
+                        ? null
+                        : () async => _show(await service.signInWithGoogle()),
+                    icon: busy
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.login_rounded),
+                    label: const Text('Masuk dengan Google'),
+                  ),
+                ] else ...[
+                  Text(
+                    account.name ?? account.email ?? 'Akun Google',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (account.email != null && account.name != null)
+                    Text(
+                      account.email!,
+                      style: theme.textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    syncing
+                        ? 'Menyinkronkan data'
+                        : sync.message.value ?? _lastSyncLabel(),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: sync.state.value == SyncState.failed
+                          ? theme.colorScheme.error
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: syncing || busy ? null : service.syncNow,
+                        icon: const Icon(Icons.sync_rounded),
+                        label: const Text('Sinkronkan'),
+                      ),
+                      TextButton(
+                        onPressed: busy ? null : service.signOut,
+                        child: const Text('Keluar'),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: theme.colorScheme.error,
+                      padding: EdgeInsets.zero,
+                    ),
+                    onPressed: busy || syncing ? null : _confirmDelete,
+                    child: const Text('Hapus akun & data cloud'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _SectionTitle extends StatelessWidget {

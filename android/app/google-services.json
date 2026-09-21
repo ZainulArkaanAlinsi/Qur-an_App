@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "171000332303",
+    "project_id": "quran-app-zainularkaan",
+    "storage_bucket": "quran-app-zainularkaan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171000332303:android:cd8e8ab375520b743f237a",
+        "android_client_info": {
+          "package_name": "com.zainularkaan.quran"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJieO4SFJnlUSNXWYnUVx2XU7fSbyW5Q8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

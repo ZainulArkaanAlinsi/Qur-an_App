@@ -145,10 +145,11 @@ class ReadingProgressService {
   static Future<ReadingSession> openSession(
     String date, {
     String? verseKey,
+    DateTime? startedAtUtc,
   }) async => ReadingSession(
     id: newUuid(),
     deviceId: await (await store()).deviceId(),
-    startedAtUtc: DateTime.now().toUtc(),
+    startedAtUtc: (startedAtUtc ?? DateTime.now()).toUtc(),
     endedAtUtc: null,
     activeSeconds: 0,
     timezone: await _timezone(),
@@ -169,13 +170,13 @@ class ReadingProgressService {
   /// Records [seconds] of reading on [date] as one closed session.
   static Future<void> addSeconds(String date, int seconds) => _serial(() async {
     if (seconds <= 0) return;
-    final session = await openSession(date);
-    await _save(
-      session.copyWith(
-        activeSeconds: seconds,
-        endedAtUtc: DateTime.now().toUtc(),
-      ),
+    final now = DateTime.now().toUtc();
+    // Backdate the start so the session spans its own active time.
+    final session = await openSession(
+      date,
+      startedAtUtc: now.subtract(Duration(seconds: seconds)),
     );
+    await _save(session.copyWith(activeSeconds: seconds, endedAtUtc: now));
   });
 
   static ReadingProgress read({DateTime? now}) => StreakCalculator.compute(
@@ -291,9 +292,12 @@ class ReadingSessionTracker with WidgetsBindingObserver {
         );
         session = null;
       }
+      // The first flush happens a few seconds in, so backdate the start by
+      // the seconds already measured.
       session ??= await ReadingProgressService.openSession(
         entry.key,
         verseKey: verseKey,
+        startedAtUtc: DateTime.now().subtract(Duration(seconds: entry.value)),
       );
       session = session.copyWith(
         activeSeconds: session.activeSeconds + entry.value,

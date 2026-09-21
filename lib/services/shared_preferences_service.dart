@@ -17,11 +17,15 @@ class SharedPreferencesService {
       'bookmark_collection_${surahNumber}_$verseNumber',
       'Umum',
     );
+    await _touchBookmark(surahNumber, verseNumber, deleted: false);
   }
 
   static Future<void> removeBookmark(int surahNumber, int verseNumber) async {
     await _prefs?.remove('bookmark_${surahNumber}_$verseNumber');
     await _prefs?.remove('bookmark_collection_${surahNumber}_$verseNumber');
+    // Keep a tombstone so an older copy from another device cannot
+    // resurrect the bookmark during sync.
+    await _touchBookmark(surahNumber, verseNumber, deleted: true);
   }
 
   static String getBookmarkCollection(int surahNumber, int verseNumber) =>
@@ -32,10 +36,112 @@ class SharedPreferencesService {
     int surahNumber,
     int verseNumber,
     String collection,
-  ) async => _prefs?.setString(
-    'bookmark_collection_${surahNumber}_$verseNumber',
-    collection.trim().isEmpty ? 'Umum' : collection.trim(),
+  ) async {
+    await _prefs?.setString(
+      'bookmark_collection_${surahNumber}_$verseNumber',
+      collection.trim().isEmpty ? 'Umum' : collection.trim(),
+    );
+    await _touchBookmark(surahNumber, verseNumber, deleted: false);
+  }
+
+  static Future<void> _touchBookmark(
+    int surah,
+    int ayah, {
+    required bool deleted,
+  }) async {
+    await _prefs?.setInt(
+      'bookmark_updated_${surah}_$ayah',
+      DateTime.now().millisecondsSinceEpoch,
+    );
+    await _prefs?.setBool('bookmark_deleted_${surah}_$ayah', deleted);
+    await _prefs?.setBool('bookmark_dirty_${surah}_$ayah', true);
+  }
+
+  static BookmarkRecord _bookmarkRecord(int surah, int ayah) => BookmarkRecord(
+    surah: surah,
+    ayah: ayah,
+    collection: getBookmarkCollection(surah, ayah),
+    deleted: _prefs?.getBool('bookmark_deleted_${surah}_$ayah') ?? false,
+    updatedAtMs: _prefs?.getInt('bookmark_updated_${surah}_$ayah') ?? 0,
   );
+
+  /// Bookmarks changed locally since their last successful upload.
+  static List<BookmarkRecord> dirtyBookmarks() {
+    final pattern = RegExp(r'^bookmark_dirty_(\d+)_(\d+)$');
+    final records = <BookmarkRecord>[];
+    for (final key in _prefs?.getKeys() ?? const <String>{}) {
+      final match = pattern.firstMatch(key);
+      if (match == null || _prefs?.getBool(key) != true) continue;
+      records.add(_bookmarkRecord(int.parse(match[1]!), int.parse(match[2]!)));
+    }
+    return records;
+  }
+
+  /// Clears the dirty flag unless the bookmark changed again meanwhile.
+  static Future<void> markBookmarkSynced(BookmarkRecord record) async {
+    final current = _bookmarkRecord(record.surah, record.ayah);
+    if (current.updatedAtMs == record.updatedAtMs) {
+      await _prefs?.remove('bookmark_dirty_${record.surah}_${record.ayah}');
+    }
+  }
+
+  /// Applies a bookmark from the cloud when it is newer than the local copy
+  /// (last write wins); returns whether anything changed.
+  static Future<bool> applyRemoteBookmark(BookmarkRecord remote) async {
+    if (!_validBookmarkKey('bookmark_${remote.surah}_${remote.ayah}')) {
+      return false;
+    }
+    final local = _bookmarkRecord(remote.surah, remote.ayah);
+    if (remote.updatedAtMs <= local.updatedAtMs) return false;
+    final base = '${remote.surah}_${remote.ayah}';
+    if (remote.deleted) {
+      await _prefs?.remove('bookmark_$base');
+      await _prefs?.remove('bookmark_collection_$base');
+    } else {
+      await _prefs?.setBool('bookmark_$base', true);
+      await _prefs?.setString('bookmark_collection_$base', remote.collection);
+    }
+    await _prefs?.setInt('bookmark_updated_$base', remote.updatedAtMs);
+    await _prefs?.setBool('bookmark_deleted_$base', remote.deleted);
+    await _prefs?.remove('bookmark_dirty_$base');
+    return true;
+  }
+
+  /// Removes bookmarks already confirmed by the cloud (not dirty), with
+  /// their metadata; used when a different account signs in so one
+  /// account's bookmarks never leak into another.
+  static Future<void> clearSyncedBookmarks() async {
+    final pattern = RegExp(r'^bookmark_updated_(\d+)_(\d+)$');
+    for (final key in (_prefs?.getKeys() ?? const <String>{}).toList()) {
+      final match = pattern.firstMatch(key);
+      if (match == null) continue;
+      final base = '${match[1]}_${match[2]}';
+      if (_prefs?.getBool('bookmark_dirty_$base') == true) continue;
+      for (final prefix in const [
+        'bookmark_',
+        'bookmark_collection_',
+        'bookmark_updated_',
+        'bookmark_deleted_',
+      ]) {
+        await _prefs?.remove('$prefix$base');
+      }
+    }
+  }
+
+  /// Marks bookmarks saved before sync metadata existed so the first sync
+  /// uploads them; runs once.
+  static Future<void> adoptLegacyBookmarks() async {
+    if (_prefs?.getBool('bookmark_sync_adopted_v1') == true) return;
+    for (final key in getBookmarks()) {
+      final parts = key.split('_');
+      final surah = int.parse(parts[1]);
+      final ayah = int.parse(parts[2]);
+      if (_prefs?.containsKey('bookmark_updated_${surah}_$ayah') != true) {
+        await _touchBookmark(surah, ayah, deleted: false);
+      }
+    }
+    await _prefs?.setBool('bookmark_sync_adopted_v1', true);
+  }
 
   static List<String> getBookmarks() =>
       (_prefs?.getKeys() ?? <String>{})
@@ -198,4 +304,27 @@ class SharedPreferencesService {
       values.map((value) => '$value').toList()..sort(),
     );
   }
+}
+
+/// Sync view of one bookmark, including deletions (tombstones).
+@immutable
+class BookmarkRecord {
+  const BookmarkRecord({
+    required this.surah,
+    required this.ayah,
+    required this.collection,
+    required this.deleted,
+    required this.updatedAtMs,
+  });
+
+  final int surah;
+  final int ayah;
+  final String collection;
+  final bool deleted;
+
+  /// Client clock time of the last change, in milliseconds since epoch.
+  final int updatedAtMs;
+
+  /// Stable document ID, e.g. `2_255`.
+  String get id => '${surah}_$ayah';
 }

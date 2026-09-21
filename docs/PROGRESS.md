@@ -2,6 +2,8 @@
 
 ## Selesai dan terhubung ke aplikasi
 
+- Sinkronisasi cloud opsional (rincian di `docs/CLOUD_SYNC.md`): Firebase project `quran-app-zainularkaan` (Spark), Firestore Jakarta, Google Sign-In. Outbox sesi idempoten, tarik berbasis cursor `syncedAt`, penggabungan waktu tumpang-tindih antar perangkat, bookmark last-write-wins dengan tombstone, klaim data tamu, pemisahan data saat ganti akun, keluar, dan hapus akun beserta data cloud. Tidak ada statistik di server. Security rules ter-deploy setelah 29 test emulator lulus. applicationId kini `com.zainularkaan.quran`.
+
 - Terjemahan Indonesia `id.indonesian` dibundel offline dari Tanzil (penerjemah Kementerian Agama RI, pembaruan 4 Juni 2010, SHA-256 tercatat), divalidasi per verseKey terhadap manifest; Reader tidak lagi membutuhkan internet untuk terjemahan. Syarat Tanzil: non-komersial.
 - Murottal per ayat (Alafasy, `ar.alafasy`, streaming dari cdn.islamic.network), dipetakan melalui `globalAyahNumber`. Satu player dengan playlist per surah (`AudioQueue`): ▶ pada kartu memutar berurutan mulai ayat itu; mini-player Reader berisi sebelumnya/putar-jeda/berikutnya, mode Putar berurutan / Ulangi ayat / Ulangi rentang (pilih dari–sampai), dan tutup. Ayat aktif diambil dari indeks player sebenarnya, disorot, dan layar mengikuti. Mini-player tampil juga di atas navigasi utama (ketuk judul untuk kembali ke ayat), dan `audio_service` 0.18.19 menyediakan kontrol notifikasi/layar kunci/headset serta playback saat layar mati melalui foreground service `mediaPlayback`.
 
@@ -20,6 +22,8 @@
 - APK debug dan APK release berhasil dibangun pada 20 September 2026. Artefak release lokal: `build/app/outputs/flutter-apk/app-release.apk` (57.5 MB, SHA-256 `7BC53F14EC2EAB58929867A07F91687CE2F05A810095718ADD6D6080758D83B2`). Release saat ini masih memakai konfigurasi signing debug proyek, sehingga bukan artefak Play Store.
 
 ## Bukti pemeriksaan terbaru
+
+- 22 September 2026 (sync cloud): `flutter test` lulus 61 test termasuk `test/cloud_sync_test.dart` (12 skenario sync dengan remote palsu); `firestore-tests` lulus 29 test rules di emulator (isolasi akun A/B, larangan stats klien, validasi sesi/bookmark); `flutter analyze` tanpa error/warning; `flutter build apk --debug` sukses (plugin Kotlin dinaikkan ke 2.3.21 karena firebase-auth 24.2). Rules dan index ter-deploy ke produksi. Login Google belum diuji di perangkat karena provider Google belum diaktifkan di Console.
 
 - 21 September 2026 (sesi baca): `flutter test` lulus 49 test termasuk `test/reading_session_test.dart`; `flutter analyze` tanpa error/warning (27 info); `flutter build apk --debug` sukses. Tracker dengan jam nyata belum diuji di perangkat (pause/background/tengah malam).
 
@@ -47,7 +51,7 @@
 - Lisensi (diperiksa 21 September 2026, rincian di `DATASET_ATTRIBUTION.md`): terjemahan hanya boleh non-komersial dan edisinya belum teridentifikasi; audio boleh di-streaming/unduh untuk pemakaian pribadi; tanda tashih LPMQ untuk mushaf digital perlu dikonfirmasi sebelum rilis di Indonesia.
 - Audio: belum diuji di perangkat: notifikasi dan tombol layar kunci/headset, layar mati lama, panggilan masuk, headphone dicabut, Android 12+ melanjutkan dari jeda saat aplikasi di latar belakang, serta iOS (butuh macOS/Xcode).
 - Backend berita HTTPS dan kunci GNews belum dikonfigurasi/deploy. Aplikasi tetap dapat memuat berita dari GDELT, tetapi backend kurasi belum tersedia.
-- Sync: outbox ke server, penggabungan interval tumpang-tindih antar perangkat, dan stats authoritative di server. Perubahan zona waktu belum ditunda ke hari berikutnya (hari mengikuti zona perangkat saat membaca).
+- Sync: aktifkan provider Google di Firebase Console, perbarui `google-services.json`, lalu uji masuk/sinkron/keluar/hapus akun di dua perangkat nyata. Perubahan zona waktu belum ditunda ke hari berikutnya (hari mengikuti zona perangkat saat membaca).
 - Rencana khatam berbasis unit edisi tervalidasi, sync/auth/outbox/rules.
 - Uji perangkat nyata: 200% font, screen reader, airplane mode, reader panjang, dan metrik profile/release 60 FPS.
 - applicationId produksi, keystore sendiri, signing release, privacy policy, store data safety, serta persetujuan rilis.

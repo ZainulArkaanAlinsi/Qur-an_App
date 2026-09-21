@@ -64,6 +64,7 @@ class ReadingSession {
     DateTime? endedAtUtc,
     int? activeSeconds,
     String? lastVerseKey,
+    String? syncStatus,
   }) => ReadingSession(
     id: id,
     deviceId: deviceId,
@@ -74,7 +75,7 @@ class ReadingSession {
     localDate: localDate,
     mode: mode,
     lastVerseKey: lastVerseKey ?? this.lastVerseKey,
-    syncStatus: syncStatus,
+    syncStatus: syncStatus ?? this.syncStatus,
   );
 
   Map<String, dynamic> toJson() => {
@@ -143,6 +144,53 @@ class ReadingSessionStore {
 
   List<ReadingSession> all() => _read(_sessionPrefix);
 
+  /// Closed sessions not yet confirmed by the server (the outbox).
+  List<ReadingSession> pendingUpload() => [
+    for (final s in all())
+      if (s.syncStatus == 'local' && s.endedAtUtc != null) s,
+  ];
+
+  /// Stores many sessions, recomputing each affected date once.
+  Future<void> saveAll(Iterable<ReadingSession> sessions) async {
+    await migrateLegacyTotals();
+    final dates = <String>{};
+    for (final session in sessions) {
+      if (session.activeSeconds <= 0) continue;
+      await _prefs.setString(
+        '$_sessionPrefix${session.localDate}_${session.id}',
+        jsonEncode(session.toJson()),
+      );
+      dates.add(session.localDate);
+    }
+    for (final date in dates) {
+      await recompute(date);
+    }
+  }
+
+  /// Removes sessions that came from or went to a cloud account, keeping
+  /// local-only history; used when a different account signs in.
+  Future<void> removeSynced() async {
+    final dates = <String>{};
+    for (final key in _prefs.getKeys().toList()) {
+      if (!key.startsWith(_sessionPrefix)) continue;
+      final raw = _prefs.getString(key);
+      if (raw == null) continue;
+      try {
+        final session = ReadingSession.fromJson(
+          jsonDecode(raw) as Map<String, dynamic>,
+        );
+        if (session.syncStatus != 'synced') continue;
+        await _prefs.remove(key);
+        dates.add(session.localDate);
+      } on Object {
+        continue;
+      }
+    }
+    for (final date in dates) {
+      await recompute(date);
+    }
+  }
+
   List<ReadingSession> forDate(String date) => _read('$_sessionPrefix${date}_');
 
   List<ReadingSession> _read(String prefix) {
@@ -169,12 +217,50 @@ class ReadingSessionStore {
   Future<int> recompute(String date) async {
     // Never overwrite a pre-session total before it is preserved.
     await migrateLegacyTotals();
-    final total =
-        legacySeconds(date) +
-        forDate(date).fold<int>(0, (sum, s) => sum + s.activeSeconds);
+    final total = legacySeconds(date) + mergedActiveSeconds(forDate(date));
     await _prefs.setInt('$_dailyPrefix$date', total);
     return total;
   }
+}
+
+/// Sums active seconds, subtracting wall-clock overlap between sessions
+/// from *different* devices so reading on two phones at once is not doubled.
+///
+/// Sessions from one device are always summed in full: they are sequential,
+/// and their stored windows are approximate. The result never drops below
+/// the busiest single device's own total.
+int mergedActiveSeconds(List<ReadingSession> sessions) {
+  final perDevice = <String, int>{};
+  for (final s in sessions) {
+    perDevice.update(
+      s.deviceId,
+      (v) => v + s.activeSeconds,
+      ifAbsent: () => s.activeSeconds,
+    );
+  }
+  var total = perDevice.values.fold<int>(0, (a, b) => a + b);
+  if (perDevice.length < 2) return total;
+  DateTime endOf(ReadingSession s) =>
+      s.endedAtUtc ?? s.startedAtUtc.add(Duration(seconds: s.activeSeconds));
+  for (var i = 0; i < sessions.length; i++) {
+    for (var j = i + 1; j < sessions.length; j++) {
+      final a = sessions[i];
+      final b = sessions[j];
+      if (a.deviceId == b.deviceId) continue;
+      final start = a.startedAtUtc.isAfter(b.startedAtUtc)
+          ? a.startedAtUtc
+          : b.startedAtUtc;
+      final endA = endOf(a);
+      final endB = endOf(b);
+      final end = endA.isBefore(endB) ? endA : endB;
+      final overlap = end.difference(start).inSeconds;
+      if (overlap > 0) {
+        total -= min(overlap, min(a.activeSeconds, b.activeSeconds));
+      }
+    }
+  }
+  final floor = perDevice.values.reduce(max);
+  return max(total, floor);
 }
 
 final _random = Random.secure();
