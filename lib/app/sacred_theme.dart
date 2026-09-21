@@ -63,7 +63,9 @@ abstract final class SacredTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 76,
-        backgroundColor: isDark ? const Color(0xFF13221B) : const Color(0xFFFFFEFC),
+        backgroundColor: isDark
+            ? const Color(0xFF13221B)
+            : const Color(0xFFFFFEFC),
         indicatorColor: isDark
             ? const Color(0xFF275945)
             : const Color(0xFFDDEFE3),

@@ -8,7 +8,11 @@ import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onOpenQuran, required this.onOpenQibla});
+  const HomeScreen({
+    super.key,
+    required this.onOpenQuran,
+    required this.onOpenQibla,
+  });
   final VoidCallback onOpenQuran;
   final VoidCallback onOpenQibla;
 
@@ -46,15 +50,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: SacredTheme.primaryContainer,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.auto_stories_rounded,
-                      color: SacredTheme.gold),
+                  child: const Icon(
+                    Icons.auto_stories_rounded,
+                    color: SacredTheme.gold,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Assalamu’alaikum', style: theme.textTheme.labelLarge),
+                      Text(
+                        'Assalamu’alaikum',
+                        style: theme.textTheme.labelLarge,
+                      ),
                       Text(
                         'Ruang tilawahmu',
                         style: theme.textTheme.titleLarge?.copyWith(
@@ -81,7 +90,14 @@ class _HomeScreenState extends State<HomeScreen> {
               surah: surah,
               onTap: () async {
                 await Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => ReaderScreen(surah: surah)),
+                  MaterialPageRoute(
+                    builder: (_) => ReaderScreen(
+                      surah: surah,
+                      initialVerse: SharedPreferencesService.getLastReadVerse(
+                        surah.number,
+                      ),
+                    ),
+                  ),
                 );
                 if (mounted) setState(() {});
               },
@@ -137,7 +153,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: LinearProgressIndicator(
                         value: completion,
                         minHeight: 7,
-                        backgroundColor: SacredTheme.primary.withValues(alpha: .10),
+                        backgroundColor: SacredTheme.primary.withValues(
+                          alpha: .10,
+                        ),
                       ),
                     ),
                   ],
@@ -172,7 +190,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: _QuickAction(
                         icon: Icons.bookmark_outline_rounded,
                         label: 'Tersimpan',
-                        caption: '${SharedPreferencesService.getBookmarks().length} bookmark',
+                        caption:
+                            '${SharedPreferencesService.getBookmarks().length} bookmark',
                         onTap: () => openBookmarks(context),
                       ),
                     ),
@@ -201,99 +220,112 @@ class _ContinueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Ink(
+        height: 216,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          child: Ink(
-            height: 216,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [SacredTheme.primaryContainer, SacredTheme.primary],
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [SacredTheme.primaryContainer, SacredTheme.primary],
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -48,
+              right: -42,
+              child: Container(
+                width: 182,
+                height: 182,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: SacredTheme.gold.withValues(alpha: .10),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -48,
-                  right: -42,
-                  child: Container(
-                    width: 182,
-                    height: 182,
+            Positioned(
+              right: 18,
+              bottom: 4,
+              child: Text(
+                'اقرأ',
+                style: TextStyle(
+                  fontFamily: 'Amiri',
+                  fontSize: 72,
+                  height: 1,
+                  color: Colors.white.withValues(alpha: .13),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: SacredTheme.gold.withValues(alpha: .10),
+                      color: Colors.white.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: const Text(
+                      'LANJUTKAN BACA',
+                      style: TextStyle(
+                        color: SacredTheme.gold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  right: 18,
-                  bottom: 4,
-                  child: Text(
-                    'اقرأ',
-                    style: TextStyle(
-                      fontFamily: 'Amiri',
-                      fontSize: 72,
-                      height: 1,
-                      color: Colors.white.withValues(alpha: .13),
+                  const Spacer(),
+                  Text(
+                    surah.displayName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -.5,
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 4),
+                  Text(
+                    '${surah.revelation} · ${surah.ayahCount} ayat',
+                    style: const TextStyle(color: Color(0xFFD7F0E4)),
+                  ),
+                  const SizedBox(height: 14),
+                  const Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .12),
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                        child: const Text(
-                          'LANJUTKAN BACA',
-                          style: TextStyle(
-                            color: SacredTheme.gold,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: SacredTheme.gold,
+                        size: 19,
                       ),
-                      const Spacer(),
+                      SizedBox(width: 8),
                       Text(
-                        surah.displayName,
-                        style: const TextStyle(
+                        'Buka pembaca',
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 28,
                           fontWeight: FontWeight.w800,
-                          letterSpacing: -.5,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${surah.revelation} · ${surah.ayahCount} ayat',
-                        style: const TextStyle(color: Color(0xFFD7F0E4)),
-                      ),
-                      const SizedBox(height: 14),
-                      const Row(
-                        children: [
-                          Icon(Icons.arrow_forward_rounded, color: SacredTheme.gold, size: 19),
-                          SizedBox(width: 8),
-                          Text('Buka pembaca', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                        ],
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _ProgressRing extends StatelessWidget {
@@ -302,16 +334,19 @@ class _ProgressRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: 54,
-        height: 54,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            CircularProgressIndicator(value: value, strokeWidth: 6),
-            Text('${(value * 100).round()}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
-          ],
+    width: 54,
+    height: 54,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        CircularProgressIndicator(value: value, strokeWidth: 6),
+        Text(
+          '${(value * 100).round()}%',
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
         ),
-      );
+      ],
+    ),
+  );
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -321,17 +356,32 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        children: [
-          Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-          const Spacer(),
-          if (trailing != null)
-            Text(trailing!, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: SacredTheme.primary)),
-        ],
-      );
+    children: [
+      Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
+      const Spacer(),
+      if (trailing != null)
+        Text(
+          trailing!,
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(color: SacredTheme.primary),
+        ),
+    ],
+  );
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({required this.icon, required this.label, required this.caption, required this.onTap});
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.caption,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final String caption;
@@ -339,30 +389,30 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: SacredTheme.primary.withValues(alpha: .10),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(icon, color: SacredTheme.primary),
-                ),
-                const SizedBox(height: 18),
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
-                const SizedBox(height: 3),
-                Text(caption, style: Theme.of(context).textTheme.bodySmall),
-              ],
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: SacredTheme.primary.withValues(alpha: .10),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: SacredTheme.primary),
             ),
-          ),
+            const SizedBox(height: 18),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 3),
+            Text(caption, style: Theme.of(context).textTheme.bodySmall),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }

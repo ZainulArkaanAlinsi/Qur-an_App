@@ -20,7 +20,8 @@ class QiblaService {
     final deltaLongitude = toLongitude - fromLongitude;
 
     final y = math.sin(deltaLongitude) * math.cos(toLatitude);
-    final x = math.cos(fromLatitude) * math.sin(toLatitude) -
+    final x =
+        math.cos(fromLatitude) * math.sin(toLatitude) -
         math.sin(fromLatitude) *
             math.cos(toLatitude) *
             math.cos(deltaLongitude);

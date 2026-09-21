@@ -22,16 +22,18 @@ class _AppShellState extends State<AppShell> {
     final pages = [
       HomeScreen(
         onOpenQuran: () => setState(() => _index = 1),
-        onOpenQibla: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const QiblaScreen()),
-        ),
+        onOpenQibla: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const QiblaScreen())),
       ),
       const QuranLibraryScreen(),
       const ProgressScreen(),
       const SettingsScreen(),
     ];
     return Scaffold(
-      body: SafeArea(child: IndexedStack(index: _index, children: pages)),
+      body: SafeArea(
+        child: IndexedStack(index: _index, children: pages),
+      ),
       bottomNavigationBar: SafeArea(
         top: false,
         minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -71,6 +73,6 @@ class _AppShellState extends State<AppShell> {
   }
 }
 
-Future<void> openBookmarks(BuildContext context) => Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const BookmarkScreen()),
-    );
+Future<void> openBookmarks(BuildContext context) => Navigator.of(
+  context,
+).push(MaterialPageRoute(builder: (_) => const BookmarkScreen()));

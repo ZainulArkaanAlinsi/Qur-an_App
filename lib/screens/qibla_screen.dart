@@ -76,11 +76,16 @@ class _QiblaScreenState extends State<QiblaScreen> {
       if (mounted) setState(() => _message = error.message);
     } on TimeoutException {
       if (mounted) {
-        setState(() => _message = 'Lokasi belum ditemukan. Coba di area terbuka.');
+        setState(
+          () => _message = 'Lokasi belum ditemukan. Coba di area terbuka.',
+        );
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _message = 'Lokasi tidak dapat dibaca. Periksa izin lalu coba lagi.');
+        setState(
+          () => _message =
+              'Lokasi tidak dapat dibaca. Periksa izin lalu coba lagi.',
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -104,7 +109,9 @@ class _QiblaScreenState extends State<QiblaScreen> {
           children: [
             Text(
               'Arahkan ponsel ke Ka’bah',
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -112,15 +119,21 @@ class _QiblaScreenState extends State<QiblaScreen> {
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 28),
-            Center(child: _QiblaDial(heading: _heading, bearing: _bearing, aligned: aligned)),
+            Center(
+              child: _QiblaDial(
+                heading: _heading,
+                bearing: _bearing,
+                aligned: aligned,
+              ),
+            ),
             const SizedBox(height: 24),
             Center(
               child: Text(
                 _bearing == null
                     ? 'Perbarui lokasi untuk mulai'
                     : aligned
-                        ? 'Arah kiblat ditemukan'
-                        : 'Putar perangkat hingga penanda berada di atas',
+                    ? 'Arah kiblat ditemukan'
+                    : 'Putar perangkat hingga penanda berada di atas',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: aligned ? SacredTheme.primary : null,
@@ -140,13 +153,21 @@ class _QiblaScreenState extends State<QiblaScreen> {
             FilledButton.icon(
               onPressed: _loading ? null : _locate,
               icon: _loading
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Icon(Icons.my_location_rounded),
               label: Text(_loading ? 'Mencari lokasi…' : 'Gunakan lokasi saya'),
             ),
             if (_message != null) ...[
               const SizedBox(height: 14),
-              _InfoPanel(icon: Icons.info_outline_rounded, text: _message!, color: theme.colorScheme.error),
+              _InfoPanel(
+                icon: Icons.info_outline_rounded,
+                text: _message!,
+                color: theme.colorScheme.error,
+              ),
             ],
             const SizedBox(height: 18),
             _InfoPanel(
@@ -159,7 +180,8 @@ class _QiblaScreenState extends State<QiblaScreen> {
             const SizedBox(height: 12),
             const _InfoPanel(
               icon: Icons.lock_outline_rounded,
-              text: 'Arah dihitung secara lokal ke koordinat Ka’bah (21.422487, 39.826206). Perangkat dan sensor menentukan ketelitian akhir.',
+              text:
+                  'Arah dihitung secara lokal ke koordinat Ka’bah (21.422487, 39.826206). Perangkat dan sensor menentukan ketelitian akhir.',
               color: SacredTheme.primary,
             ),
           ],
@@ -170,22 +192,39 @@ class _QiblaScreenState extends State<QiblaScreen> {
 }
 
 class _QiblaDial extends StatelessWidget {
-  const _QiblaDial({required this.heading, required this.bearing, required this.aligned});
+  const _QiblaDial({
+    required this.heading,
+    required this.bearing,
+    required this.aligned,
+  });
   final double? heading;
   final double? bearing;
   final bool aligned;
 
   @override
   Widget build(BuildContext context) {
-    final relativeBearing = heading != null && bearing != null ? (bearing! - heading!) * math.pi / 180 : 0.0;
+    final relativeBearing = heading != null && bearing != null
+        ? (bearing! - heading!) * math.pi / 180
+        : 0.0;
     return Container(
       width: 276,
       height: 276,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const RadialGradient(colors: [Color(0xFF176753), SacredTheme.primaryContainer]),
-        border: Border.all(color: SacredTheme.gold.withValues(alpha: .7), width: 2),
-        boxShadow: [BoxShadow(color: SacredTheme.primary.withValues(alpha: .22), blurRadius: 30, offset: const Offset(0, 14))],
+        gradient: const RadialGradient(
+          colors: [Color(0xFF176753), SacredTheme.primaryContainer],
+        ),
+        border: Border.all(
+          color: SacredTheme.gold.withValues(alpha: .7),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: SacredTheme.primary.withValues(alpha: .22),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -194,15 +233,36 @@ class _QiblaDial extends StatelessWidget {
           const Positioned(bottom: 20, child: _Cardinal(label: 'S')),
           const Positioned(left: 20, child: _Cardinal(label: 'B')),
           const Positioned(right: 20, child: _Cardinal(label: 'T')),
-          Container(width: 184, height: 184, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: .17)))),
+          Container(
+            width: 184,
+            height: 184,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: .17)),
+            ),
+          ),
           Transform.rotate(
             angle: relativeBearing,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.navigation_rounded, size: 84, color: bearing == null ? Colors.white.withValues(alpha: .32) : SacredTheme.gold),
+                Icon(
+                  Icons.navigation_rounded,
+                  size: 84,
+                  color: bearing == null
+                      ? Colors.white.withValues(alpha: .32)
+                      : SacredTheme.gold,
+                ),
                 const SizedBox(height: 8),
-                Text('KIBLAT', style: TextStyle(color: Colors.white.withValues(alpha: .9), fontWeight: FontWeight.w800, letterSpacing: 1.5, fontSize: 11)),
+                Text(
+                  'KIBLAT',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .9),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
           ),
@@ -210,9 +270,23 @@ class _QiblaDial extends StatelessWidget {
             Positioned(
               bottom: 58,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: SacredTheme.gold, borderRadius: BorderRadius.circular(99)),
-                child: const Text('SEARAH', style: TextStyle(color: SacredTheme.primaryContainer, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: .9)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: SacredTheme.gold,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: const Text(
+                  'SEARAH',
+                  style: TextStyle(
+                    color: SacredTheme.primaryContainer,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .9,
+                  ),
+                ),
               ),
             ),
         ],
@@ -226,28 +300,44 @@ class _Cardinal extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => Text(label, style: TextStyle(color: Colors.white.withValues(alpha: .74), fontSize: 12, fontWeight: FontWeight.w800));
+  Widget build(BuildContext context) => Text(
+    label,
+    style: TextStyle(
+      color: Colors.white.withValues(alpha: .74),
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+    ),
+  );
 }
 
 class _InfoPanel extends StatelessWidget {
-  const _InfoPanel({required this.icon, required this.text, required this.color});
+  const _InfoPanel({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
   final IconData icon;
   final String text;
   final Color color;
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: color.withValues(alpha: .07), borderRadius: BorderRadius.circular(16)),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(width: 10),
-            Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall)),
-          ],
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .07),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(text, style: Theme.of(context).textTheme.bodySmall),
         ),
-      );
+      ],
+    ),
+  );
 }
 
 class _QiblaException implements Exception {

@@ -31,8 +31,10 @@ class _ProgressScreenState extends State<ProgressScreen>
   @override
   Widget build(BuildContext context) {
     final progress = ReadingProgressService.read();
-    final completion =
-        (progress.todaySeconds / progress.targetSeconds).clamp(0.0, 1.0);
+    final completion = (progress.todaySeconds / progress.targetSeconds).clamp(
+      0.0,
+      1.0,
+    );
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
@@ -40,13 +42,15 @@ class _ProgressScreenState extends State<ProgressScreen>
         Text(
           'Progres',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: -.7,
-              ),
+            fontWeight: FontWeight.w800,
+            letterSpacing: -.7,
+          ),
         ),
         const SizedBox(height: 6),
-        Text('Catatan kecil untuk menemani kebiasaan baikmu.',
-            style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          'Catatan kecil untuk menemani kebiasaan baikmu.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(22),
@@ -72,9 +76,13 @@ class _ProgressScreenState extends State<ProgressScreen>
                       color: SacredTheme.gold,
                       backgroundColor: Colors.white.withValues(alpha: .18),
                     ),
-                    Text('${(completion * 100).round()}%',
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w900)),
+                    Text(
+                      '${(completion * 100).round()}%',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -83,22 +91,28 @@ class _ProgressScreenState extends State<ProgressScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Target hari ini',
-                        style: TextStyle(color: Color(0xFFD7F0E4))),
+                    const Text(
+                      'Target hari ini',
+                      style: TextStyle(color: Color(0xFFD7F0E4)),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       '${progress.todaySeconds ~/ 60} / ${progress.targetSeconds ~/ 60} menit',
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800),
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 5),
                     Text(
                       progress.completedToday
                           ? 'Target hari ini telah tercapai.'
                           : 'Lanjutkan dari halaman Qur’an.',
-                      style: const TextStyle(color: Color(0xFFD7F0E4), fontSize: 12),
+                      style: const TextStyle(
+                        color: Color(0xFFD7F0E4),
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -107,8 +121,12 @@ class _ProgressScreenState extends State<ProgressScreen>
           ),
         ),
         const SizedBox(height: 28),
-        Text('Kebiasaan membaca',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+        Text(
+          'Kebiasaan membaca',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -144,19 +162,25 @@ class _ProgressScreenState extends State<ProgressScreen>
                     color: SacredTheme.primary.withValues(alpha: .09),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.timelapse_rounded,
-                      color: SacredTheme.primary),
+                  child: const Icon(
+                    Icons.timelapse_rounded,
+                    color: SacredTheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Total waktu membaca',
-                          style: TextStyle(fontWeight: FontWeight.w800)),
+                      const Text(
+                        'Total waktu membaca',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
                       const SizedBox(height: 3),
-                      Text('${progress.totalSeconds ~/ 60} menit tercatat di perangkat ini',
-                          style: Theme.of(context).textTheme.bodySmall),
+                      Text(
+                        '${progress.totalSeconds ~/ 60} menit tercatat di perangkat ini',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                 ),
@@ -182,7 +206,12 @@ class _ProgressScreenState extends State<ProgressScreen>
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard({required this.icon, required this.label, required this.value, required this.tint});
+  const _MetricCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.tint,
+  });
   final IconData icon;
   final String label;
   final String value;
@@ -190,18 +219,21 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: tint),
-              const SizedBox(height: 18),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
-              const SizedBox(height: 3),
-              Text(label, style: Theme.of(context).textTheme.bodySmall),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: tint),
+          const SizedBox(height: 18),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
           ),
-        ),
-      );
+          const SizedBox(height: 3),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    ),
+  );
 }

@@ -8,6 +8,7 @@ class QuranTextRepository {
   static final instance = QuranTextRepository._();
   static const _asset = 'assets/quran/raw/tanzil_uthmani_v1.0.2.txt';
   List<List<String>>? _surahs;
+  Future<List<List<String>>>? _loading;
 
   Future<List<String>> versesForSurah(int surahNumber) async {
     final surahs = await _load();
@@ -19,6 +20,15 @@ class QuranTextRepository {
 
   Future<List<List<String>>> _load() async {
     if (_surahs != null) return _surahs!;
+    try {
+      return await (_loading ??= _loadValidated());
+    } catch (_) {
+      _loading = null;
+      rethrow;
+    }
+  }
+
+  Future<List<List<String>>> _loadValidated() async {
     final raw = await rootBundle.loadString(_asset);
     final verses = await compute(_parseTanzilVerses, raw);
     const expectedVerseCount = 6236;
@@ -47,6 +57,5 @@ class QuranTextRepository {
 
 List<String> _parseTanzilVerses(String raw) => raw
     .split(RegExp(r'\r?\n'))
-    .map((line) => line.trim())
     .where((line) => line.isNotEmpty && !line.startsWith('#'))
     .toList(growable: false);

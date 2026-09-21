@@ -21,7 +21,8 @@ class GlassSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final color = tint ??
+    final color =
+        tint ??
         (dark
             ? const Color(0xFF173126).withValues(alpha: .72)
             : Colors.white.withValues(alpha: .62));

@@ -30,14 +30,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
       children: [
-        Text('Pengaturan',
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -.7,
-            )),
+        Text(
+          'Pengaturan',
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -.7,
+          ),
+        ),
         const SizedBox(height: 6),
-        Text('Atur ruang baca agar nyaman untukmu.',
-            style: theme.textTheme.bodyMedium),
+        Text(
+          'Atur ruang baca agar nyaman untukmu.',
+          style: theme.textTheme.bodyMedium,
+        ),
         const SizedBox(height: 26),
         const _SectionTitle('Tampilan'),
         const SizedBox(height: 10),
@@ -46,8 +50,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Tema aplikasi',
-                  style: TextStyle(fontWeight: FontWeight.w800)),
+              const Text(
+                'Tema aplikasi',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 12),
               SegmentedButton<ThemeMode>(
                 segments: const [
@@ -69,7 +75,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
                 selected: {controller.themeMode},
                 showSelectedIcon: false,
-                onSelectionChanged: (value) => controller.setThemeMode(value.first),
+                onSelectionChanged: (value) =>
+                    controller.setThemeMode(value.first),
               ),
             ],
           ),
@@ -85,18 +92,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Row(
                 children: [
                   const Expanded(
-                    child: Text('Ukuran huruf Arab',
-                        style: TextStyle(fontWeight: FontWeight.w800)),
+                    child: Text(
+                      'Ukuran huruf Arab',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: SacredTheme.primary.withValues(alpha: .10),
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: Text('${_arabic.round()} px',
-                        style: const TextStyle(
-                            color: SacredTheme.primary, fontWeight: FontWeight.w800)),
+                    child: Text(
+                      '${_arabic.round()} px',
+                      style: const TextStyle(
+                        color: SacredTheme.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -110,8 +126,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SharedPreferencesService.setArabicFontSize(value);
                 },
               ),
-              Text('Gunakan mode fokus di Reader untuk pengalaman baca yang lebih hening.',
-                  style: theme.textTheme.bodySmall),
+              Text(
+                'Gunakan mode fokus di Reader untuk pengalaman baca yang lebih hening.',
+                style: theme.textTheme.bodySmall,
+              ),
               const SizedBox(height: 6),
             ],
           ),
@@ -124,11 +142,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Waktu membaca',
-                  style: TextStyle(fontWeight: FontWeight.w800)),
+              const Text(
+                'Waktu membaca',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 4),
-              Text('Target dicatat lokal sebagai estimasi aktivitas Reader.',
-                  style: theme.textTheme.bodySmall),
+              Text(
+                'Perubahan target berlaku besok. Riwayat hari sebelumnya tetap tersimpan.',
+                style: theme.textTheme.bodySmall,
+              ),
               const SizedBox(height: 14),
               Wrap(
                 spacing: 8,
@@ -140,7 +162,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         selected: _targetSeconds == seconds,
                         onSelected: (_) {
                           setState(() => _targetSeconds = seconds);
-                          SharedPreferencesService.setDailyTargetSeconds(seconds);
+                          SharedPreferencesService.setDailyTargetSeconds(
+                            seconds,
+                          );
                         },
                       ),
                     )
@@ -165,18 +189,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: SacredTheme.gold.withValues(alpha: .28),
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: const Icon(Icons.verified_outlined,
-                      color: SacredTheme.primary),
+                  child: const Icon(
+                    Icons.verified_outlined,
+                    color: SacredTheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Teks Arab offline',
-                          style: TextStyle(fontWeight: FontWeight.w800)),
+                      Text(
+                        'Teks Arab offline',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
                       SizedBox(height: 4),
-                      Text('Tanzil Uthmani v1.0.2. Atribusi dan checksum tersimpan di dokumentasi proyek.'),
+                      Text(
+                        'Tanzil Uthmani v1.0.2. Atribusi dan checksum tersimpan di dokumentasi proyek.',
+                      ),
                     ],
                   ),
                 ),
@@ -194,6 +224,10 @@ class _SectionTitle extends StatelessWidget {
   final String title;
 
   @override
-  Widget build(BuildContext context) => Text(title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800));
+  Widget build(BuildContext context) => Text(
+    title,
+    style: Theme.of(
+      context,
+    ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+  );
 }
