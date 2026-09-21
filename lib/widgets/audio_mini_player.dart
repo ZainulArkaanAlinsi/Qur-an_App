@@ -37,126 +37,151 @@ class AudioMiniPlayer extends StatelessWidget {
           AudioRepeat.range =>
             'Mengulang ayat ${queue.firstAyah}–${queue.lastAyah}',
         };
+        final playing = audio.isPlaying.value;
         return Semantics(
           container: true,
           label: 'Pemutar murottal',
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 6, 4, 6),
-            decoration: BoxDecoration(
-              color: SacredTheme.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .12),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: IconTheme.merge(
-              data: const IconThemeData(color: Colors.white),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: onOpen == null ? null : () => onOpen!(surah, ayah),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${surah.displayName} · $ayah',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: const Color(0xFFD7F0E4),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: audio.previous,
-                    icon: const Icon(Icons.skip_previous_rounded),
-                    tooltip: 'Ayat sebelumnya',
-                  ),
-                  IconButton.filled(
-                    style: IconButton.styleFrom(
-                      backgroundColor: SacredTheme.gold,
-                      foregroundColor: SacredTheme.primary,
-                    ),
-                    onPressed: audio.togglePlayPause,
-                    icon: audio.buffering.value
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                              color: SacredTheme.primary,
-                            ),
-                          )
-                        : Icon(
-                            audio.isPlaying.value
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                          ),
-                    tooltip: audio.isPlaying.value ? 'Jeda' : 'Putar',
-                  ),
-                  IconButton(
-                    onPressed: audio.next,
-                    icon: const Icon(Icons.skip_next_rounded),
-                    tooltip: 'Ayat berikutnya',
-                  ),
-                  PopupMenuButton<AudioRepeat>(
-                    tooltip: 'Pengulangan',
-                    icon: Icon(
-                      repeat == AudioRepeat.verse
-                          ? Icons.repeat_one_on_rounded
-                          : repeat == AudioRepeat.range
-                          ? Icons.repeat_on_rounded
-                          : Icons.repeat_rounded,
-                      color: repeat == AudioRepeat.off
-                          ? Colors.white
-                          : SacredTheme.gold,
-                    ),
-                    initialValue: repeat,
-                    onSelected: (mode) async {
-                      if (mode == AudioRepeat.range) {
-                        await _chooseRange(context, surah, ayah);
-                      } else {
-                        await audio.setRepeat(mode);
-                      }
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                        value: AudioRepeat.off,
-                        child: Text('Putar berurutan'),
-                      ),
-                      PopupMenuItem(
-                        value: AudioRepeat.verse,
-                        child: Text('Ulangi ayat ini'),
-                      ),
-                      PopupMenuItem(
-                        value: AudioRepeat.range,
-                        child: Text('Ulangi rentang ayat…'),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    onPressed: audio.stop,
-                    icon: const Icon(Icons.close_rounded),
-                    tooltip: 'Tutup pemutar',
+          // Compact controls keep their layout even with very large text.
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.4,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 4, 4, 6),
+              decoration: BoxDecoration(
+                color: SacredTheme.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .12),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
                   ),
                 ],
+              ),
+              child: IconTheme.merge(
+                data: const IconThemeData(color: Colors.white),
+                // Two rows so the surah name always has the full width,
+                // even on 320dp screens.
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: onOpen == null
+                                ? null
+                                : () => onOpen!(surah, ayah),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${surah.displayName} · Ayat $ayah',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  Text(
+                                    subtitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: const Color(0xFFD7F0E4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: audio.stop,
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.close_rounded),
+                          tooltip: 'Tutup pemutar',
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        PopupMenuButton<AudioRepeat>(
+                          tooltip: 'Pengulangan',
+                          enabled: !audio.buffering.value,
+                          icon: Icon(
+                            repeat == AudioRepeat.verse
+                                ? Icons.repeat_one_on_rounded
+                                : repeat == AudioRepeat.range
+                                ? Icons.repeat_on_rounded
+                                : Icons.repeat_rounded,
+                            color: repeat == AudioRepeat.off
+                                ? Colors.white
+                                : SacredTheme.gold,
+                          ),
+                          initialValue: repeat,
+                          onSelected: (mode) async {
+                            if (mode == AudioRepeat.range) {
+                              await _chooseRange(context, surah, ayah);
+                            } else {
+                              await audio.setRepeat(mode);
+                            }
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: AudioRepeat.off,
+                              child: Text('Putar berurutan'),
+                            ),
+                            PopupMenuItem(
+                              value: AudioRepeat.verse,
+                              child: Text('Ulangi ayat ini'),
+                            ),
+                            PopupMenuItem(
+                              value: AudioRepeat.range,
+                              child: Text('Ulangi rentang ayat…'),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          onPressed: audio.previous,
+                          icon: const Icon(Icons.skip_previous_rounded),
+                          tooltip: 'Ayat sebelumnya',
+                        ),
+                        IconButton.filled(
+                          style: IconButton.styleFrom(
+                            backgroundColor: SacredTheme.gold,
+                            foregroundColor: SacredTheme.primary,
+                          ),
+                          onPressed: audio.togglePlayPause,
+                          icon: audio.buffering.value
+                              ? const SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.2,
+                                    color: SacredTheme.primary,
+                                  ),
+                                )
+                              : Icon(
+                                  playing
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                ),
+                          tooltip: playing ? 'Jeda' : 'Putar',
+                        ),
+                        IconButton(
+                          onPressed: audio.next,
+                          icon: const Icon(Icons.skip_next_rounded),
+                          tooltip: 'Ayat berikutnya',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

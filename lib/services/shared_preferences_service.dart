@@ -123,8 +123,9 @@ class SharedPreferencesService {
     int seconds, {
     DateTime? now,
   }) async {
-    if (![300, 600, 900, 1800].contains(seconds))
+    if (![300, 600, 900, 1800].contains(seconds)) {
       throw ArgumentError.value(seconds);
+    }
     final today = now ?? DateTime.now();
     for (final date in {...getReadingDates(), _dateKey(today)}) {
       await ensureTargetSnapshot(date);

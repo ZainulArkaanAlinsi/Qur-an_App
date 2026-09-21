@@ -22,19 +22,22 @@ class _IslamicNewsScreenState extends State<IslamicNewsScreen> {
     body: FutureBuilder<List<IslamicNewsArticle>>(
       future: _news,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done)
+        if (snapshot.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError)
+        }
+        if (snapshot.hasError) {
           return _NewsError(
             error: snapshot.error,
             onRetry: () =>
                 setState(() => _news = IslamicNewsService.fetchLatest()),
           );
+        }
         final news = snapshot.data!;
-        if (news.isEmpty)
+        if (news.isEmpty) {
           return const Center(
             child: Text('Belum ada berita yang ditemukan hari ini.'),
           );
+        }
         return RefreshIndicator(
           onRefresh: () async =>
               setState(() => _news = IslamicNewsService.fetchLatest()),

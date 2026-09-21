@@ -174,27 +174,48 @@ class QuranAudioService {
     }
   }
 
+  // Indices are computed here rather than via hasNext/seekToNext: under
+  // LoopMode.one just_audio reports the *current* item as next/previous, so
+  // skipping would only restart the verse being repeated.
+
+  /// Moves to the next verse; wraps within a repeated range.
   Future<void> next() async {
-    if (_player.hasNext) await _player.seekToNext();
+    final q = queue.value;
+    final index = _player.currentIndex;
+    if (q == null || index == null || _loading) return;
+    if (index + 1 < q.length) {
+      await _player.seek(Duration.zero, index: index + 1);
+    } else if (repeat.value == AudioRepeat.range) {
+      await _player.seek(Duration.zero, index: 0);
+    }
   }
 
-  /// Moves back one verse, reloading from the previous verse when the
-  /// playlist started mid-surah.
+  /// Moves back one verse, wrapping within a repeated range and reloading
+  /// from the previous verse when the playlist started mid-surah.
   Future<void> previous() async {
     final q = queue.value;
-    final ayah = _currentAyah;
-    if (q == null || ayah == null) return;
-    if (_player.hasPrevious) {
-      await _player.seekToPrevious();
-    } else if (ayah > 1 && repeat.value != AudioRepeat.range) {
+    final index = _player.currentIndex;
+    if (q == null || index == null || _loading) return;
+    final ayah = q.ayahAt(index);
+    if (index > 0) {
+      await _player.seek(Duration.zero, index: index - 1);
+    } else if (repeat.value == AudioRepeat.range) {
+      await _player.seek(Duration.zero, index: q.length - 1);
+    } else if (ayah > 1) {
       await _load(AudioQueue.from(q.surah, ayah - 1), repeat.value);
     }
   }
 
+  /// Switches between continuous and single-verse repeat. Ignored while a
+  /// playlist is loading (the menu is disabled then) so the change cannot
+  /// race the load's own loop-mode setup.
   Future<void> setRepeat(AudioRepeat mode) async {
     final q = queue.value;
     final ayah = _currentAyah;
-    if (q == null || ayah == null || mode == AudioRepeat.range) return;
+    if (q == null || ayah == null || mode == AudioRepeat.range || _loading) {
+      return;
+    }
+    final generation = _generation;
     if (repeat.value == AudioRepeat.range) {
       // Leaving a range: continue from the same point to the end of surah.
       await _load(
@@ -207,6 +228,7 @@ class QuranAudioService {
     await _player.setLoopMode(
       mode == AudioRepeat.verse ? LoopMode.one : LoopMode.off,
     );
+    if (generation != _generation) return;
     repeat.value = mode;
   }
 

@@ -21,8 +21,9 @@ class JuzRepository {
               JuzBoundary(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!)),
         )
         .toList();
-    if (entries.length != 30)
+    if (entries.length != 30) {
       throw const FormatException('Metadata Juz tidak lengkap.');
+    }
     var previous = 0;
     for (var i = 0; i < entries.length; i++) {
       final entry = entries[i];

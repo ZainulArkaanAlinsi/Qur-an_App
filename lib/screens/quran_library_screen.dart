@@ -65,10 +65,10 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
                       color: SacredTheme.gold.withValues(alpha: .25),
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: const Text(
+                    child: Text(
                       'OFFLINE',
                       style: TextStyle(
-                        color: SacredTheme.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1,
@@ -164,12 +164,14 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
   Widget _buildJuzList() => FutureBuilder<List<JuzBoundary>>(
     future: _juz,
     builder: (context, snapshot) {
-      if (snapshot.hasError)
+      if (snapshot.hasError) {
         return _JuzError(
           onRetry: () => setState(() => _juz = JuzRepository.load()),
         );
-      if (!snapshot.hasData)
+      }
+      if (!snapshot.hasData) {
         return const Center(child: CircularProgressIndicator());
+      }
       final juz = snapshot.data!;
       return ListView.separated(
         physics: const BouncingScrollPhysics(),
@@ -238,8 +240,8 @@ class _SurahRow extends StatelessWidget {
               ),
               child: Text(
                 '${surah.number}',
-                style: const TextStyle(
-                  color: SacredTheme.primary,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -302,8 +304,8 @@ class _JuzRow extends StatelessWidget {
                 ),
                 child: Text(
                   '${boundary.number}',
-                  style: const TextStyle(
-                    color: SacredTheme.primary,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

@@ -60,16 +60,18 @@ class PrayerService {
       {'city': city, 'country': country, 'method': '20'},
     );
     final response = await http.get(uri).timeout(const Duration(seconds: 12));
-    if (response.statusCode != 200)
+    if (response.statusCode != 200) {
       throw Exception('Jadwal salat belum dapat dimuat.');
+    }
     final root = jsonDecode(response.body) as Map<String, dynamic>;
     final data = root['data'] as Map<String, dynamic>?;
     final timings = data?['timings'] as Map<String, dynamic>?;
     final hijri =
         (data?['date'] as Map<String, dynamic>?)?['hijri']
             as Map<String, dynamic>?;
-    if (timings == null || hijri == null)
+    if (timings == null || hijri == null) {
       throw const FormatException('Respons jadwal tidak lengkap.');
+    }
     final sourceKeys = {
       'Subuh': 'Fajr',
       'Dzuhur': 'Dhuhr',

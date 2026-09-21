@@ -48,9 +48,9 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                           color: SacredTheme.gold.withValues(alpha: .28),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.bookmark_rounded,
-                          color: SacredTheme.primary,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: 13),
@@ -87,7 +87,11 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                     verse,
                                   ),
                                   style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(color: SacredTheme.primary),
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
                                 ),
                               ],
                             ),
@@ -155,9 +159,9 @@ class _EmptyBookmarks extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: SacredTheme.primary.withValues(alpha: .10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.bookmark_add_outlined,
-                color: SacredTheme.primary,
+                color: Theme.of(context).colorScheme.primary,
                 size: 28,
               ),
             ),

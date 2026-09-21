@@ -97,8 +97,9 @@ class ReminderService {
         quranReminderMinutes ~/ 60,
         quranReminderMinutes % 60,
       );
-      if (!scheduled.isAfter(now))
+      if (!scheduled.isAfter(now)) {
         scheduled = scheduled.add(const Duration(days: 1));
+      }
       await _scheduleDaily(
         200,
         scheduled,

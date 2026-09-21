@@ -68,13 +68,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   void _savePosition() {
-    if (_ready)
+    if (_ready) {
       unawaited(
         SharedPreferencesService.setLastReadVerse(
           widget.surah.number,
           _currentVerse,
         ),
       );
+    }
   }
 
   Future<void> _jumpToVerse() async {
@@ -93,8 +94,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
           ),
           onSubmitted: (value) {
             final verse = int.tryParse(value);
-            if (verse != null && verse >= 1 && verse <= widget.surah.ayahCount)
+            if (verse != null &&
+                verse >= 1 &&
+                verse <= widget.surah.ayahCount) {
               Navigator.pop(context, verse);
+            }
           },
         ),
         actions: [
@@ -107,8 +111,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
               final verse = int.tryParse(controller.text);
               if (verse != null &&
                   verse >= 1 &&
-                  verse <= widget.surah.ayahCount)
+                  verse <= widget.surah.ayahCount) {
                 Navigator.pop(context, verse);
+              }
             },
             child: const Text('Buka'),
           ),
@@ -129,10 +134,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
         .toInt();
     _tracker = ReadingSessionTracker(
       onChanged: () {
-        if (mounted)
+        if (mounted) {
           _timerText.value = _tracker.needsConfirmation
               ? 'Masih membaca?'
               : _timerLabel();
+        }
       },
     );
     _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
@@ -206,23 +212,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
       ),
       actions: [
         if (!_focusMode)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: SacredTheme.primary.withValues(alpha: .08),
-              borderRadius: BorderRadius.circular(99),
-            ),
-            child: ValueListenableBuilder<String>(
-              valueListenable: _timerText,
-              builder: (context, value, _) => InkWell(
-                onTap: () => _tracker.setPaused(!_tracker.paused),
-                child: Text(
-                  _tracker.paused
-                      ? (value == 'Masih membaca?' ? value : 'Lanjutkan')
-                      : value,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: SacredTheme.primary,
-                    fontWeight: FontWeight.w800,
+          // Capped so the surah title keeps room at large text sizes.
+          MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(99),
+              ),
+              child: ValueListenableBuilder<String>(
+                valueListenable: _timerText,
+                builder: (context, value, _) => InkWell(
+                  onTap: () => _tracker.setPaused(!_tracker.paused),
+                  child: Text(
+                    _tracker.paused
+                        ? (value == 'Masih membaca?' ? value : 'Lanjutkan')
+                        : value,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -278,10 +290,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
             itemCount: verses.length + 1,
             separatorBuilder: (_, __) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              if (index == 0)
+              if (index == 0) {
                 return _focusMode
                     ? const SizedBox.shrink()
                     : const _SourceNotice();
+              }
               final verseIndex = index - 1;
               return _VerseCard(
                 key: ValueKey('${widget.surah.number}:${verseIndex + 1}'),
@@ -313,10 +326,14 @@ class _SourceNotice extends StatelessWidget {
       color: SacredTheme.gold.withValues(alpha: .16),
       borderRadius: BorderRadius.circular(16),
     ),
-    child: const Row(
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.offline_pin_outlined, size: 20, color: SacredTheme.primary),
+        Icon(
+          Icons.offline_pin_outlined,
+          size: 20,
+          color: Theme.of(context).colorScheme.primary,
+        ),
         SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -425,9 +442,13 @@ class _VerseCardState extends State<_VerseCard> {
           children: [
             Row(
               children: [
+                // Grows for 3-digit verse numbers and large text.
                 Container(
-                  width: 32,
-                  height: 32,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 7),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: SacredTheme.gold.withValues(alpha: .30),
@@ -435,8 +456,8 @@ class _VerseCardState extends State<_VerseCard> {
                   ),
                   child: Text(
                     '${widget.verseNumber}',
-                    style: const TextStyle(
-                      color: SacredTheme.primary,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -463,7 +484,9 @@ class _VerseCardState extends State<_VerseCard> {
                         ? Icons.bookmark_rounded
                         : Icons.bookmark_outline_rounded,
                   ),
-                  color: bookmarked ? SacredTheme.primary : null,
+                  color: bookmarked
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
                   tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
                 ),
                 _VersePlayButton(
@@ -575,7 +598,7 @@ class _VersePlayButton extends StatelessWidget {
                       ? Icons.pause_circle_filled_rounded
                       : Icons.play_circle_outline_rounded,
                 ),
-          color: current ? SacredTheme.primary : null,
+          color: current ? Theme.of(context).colorScheme.primary : null,
           tooltip: playing ? 'Jeda murottal' : 'Putar mulai ayat ini',
         );
       },
