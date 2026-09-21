@@ -20,3 +20,12 @@
 - [ ] Terjemahan terbundel adalah edisi Tanzil pembaruan 4 Juni 2010 (sebelum revisi Kemenag 2019). Putuskan apakah tetap memakai edisi ini atau beralih ke sumber resmi Kemenag yang terversi, lalu bandingkan dan minta review manusia.
 - [ ] Jangan membundel audio Alafasy di APK; unduhan offline hanya untuk pemakaian pribadi.
 - [ ] Tampilan atribusi di Pengaturan > Konten & sumber sudah sesuai rilis final.
+
+## Sinkronisasi cloud
+
+- [x] Provider Google aktif di Firebase Console dan `google-services.json` memuat web OAuth client (22 September 2026).
+- [ ] Buat keystore rilis, daftarkan SHA-1/SHA-256-nya ke aplikasi Firebase, dan jalankan ulang `flutterfire configure`; tanpa ini Google Sign-In gagal pada build rilis.
+- [ ] Batasi API key Android di Google Cloud Console ke package `com.zainularkaan.quran` dan SHA-1 yang terdaftar.
+- [ ] Perbarui kebijakan privasi dan formulir Data safety: aplikasi kini menyimpan UID, email akun Google, sesi baca (waktu, durasi, ayat terakhir, zona waktu, ID perangkat acak), dan bookmark di Firestore (Jakarta) bila pengguna masuk; ada fitur hapus akun beserta data.
+- [ ] Ganti label aplikasi di `AndroidManifest.xml` (`android:label` masih `quran_app_2025`).
+- [ ] Uji di dua perangkat: masuk, sinkron, baca bersamaan, hapus bookmark di satu perangkat, keluar, ganti akun, hapus akun.

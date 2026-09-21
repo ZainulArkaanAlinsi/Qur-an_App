@@ -7,6 +7,7 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
 import 'package:quran_app_2025/services/app_update_service.dart';
+import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 
 Future<void> main() async {
@@ -14,6 +15,8 @@ Future<void> main() async {
   await SharedPreferencesService.init();
   await ReminderService.instance.initialize();
   await QuranAudioService.instance.initSystemControls();
+  // Optional cloud sync; the app works fully offline if this fails.
+  await AccountService.instance.init();
   final controller = AppController();
   await controller.load();
   runApp(QuranApp(controller: controller));

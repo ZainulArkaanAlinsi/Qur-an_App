@@ -64,6 +64,7 @@ class ReadingSession {
     DateTime? endedAtUtc,
     int? activeSeconds,
     String? lastVerseKey,
+    String? syncStatus,
   }) => ReadingSession(
     id: id,
     deviceId: deviceId,
@@ -74,7 +75,7 @@ class ReadingSession {
     localDate: localDate,
     mode: mode,
     lastVerseKey: lastVerseKey ?? this.lastVerseKey,
-    syncStatus: syncStatus,
+    syncStatus: syncStatus ?? this.syncStatus,
   );
 
   Map<String, dynamic> toJson() => {
@@ -143,6 +144,53 @@ class ReadingSessionStore {
 
   List<ReadingSession> all() => _read(_sessionPrefix);
 
+  /// Closed sessions not yet confirmed by the server (the outbox).
+  List<ReadingSession> pendingUpload() => [
+    for (final s in all())
+      if (s.syncStatus == 'local' && s.endedAtUtc != null) s,
+  ];
+
+  /// Stores many sessions, recomputing each affected date once.
+  Future<void> saveAll(Iterable<ReadingSession> sessions) async {
+    await migrateLegacyTotals();
+    final dates = <String>{};
+    for (final session in sessions) {
+      if (session.activeSeconds <= 0) continue;
+      await _prefs.setString(
+        '$_sessionPrefix${session.localDate}_${session.id}',
+        jsonEncode(session.toJson()),
+      );
+      dates.add(session.localDate);
+    }
+    for (final date in dates) {
+      await recompute(date);
+    }
+  }
+
+  /// Removes sessions that came from or went to a cloud account, keeping
+  /// local-only history; used when a different account signs in.
+  Future<void> removeSynced() async {
+    final dates = <String>{};
+    for (final key in _prefs.getKeys().toList()) {
+      if (!key.startsWith(_sessionPrefix)) continue;
+      final raw = _prefs.getString(key);
+      if (raw == null) continue;
+      try {
+        final session = ReadingSession.fromJson(
+          jsonDecode(raw) as Map<String, dynamic>,
+        );
+        if (session.syncStatus != 'synced') continue;
+        await _prefs.remove(key);
+        dates.add(session.localDate);
+      } on Object {
+        continue;
+      }
+    }
+    for (final date in dates) {
+      await recompute(date);
+    }
+  }
+
   List<ReadingSession> forDate(String date) => _read('$_sessionPrefix${date}_');
 
   List<ReadingSession> _read(String prefix) {
@@ -169,12 +217,60 @@ class ReadingSessionStore {
   Future<int> recompute(String date) async {
     // Never overwrite a pre-session total before it is preserved.
     await migrateLegacyTotals();
-    final total =
-        legacySeconds(date) +
-        forDate(date).fold<int>(0, (sum, s) => sum + s.activeSeconds);
+    final total = legacySeconds(date) + mergedActiveSeconds(forDate(date));
     await _prefs.setInt('$_dailyPrefix$date', total);
     return total;
   }
+}
+
+/// Sums active seconds, counting time read on several devices at once only
+/// once, so reading on two or more phones simultaneously is not multiplied.
+///
+/// Duplicate time is `sum of each device's own covered time - covered time
+/// of all devices together`, which stays correct for any number of
+/// overlapping devices. Sessions from one device are always summed in full,
+/// and the result never drops below the busiest single device's total.
+int mergedActiveSeconds(List<ReadingSession> sessions) {
+  final byDevice = <String, List<ReadingSession>>{};
+  for (final s in sessions) {
+    (byDevice[s.deviceId] ??= []).add(s);
+  }
+  final active = sessions.fold<int>(0, (sum, s) => sum + s.activeSeconds);
+  if (byDevice.length < 2) return active;
+  final perDeviceCovered = byDevice.values.fold<int>(
+    0,
+    (sum, list) => sum + _coveredSeconds(list),
+  );
+  final duplicated = perDeviceCovered - _coveredSeconds(sessions);
+  final floor = byDevice.values
+      .map((list) => list.fold<int>(0, (sum, s) => sum + s.activeSeconds))
+      .reduce(max);
+  return max(active - duplicated, floor);
+}
+
+/// Length of the union of the sessions' wall-clock windows, in seconds.
+int _coveredSeconds(List<ReadingSession> sessions) {
+  final windows = [
+    for (final s in sessions)
+      (
+        s.startedAtUtc,
+        s.endedAtUtc ?? s.startedAtUtc.add(Duration(seconds: s.activeSeconds)),
+      ),
+  ]..sort((a, b) => a.$1.compareTo(b.$1));
+  var total = 0;
+  DateTime? start;
+  DateTime? end;
+  for (final (from, to) in windows) {
+    if (end == null || from.isAfter(end)) {
+      if (start != null) total += end!.difference(start).inSeconds;
+      start = from;
+      end = to;
+    } else if (to.isAfter(end)) {
+      end = to;
+    }
+  }
+  if (start != null) total += end!.difference(start).inSeconds;
+  return total;
 }
 
 final _random = Random.secure();

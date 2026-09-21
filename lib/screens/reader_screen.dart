@@ -8,6 +8,7 @@ import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
 
@@ -188,7 +189,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
     QuranAudioService.instance.playingVerse.removeListener(_followAudio);
     QuranAudioService.instance.error.removeListener(_showAudioError);
     _timerText.dispose();
-    _tracker.dispose();
+    // Upload the session just closed once the tracker has saved it.
+    unawaited(
+      _tracker.dispose().then((_) => AccountService.instance.syncNow()),
+    );
     super.dispose();
   }
 
