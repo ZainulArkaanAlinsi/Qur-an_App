@@ -4,6 +4,7 @@ import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
+import 'package:quran_app_2025/screens/quran_search_screen.dart';
 
 class QuranLibraryScreen extends StatefulWidget {
   const QuranLibraryScreen({super.key});
@@ -73,6 +74,15 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
                         letterSpacing: 1,
                       ),
                     ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const QuranSearchScreen(),
+                      ),
+                    ),
+                    icon: const Icon(Icons.manage_search_rounded),
+                    tooltip: 'Cari ayat Arab',
                   ),
                 ],
               ),
