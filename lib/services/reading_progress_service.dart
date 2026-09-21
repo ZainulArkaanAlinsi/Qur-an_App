@@ -10,13 +10,104 @@ class ReadingProgress {
     required this.currentStreak,
     required this.longestStreak,
     required this.totalSeconds,
+    this.pendingToday = false,
+    this.recentDays = const [],
   });
   final int todaySeconds;
   final int targetSeconds;
   final int currentStreak;
   final int longestStreak;
   final int totalSeconds;
+
+  /// True when yesterday qualified but today has not reached the target yet,
+  /// so [currentStreak] is still carried and will break after midnight.
+  final bool pendingToday;
+
+  /// Oldest-first qualifying flags for the last seven local dates.
+  final List<bool> recentDays;
   bool get completedToday => todaySeconds >= targetSeconds;
+  int get remainingSeconds => completedToday ? 0 : targetSeconds - todaySeconds;
+}
+
+/// Pure streak rules from the guide (section 6): one increment per qualifying
+/// day, today pending while yesterday qualified, reset after a missed day.
+class StreakCalculator {
+  static ReadingProgress compute({
+    required String today,
+    required Map<String, int> secondsByDate,
+    required int Function(String date) targetFor,
+  }) {
+    bool qualifies(String date) =>
+        (secondsByDate[date] ?? 0) >= targetFor(date);
+
+    final dates =
+        secondsByDate.keys.where((d) => d.compareTo(today) <= 0).toList()
+          ..sort();
+    var total = 0;
+    var longest = 0;
+    var run = 0;
+    DateTime? previous;
+    for (final date in dates) {
+      final day = _parse(date);
+      if (day == null) continue;
+      total += secondsByDate[date] ?? 0;
+      if (previous == null || day.difference(previous).inDays != 1) {
+        run = 0;
+      }
+      previous = day;
+      run = qualifies(date) ? run + 1 : 0;
+      if (run > longest) longest = run;
+    }
+
+    final todayDate = _parse(today)!;
+    final todayQualifies = qualifies(today);
+    var cursor = todayQualifies
+        ? todayDate
+        : todayDate.subtract(const Duration(days: 1));
+    var current = 0;
+    while (qualifies(_format(cursor))) {
+      current++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+
+    return ReadingProgress(
+      todaySeconds: secondsByDate[today] ?? 0,
+      targetSeconds: targetFor(today),
+      currentStreak: current,
+      longestStreak: longest,
+      totalSeconds: total,
+      pendingToday: !todayQualifies && current > 0,
+      recentDays: [
+        for (var offset = 6; offset >= 0; offset--)
+          qualifies(_format(todayDate.subtract(Duration(days: offset)))),
+      ],
+    );
+  }
+
+  // Calendar arithmetic runs in UTC so DST shifts never skip or repeat a date.
+  static DateTime? _parse(String date) =>
+      DateTime.tryParse('${date}T00:00:00Z');
+  static String _format(DateTime date) =>
+      ReadingProgressService.localDate(date);
+}
+
+/// Splits [activeSeconds] measured between [previous] and [now] into local
+/// dates, so a session crossing midnight credits both days separately.
+Map<String, int> splitActiveSeconds({
+  required DateTime previous,
+  required DateTime now,
+  required int activeSeconds,
+}) {
+  if (activeSeconds <= 0) return const {};
+  final date = ReadingProgressService.localDate(now);
+  final previousDate = ReadingProgressService.localDate(previous);
+  if (date == previousDate || !now.isAfter(previous)) {
+    return {date: activeSeconds};
+  }
+  final midnight = DateTime(now.year, now.month, now.day);
+  final after = now.difference(midnight).inSeconds.clamp(0, activeSeconds);
+  final before = activeSeconds - after;
+  return {if (before > 0) previousDate: before, if (after > 0) date: after};
 }
 
 class ReadingProgressService {
@@ -40,54 +131,14 @@ class ReadingProgressService {
     return write;
   }
 
-  static ReadingProgress read({DateTime? now}) {
-    final today = localDate(now);
-    final target = SharedPreferencesService.getTargetForDate(today);
-    final dates = SharedPreferencesService.getReadingDates();
-    var total = 0;
-    var longest = 0;
-    var run = 0;
-    DateTime? previous;
-    for (final date in dates) {
-      if (date.compareTo(today) > 0) continue;
-      final currentDate = DateTime.tryParse('${date}T00:00:00Z');
-      if (currentDate == null) continue;
-      if (previous == null || currentDate.difference(previous).inDays != 1)
-        run = 0;
-      previous = currentDate;
-      final seconds = SharedPreferencesService.getReadingSeconds(date);
-      total += seconds;
-      if (seconds >= SharedPreferencesService.getTargetForDate(date)) {
-        run++;
-        if (run > longest) longest = run;
-      } else {
-        run = 0;
-      }
-    }
-    final todaySeconds = SharedPreferencesService.getReadingSeconds(today);
-    final current = _currentStreak(today, target);
-    return ReadingProgress(
-      todaySeconds: todaySeconds,
-      targetSeconds: target,
-      currentStreak: current,
-      longestStreak: longest,
-      totalSeconds: total,
-    );
-  }
-
-  static int _currentStreak(String today, int target) {
-    final todayDate = DateTime.parse('${today}T00:00:00Z');
-    var cursor = SharedPreferencesService.getReadingSeconds(today) >= target
-        ? todayDate
-        : todayDate.subtract(const Duration(days: 1));
-    var streak = 0;
-    while (SharedPreferencesService.getReadingSeconds(localDate(cursor)) >=
-        SharedPreferencesService.getTargetForDate(localDate(cursor))) {
-      streak++;
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
-    return streak;
-  }
+  static ReadingProgress read({DateTime? now}) => StreakCalculator.compute(
+    today: localDate(now),
+    secondsByDate: {
+      for (final date in SharedPreferencesService.getReadingDates())
+        date: SharedPreferencesService.getReadingSeconds(date),
+    },
+    targetFor: SharedPreferencesService.getTargetForDate,
+  );
 }
 
 class ReadingSessionTracker with WidgetsBindingObserver {
@@ -144,26 +195,16 @@ class ReadingSessionTracker with WidgetsBindingObserver {
     final delta = elapsed - _accounted;
     if (delta <= 0) return;
     final now = DateTime.now();
-    final previous = _lastWallTime ?? now;
-    final date = ReadingProgressService.localDate(now);
-    final previousDate = ReadingProgressService.localDate(previous);
     // A monotonic duration prevents wall-clock changes from granting extra time.
     // When a tick crosses midnight, split only the measured active duration.
-    var remaining = delta;
-    if (date != previousDate && now.isAfter(previous)) {
-      final midnight = DateTime(now.year, now.month, now.day);
-      final afterMidnight = now.difference(midnight).inSeconds.clamp(0, delta);
-      final beforeMidnight = delta - afterMidnight;
-      if (beforeMidnight > 0) {
-        _pending.update(
-          previousDate,
-          (v) => v + beforeMidnight,
-          ifAbsent: () => beforeMidnight,
-        );
-      }
-      remaining = afterMidnight;
-    }
-    _pending.update(date, (v) => v + remaining, ifAbsent: () => remaining);
+    splitActiveSeconds(
+      previous: _lastWallTime ?? now,
+      now: now,
+      activeSeconds: delta,
+    ).forEach(
+      (date, seconds) =>
+          _pending.update(date, (v) => v + seconds, ifAbsent: () => seconds),
+    );
     _accounted = elapsed;
     _lastWallTime = now;
     if (elapsed - _lastInteraction >= 300) {
