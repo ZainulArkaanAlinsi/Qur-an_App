@@ -131,13 +131,7 @@ class CloudSyncService {
         await SharedPreferencesService.applyRemoteBookmark(record);
       }
       _ensureTarget(uid);
-      final dirty = SharedPreferencesService.dirtyBookmarks();
-      if (dirty.isNotEmpty) {
-        await remote.pushBookmarks(uid, dirty);
-        for (final record in dirty) {
-          await SharedPreferencesService.markBookmarkSynced(record);
-        }
-      }
+      await _pushBookmarks(uid);
       await _advance(prefs, bookmarksKey, bookmarks.cursorMs);
 
       _ensureTarget(uid);
@@ -168,6 +162,37 @@ class CloudSyncService {
       debugPrint('Sinkronisasi gagal: $error');
       message.value = 'Sinkronisasi gagal. Data tetap aman di perangkat.';
       state.value = SyncState.failed;
+    }
+  }
+
+  /// Uploads dirty bookmarks. The batch is atomic, so if the server rejects
+  /// one stale record (older than its copy, e.g. after clock skew and the
+  /// server copy fell outside the pull window), every bookmark would stay
+  /// stuck. On failure, re-pull all bookmarks so newer server copies replace
+  /// stale local ones (clearing their dirty flag), then retry once.
+  Future<void> _pushBookmarks(String uid) async {
+    Future<void> push() async {
+      final dirty = SharedPreferencesService.dirtyBookmarks();
+      if (dirty.isEmpty) return;
+      await remote.pushBookmarks(uid, dirty);
+      for (final record in dirty) {
+        await SharedPreferencesService.markBookmarkSynced(record);
+      }
+    }
+
+    try {
+      await push();
+    } on _SyncCancelled {
+      rethrow;
+    } on Object catch (error) {
+      debugPrint('Unggah bookmark ditolak, menyelaraskan ulang: $error');
+      _ensureTarget(uid);
+      final all = await remote.pullBookmarks(uid, 0);
+      for (final record in all.items) {
+        await SharedPreferencesService.applyRemoteBookmark(record);
+      }
+      _ensureTarget(uid);
+      await push();
     }
   }
 
@@ -215,17 +240,22 @@ class CloudSyncService {
   /// Phase 2, only after the account is gone: local data stays on the device
   /// and becomes local-only again, ready for a future account.
   Future<void> finishAccountDeletion(String uid) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('sync_sessions_cursor_$uid');
-    await prefs.remove('sync_bookmarks_cursor_$uid');
-    await prefs.remove(_ownerKey);
-    await prefs.remove(_lastSuccessKey);
-    final store = ReadingSessionStore(prefs);
-    await store.saveAll([
-      for (final s in store.all())
-        if (s.syncStatus == 'synced') s.copyWith(syncStatus: 'local'),
-    ]);
-    _paused = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('sync_sessions_cursor_$uid');
+      await prefs.remove('sync_bookmarks_cursor_$uid');
+      await prefs.remove(_ownerKey);
+      await prefs.remove(_lastSuccessKey);
+      final store = ReadingSessionStore(prefs);
+      await store.saveAll([
+        for (final s in store.all())
+          if (s.syncStatus == 'synced') s.copyWith(syncStatus: 'local'),
+      ]);
+    } finally {
+      // The account is already gone; never leave sync disabled for the next
+      // account because local cleanup failed.
+      _paused = false;
+    }
   }
 
   /// Aborted deletion (the account still exists): marks local data unsent
