@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quran_app_2025/core/bff/bff_client.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
+import 'package:quran_app_2025/features/mushaf/data/bff_mushaf_source.dart';
+import 'package:quran_app_2025/features/mushaf/data/mushaf_source.dart';
 import 'package:quran_app_2025/features/mushaf/data/qf_debug_mushaf_source.dart';
 import 'package:quran_app_2025/features/mushaf/domain/mushaf_layout.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/mushaf_page_canvas.dart';
@@ -36,7 +39,7 @@ class DebugReaderPrototypeScreen extends StatefulWidget {
     this.initialEdition = MushafEdition.standard,
   });
 
-  final QfDebugMushafSource? source;
+  final MushafSource? source;
   final int initialPage;
   final ReaderLayout initialLayout;
   final MushafEdition initialEdition;
@@ -48,8 +51,10 @@ class DebugReaderPrototypeScreen extends StatefulWidget {
 
 class _DebugReaderPrototypeScreenState
     extends State<DebugReaderPrototypeScreen> {
-  late final QfDebugMushafSource _source =
-      widget.source ?? QfDebugMushafSource();
+  // Pakai BFF bila dikonfigurasi saat build; kalau tidak, jalur debug lama.
+  late final MushafSource _source =
+      widget.source ??
+      (isBffConfigured ? BffMushafSource() : QfDebugMushafSource());
   late ReaderLayout _layout = widget.initialLayout;
   late MushafEdition _edition = widget.initialEdition;
   late int _page = widget.initialPage.clamp(1, mushafPageCount);
@@ -78,9 +83,9 @@ class _DebugReaderPrototypeScreenState
   }
 
   void _lockLandscape() => SystemChrome.setPreferredOrientations(const [
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
 
   void _restoreOrientation() => SystemChrome.setPreferredOrientations(const []);
 
@@ -109,9 +114,9 @@ class _DebugReaderPrototypeScreenState
   }
 
   void _onPageChanged(int index) => setState(() {
-        _page = _layout == ReaderLayout.spread ? index * 2 + 1 : index + 1;
-        _selected = null;
-      });
+    _page = _layout == ReaderLayout.spread ? index * 2 + 1 : index + 1;
+    _selected = null;
+  });
 
   void _onVerseTap(String key) =>
       setState(() => _selected = _selected == key ? null : key);
@@ -134,7 +139,11 @@ class _DebugReaderPrototypeScreenState
     return Scaffold(
       appBar: _chrome
           ? AppBar(
-              title: const Text('Prototipe baca (debug)'),
+              title: Text(
+                isBffConfigured
+                    ? 'Prototipe baca (BFF)'
+                    : 'Prototipe baca (debug)',
+              ),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(56),
                 child: _Controls(
@@ -161,27 +170,27 @@ class _DebugReaderPrototypeScreenState
                 onPageChanged: _onPageChanged,
                 itemBuilder: (context, index) => switch (_layout) {
                   ReaderLayout.card => _CardPage(
-                      source: _source,
-                      page: index + 1,
-                    ),
+                    source: _source,
+                    page: index + 1,
+                  ),
                   ReaderLayout.single => _MushafPageItem(
-                      source: _source,
-                      page: index + 1,
-                      edition: _edition,
-                      selectedVerse: _selected,
-                      onVerseTap: _onVerseTap,
-                      juzOf: _juzOf,
-                      zoomable: true,
-                    ),
+                    source: _source,
+                    page: index + 1,
+                    edition: _edition,
+                    selectedVerse: _selected,
+                    onVerseTap: _onVerseTap,
+                    juzOf: _juzOf,
+                    zoomable: true,
+                  ),
                   ReaderLayout.spread => _Spread(
-                      source: _source,
-                      rightPage: index * 2 + 1,
-                      edition: _edition,
-                      selectedVerse: _selected,
-                      onVerseTap: _onVerseTap,
-                      juzOf: _juzOf,
-                      onUseSinglePage: () => _setLayout(ReaderLayout.single),
-                    ),
+                    source: _source,
+                    rightPage: index * 2 + 1,
+                    edition: _edition,
+                    selectedVerse: _selected,
+                    onVerseTap: _onVerseTap,
+                    juzOf: _juzOf,
+                    onUseSinglePage: () => _setLayout(ReaderLayout.single),
+                  ),
                 },
               ),
             ),
@@ -270,7 +279,7 @@ class _MushafPageItem extends StatefulWidget {
     required this.zoomable,
   });
 
-  final QfDebugMushafSource source;
+  final MushafSource source;
   final int page;
   final MushafEdition edition;
   final String? selectedVerse;
@@ -396,7 +405,7 @@ class _Spread extends StatelessWidget {
     required this.onUseSinglePage,
   });
 
-  final QfDebugMushafSource source;
+  final MushafSource source;
 
   /// Halaman ganjil di kanan; halaman genap berikutnya di kiri.
   final int rightPage;
@@ -492,8 +501,8 @@ class _PageError extends StatelessWidget {
             Text(
               layout
                   ? 'Halaman $page tidak ditampilkan: data layout dari sumber '
-                      'tidak konsisten, dan aplikasi tidak menyusun halaman '
-                      'tebakan.\n${(error as MushafLayoutException).message}'
+                        'tidak konsisten, dan aplikasi tidak menyusun halaman '
+                        'tebakan.\n${(error as MushafLayoutException).message}'
                   : 'Gagal memuat halaman $page.\n$error',
               textAlign: TextAlign.center,
             ),
@@ -604,7 +613,7 @@ typedef _CardVerse = ({
 class _CardPage extends StatefulWidget {
   const _CardPage({required this.source, required this.page});
 
-  final QfDebugMushafSource source;
+  final MushafSource source;
   final int page;
 
   @override
@@ -751,22 +760,21 @@ class _CardHeaderState extends State<_CardHeader> {
         Text(
           widget.verseKey,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w800,
-              ),
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         const Spacer(),
         IconButton(
           tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
           icon: Icon(
-            bookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+            bookmarked
+                ? Icons.bookmark_rounded
+                : Icons.bookmark_outline_rounded,
           ),
           onPressed: () async {
             if (bookmarked) {
-              await SharedPreferencesService.removeBookmark(
-                parts[0],
-                parts[1],
-              );
+              await SharedPreferencesService.removeBookmark(parts[0], parts[1]);
             } else {
               await SharedPreferencesService.saveBookmark(parts[0], parts[1]);
             }
