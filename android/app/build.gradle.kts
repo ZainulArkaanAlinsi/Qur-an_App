@@ -77,6 +77,8 @@ kotlin {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // FileProvider untuk menyerahkan APK pembaruan ke pemasang sistem.
+    implementation("androidx.core:core-ktx:1.13.1")
 }
 
 flutter {

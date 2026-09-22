@@ -175,6 +175,14 @@ class SharedPreferencesService {
         verse <= surahCatalog[surah - 1].ayahCount;
   }
 
+  /// Unduh dan pasang pembaruan otomatis. Aktif secara bawaan karena APK
+  /// diedarkan di luar Play Store; pemasangan tetap dikonfirmasi Android.
+  static bool getAutoUpdate() => _prefs?.getBool('auto_update') ?? true;
+
+  static Future<void> setAutoUpdate(bool value) async {
+    await _prefs?.setBool('auto_update', value);
+  }
+
   static double getArabicFontSize() {
     final value = _prefs?.getDouble('arabic_font_size') ?? 28;
     return value.isFinite ? value.clamp(22, 42).toDouble() : 28;
