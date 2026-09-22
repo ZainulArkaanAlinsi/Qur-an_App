@@ -23,6 +23,8 @@
 
 ## Bukti pemeriksaan terbaru
 
+- 22 September 2026 (rilis 1.1.0): nama aplikasi Ruang Tilawah, keystore rilis di luar repo, signing rilis dari `key.properties`, SHA rilis terdaftar di Firebase, API key Android dibatasi dan diverifikasi, kebijakan privasi di Firebase Hosting, pemeriksa pembaruan GitHub Releases. `flutter test` 73 lulus; APK rilis ditandatangani kunci rilis (diverifikasi `apksigner`). Belum dipasang di perangkat nyata.
+
 - 22 September 2026 (review PR #5): 4 temuan review diperbaiki: bookmark ditarik sebelum diunggah dan rules menolak update `updatedAtMs` yang lebih tua; hapus akun meminta konfirmasi Google dulu, menjeda sync, dan memulihkan data bila gagal; sync antrean selalu memakai akun terbaru dan berhenti saat keluar; waktu baca multi-perangkat memakai gabungan interval. `flutter test` 67 lulus, rules 31 lulus, rules ter-deploy ulang.
 
 - 22 September 2026 (sync cloud): `flutter test` lulus 61 test termasuk `test/cloud_sync_test.dart` (12 skenario sync dengan remote palsu); `firestore-tests` lulus 29 test rules di emulator (isolasi akun A/B, larangan stats klien, validasi sesi/bookmark); `flutter analyze` tanpa error/warning; `flutter build apk --debug` sukses (plugin Kotlin dinaikkan ke 2.3.21 karena firebase-auth 24.2). Rules dan index ter-deploy ke produksi. Provider Google diaktifkan di Console pada 22 September 2026 dan `google-services.json` diperbarui (memuat web OAuth client); login Google belum diuji di perangkat.

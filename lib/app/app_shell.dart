@@ -8,6 +8,8 @@ import 'package:quran_app_2025/screens/quran_library_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/screens/settings_screen.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
+import 'package:quran_app_2025/services/update_check_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
 
 class AppShell extends StatefulWidget {
@@ -19,6 +21,30 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _announceUpdate());
+  }
+
+  /// APKs are installed outside Play, so tell users when a newer build is
+  /// published on GitHub Releases (checked at most once a day).
+  Future<void> _announceUpdate() async {
+    final update = await UpdateCheckService.checkDaily();
+    if (update == null || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 10),
+        content: Text('Versi ${update.version} tersedia.'),
+        action: SnackBarAction(
+          label: 'Unduh',
+          onPressed: () =>
+              launchUrl(update.url, mode: LaunchMode.externalApplication),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

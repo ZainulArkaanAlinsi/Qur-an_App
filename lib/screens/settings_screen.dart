@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
+import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -252,7 +254,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Mishary Rashid Alafasy, per ayat 128 kbps, di-streaming dari CDN Islamic Network (Al Quran Cloud). Hak cipta rekaman milik qari.',
           url: 'https://alquran.cloud/terms-and-conditions',
         ),
+        const SizedBox(height: 26),
+        const _SectionTitle('Tentang aplikasi'),
+        const SizedBox(height: 10),
+        const _AboutCard(),
       ],
+    );
+  }
+}
+
+class _AboutCard extends StatefulWidget {
+  const _AboutCard();
+
+  @override
+  State<_AboutCard> createState() => _AboutCardState();
+}
+
+class _AboutCardState extends State<_AboutCard> {
+  bool _checking = false;
+  String? _status;
+  AvailableUpdate? _update;
+
+  Future<void> _check() async {
+    setState(() {
+      _checking = true;
+      _status = null;
+    });
+    final update = await UpdateCheckService.check();
+    if (!mounted) return;
+    setState(() {
+      _checking = false;
+      _update = update;
+      _status = update == null
+          ? 'Anda sudah memakai versi terbaru (atau belum terhubung ke internet).'
+          : 'Versi ${update.version} tersedia.';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final update = _update;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ruang Tilawah $appVersion',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+            if (_status != null) ...[
+              const SizedBox(height: 4),
+              Text(_status!, style: theme.textTheme.bodySmall),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                if (update != null)
+                  FilledButton.icon(
+                    onPressed: () => launchUrl(
+                      update.url,
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    icon: const Icon(Icons.download_rounded),
+                    label: const Text('Unduh pembaruan'),
+                  )
+                else
+                  OutlinedButton.icon(
+                    onPressed: _checking ? null : _check,
+                    icon: _checking
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.system_update_rounded),
+                    label: const Text('Periksa pembaruan'),
+                  ),
+                TextButton(
+                  onPressed: () => launchUrl(
+                    Uri.parse(privacyPolicyUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  child: const Text('Kebijakan privasi'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
