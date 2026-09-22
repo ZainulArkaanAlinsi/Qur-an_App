@@ -422,6 +422,45 @@ void main() {
     expect(store.pendingUpload().map((s) => s.id), contains('guest-later'));
   });
 
+  group('PendingWrites', () {
+    test('menahan unggahan baru selama tulisan lama belum selesai', () async {
+      final pending = PendingWrites();
+      final network = Completer<void>();
+      final write = pending.track(network.future);
+
+      // A timed-out pass leaves the write queued; the next pass must not
+      // queue the outbox again.
+      expect(pending.hasPending, isTrue);
+      expect(pending.ensureSettled, throwsA(isA<WritesPendingException>()));
+
+      network.complete();
+      await write;
+      expect(pending.hasPending, isFalse);
+      pending.ensureSettled();
+    });
+
+    test('tulisan yang gagal juga dianggap selesai', () async {
+      final pending = PendingWrites();
+      final write = pending.track(Future<void>.error(StateError('ditolak')));
+      await expectLater(write, throwsStateError);
+      expect(pending.hasPending, isFalse);
+    });
+
+    test('batas waktu tidak membatalkan pencatatan tulisan', () async {
+      final pending = PendingWrites();
+      final network = Completer<void>();
+      final bounded = pending
+          .track(network.future)
+          .timeout(const Duration(milliseconds: 10));
+      await expectLater(bounded, throwsA(isA<TimeoutException>()));
+      // Still queued by the SDK, so still pending.
+      expect(pending.hasPending, isTrue);
+      network.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(pending.hasPending, isFalse);
+    });
+  });
+
   group('mergedActiveSeconds', () {
     test('satu perangkat selalu dijumlah penuh', () {
       expect(

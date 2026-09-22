@@ -29,6 +29,36 @@ abstract class SyncRemote {
 
 enum SyncState { idle, syncing, done, failed }
 
+/// Tracks server writes that have not settled yet.
+///
+/// A timed-out write is still queued by the SDK and sent on reconnect, so a
+/// new upload must not be queued on top of it; otherwise every offline sync
+/// pass would add another copy of the same outbox.
+class PendingWrites {
+  int _unsettled = 0;
+
+  bool get hasPending => _unsettled > 0;
+
+  /// Counts [write] until it completes or fails, and returns it unchanged.
+  Future<T> track<T>(Future<T> write) {
+    _unsettled++;
+    return write.whenComplete(() => _unsettled--);
+  }
+
+  /// Throws while an earlier write is still waiting for the network.
+  void ensureSettled() {
+    if (hasPending) throw const WritesPendingException();
+  }
+}
+
+class WritesPendingException implements Exception {
+  const WritesPendingException();
+
+  @override
+  String toString() =>
+      'Unggahan sebelumnya masih menunggu jaringan; dicoba lagi nanti.';
+}
+
 /// Two-way sync of reading sessions and bookmarks.
 ///
 /// Reading works fully offline: closed sessions wait in the local outbox

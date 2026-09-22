@@ -30,6 +30,14 @@ class FirestoreSyncRemote implements SyncRemote {
 
   static Future<T> _bounded<T>(Future<T> future) => future.timeout(_timeout);
 
+  final _pending = PendingWrites();
+
+  // A timeout stops waiting but does not cancel the write: the SDK keeps it
+  // queued. Commits are tracked so later passes do not queue the same
+  // outbox again while offline and replay it many times on reconnect.
+  Future<void> _commit(WriteBatch batch) =>
+      _bounded(_pending.track(batch.commit()));
+
   CollectionReference<Map<String, dynamic>> _col(String uid, String name) =>
       _db.collection('users').doc(uid).collection(name);
 
@@ -38,6 +46,7 @@ class FirestoreSyncRemote implements SyncRemote {
     String collection,
     Iterable<MapEntry<String, Map<String, dynamic>>> docs,
   ) async {
+    _pending.ensureSettled();
     var batch = _db.batch();
     var count = 0;
     for (final doc in docs) {
@@ -46,12 +55,12 @@ class FirestoreSyncRemote implements SyncRemote {
         'syncedAt': FieldValue.serverTimestamp(),
       });
       if (++count == _pageSize) {
-        await _bounded(batch.commit());
+        await _commit(batch);
         batch = _db.batch();
         count = 0;
       }
     }
-    if (count > 0) await _bounded(batch.commit());
+    if (count > 0) await _commit(batch);
   }
 
   Future<RemotePage<T>> _pull<T>(
@@ -170,7 +179,7 @@ class FirestoreSyncRemote implements SyncRemote {
         for (final doc in page.docs) {
           batch.delete(doc.reference);
         }
-        await _bounded(batch.commit());
+        await _commit(batch);
       }
     }
   }
