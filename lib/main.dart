@@ -31,7 +31,7 @@ class QuranApp extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: controller,
     builder: (context, _) => MaterialApp(
-      title: 'Qur’an',
+      title: 'Ruang Tilawah',
       debugShowCheckedModeBanner: false,
       theme: SacredTheme.light,
       darkTheme: SacredTheme.dark,

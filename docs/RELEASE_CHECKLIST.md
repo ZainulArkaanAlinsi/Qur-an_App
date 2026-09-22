@@ -24,8 +24,19 @@
 ## Sinkronisasi cloud
 
 - [x] Provider Google aktif di Firebase Console dan `google-services.json` memuat web OAuth client (22 September 2026).
-- [ ] Buat keystore rilis, daftarkan SHA-1/SHA-256-nya ke aplikasi Firebase, dan jalankan ulang `flutterfire configure`; tanpa ini Google Sign-In gagal pada build rilis.
-- [ ] Batasi API key Android di Google Cloud Console ke package `com.zainularkaan.quran` dan SHA-1 yang terdaftar.
-- [ ] Perbarui kebijakan privasi dan formulir Data safety: aplikasi kini menyimpan UID, email akun Google, sesi baca (waktu, durasi, ayat terakhir, zona waktu, ID perangkat acak), dan bookmark di Firestore (Jakarta) bila pengguna masuk; ada fitur hapus akun beserta data.
-- [ ] Ganti label aplikasi di `AndroidManifest.xml` (`android:label` masih `quran_app_2025`).
+- [x] Keystore rilis dibuat, SHA-1/SHA-256-nya terdaftar di Firebase, dan `google-services.json` diperbarui (22 September 2026; lihat `docs/RELEASE.md`).
+- [x] API key Android dibatasi ke `com.zainularkaan.quran` + SHA-1 debug/rilis; diverifikasi ditolak untuk klien tanpa identitas, package lain, dan sertifikat lain.
+- [x] Kebijakan privasi terbit di https://quran-app-zainularkaan.web.app/privacy dan ditautkan dari Pengaturan > Tentang aplikasi. (Formulir Data safety hanya berlaku bila kelak terbit di Play Store.)
+- [x] Nama aplikasi: Ruang Tilawah.
 - [ ] Uji di dua perangkat: masuk, sinkron, baca bersamaan, hapus bookmark di satu perangkat, keluar, ganti akun, hapus akun.
+
+## Distribusi APK langsung (dipilih 22 September 2026)
+
+Aplikasi didistribusikan gratis lewat GitHub Releases, bukan Google Play.
+Butir khusus Play Console di atas (deklarasi foreground service, Data safety,
+akun developer US$25, tes tertutup 12 penguji) tidak berlaku kecuali kelak
+beralih ke Play Store.
+
+- [ ] Backup `C:/Users/USER/keystores/ruang-tilawah-release.jks` dan `android/key.properties` ke tempat aman di luar laptop.
+- [ ] Pasang APK rilis di HP nyata: masuk Google, sinkron, murottal dengan layar mati, mode pesawat.
+- [ ] Terbitkan rilis GitHub `v1.1.0` dengan APK dan SHA-256-nya (draft disiapkan).
