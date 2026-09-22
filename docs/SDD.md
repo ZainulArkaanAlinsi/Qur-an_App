@@ -85,7 +85,49 @@ yang sama; baris boleh melintasi batas ayat.
   langsung dari api.quran.com per surah, divalidasi jumlah/kunci ayat terhadap
   manifest, ayat bermarkup rusak dicantumkan di banner.
 
-## 5. Mushaf (rencana Fase 1)
+## 5. Mushaf
+
+### Prototipe Fase 0 (sudah ada, khusus debug)
+
+Pengaturan > Debug > Prototipe tiga layout baca
+(`lib/features/mushaf/presentation/debug_reader_prototype_screen.dart`):
+Card / 1 Halaman / 2 Halaman, pilihan Mushaf Biasa (QCF V2) / Mushaf Tajwid
+(QCF V4 COLRv1), swipe RTL (`PageView(reverse: true)`), toolbar ayat melayang
+(putar, bookmark, tafsir nonaktif), ketuk area kosong untuk layar penuh.
+
+- `lib/features/mushaf/domain/mushaf_layout.dart` — `buildMushafPage`
+  menyusun baris dari kata (`page_number` + `line_number`), bukan dari ayat.
+- **`by_page` memilih ayat menurut halaman V1**, sedangkan `page_number`/
+  `line_number` kata mengikuti `mushaf=1` (V2). Contoh: 55:17–18 dikembalikan
+  oleh `by_page/532` tetapi berada di halaman V2 531. Sumber mengambil
+  halaman N-1..N+2 lalu menyaring `page_number == N`.
+- Judul surah/basmalah tidak ada di data kata. Aturan: tepat sebelum baris
+  pertama ayat 1 — judul lalu basmalah; judul saja untuk Al-Fatihah dan
+  At-Taubah; boleh tumpah ke akhir halaman sebelumnya (18 surah, mis. An-Nisa
+  76→77). Diaudit pada 604 halaman: 0 baris hilang/bentrok
+  (`dart run tool/mushaf_layout_audit.dart <folder>`).
+- Urutan kata = (surah, ayat, posisi), **bukan** `id` kata (id tidak urut di
+  beberapa halaman).
+- Cacat data provider: halaman 589 menaruh penanda akhir ayat 84:21 di baris
+  13 padahal kata 3–6 di baris 14. Halaman ditolak (`MushafLayoutException`),
+  tidak disusun tebakan. Laporkan ke provider.
+- Kanvas logis tetap 360×560, `FittedBox(contain)` + `InteractiveViewer`
+  (zoom tanpa reflow). Ukuran huruf = lebar dalam ÷ 17,6 (baris penuh
+  15,4–17,3 em diukur dari metrik font). Baris dengan lebar alami < 80% lebar
+  diletakkan di tengah — **heuristik**, karena data tidak membawa penanda
+  baris tengah; perlu dibandingkan dengan render resmi.
+- Basmalah = glyph 1:1 (tanpa nomor) dengan font halaman 1 edisi yang sama.
+  Bingkai judul adalah desain orisinal, bukan salinan ornamen cetak.
+- **Font warna V4 (COLRv1) memakai hitam bawaan** untuk huruf non-tajwid dan
+  mengabaikan warna teks, sehingga tak terbaca di tema gelap. Halaman Mushaf
+  Tajwid selalu memakai kertas terang.
+- Render diverifikasi di host (Skia). **Risiko:** Android memakai Impeller;
+  dukungan COLRv1 di Impeller harus diuji di perangkat.
+- Mode 2 halaman mengunci landscape hanya selama aktif dan memulihkan
+  orientasi saat keluar; lebar per halaman < 230 dp menawarkan mode satu
+  halaman alih-alih teks kekecilan.
+
+### Rencana Fase 1
 
 - QCF V2 (biasa) dan QCF V4 (tajwid): font per halaman, glyph per kata.
   Kanvas aspect ratio tetap, `FittedBox`/`InteractiveViewer` untuk zoom; tidak
