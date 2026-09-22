@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/core/app_version.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
@@ -258,6 +260,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const _SectionTitle('Tentang aplikasi'),
         const SizedBox(height: 10),
         const _AboutCard(),
+        // Konstanta `kDebugMode` membuat cabang ini (dan layar pratinjau yang
+        // memanggil api.quran.com langsung) terbuang dari build rilis.
+        if (kDebugMode) ...[
+          const SizedBox(height: 26),
+          const _SectionTitle('Debug'),
+          const SizedBox(height: 10),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.palette_outlined),
+              title: const Text('Pratinjau tajwid'),
+              subtitle: const Text('Data langsung dari api.quran.com'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const DebugTajweedPreviewScreen(),
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
