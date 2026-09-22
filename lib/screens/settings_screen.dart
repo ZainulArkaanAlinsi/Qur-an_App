@@ -5,6 +5,7 @@ import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
+import 'package:quran_app_2025/services/auto_update_service.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
@@ -257,6 +258,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           url: 'https://alquran.cloud/terms-and-conditions',
         ),
         const SizedBox(height: 26),
+        const _SectionTitle('Pembaruan aplikasi'),
+        const SizedBox(height: 10),
+        const _AutoUpdateCard(),
+        const SizedBox(height: 26),
         const _SectionTitle('Tentang aplikasi'),
         const SizedBox(height: 10),
         const _AboutCard(),
@@ -281,6 +286,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Pembaruan otomatis: unduh sendiri lalu buka pemasang. Android tetap
+/// meminta konfirmasi tiap pemasangan, jadi teksnya tidak menjanjikan
+/// "tanpa dialog".
+class _AutoUpdateCard extends StatefulWidget {
+  const _AutoUpdateCard();
+
+  @override
+  State<_AutoUpdateCard> createState() => _AutoUpdateCardState();
+}
+
+class _AutoUpdateCardState extends State<_AutoUpdateCard> {
+  late bool _enabled = SharedPreferencesService.getAutoUpdate();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          SwitchListTile(
+            value: _enabled,
+            title: const Text('Unduh pembaruan otomatis'),
+            subtitle: const Text(
+              'Versi baru diunduh sendiri saat aplikasi dibuka, lalu pemasang '
+              'Android terbuka. Konfirmasi pemasangan tetap dari Anda.',
+            ),
+            onChanged: (value) async {
+              setState(() => _enabled = value);
+              await SharedPreferencesService.setAutoUpdate(value);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.verified_user_outlined),
+            title: const Text('Izin pasang aplikasi'),
+            subtitle: const Text(
+              'Diperlukan sekali agar pembaruan bisa dipasang langsung dari '
+              'aplikasi.',
+            ),
+            trailing: const Icon(Icons.open_in_new_rounded),
+            onTap: () => const ApkInstaller().openPermissionSettings(),
+          ),
+        ],
+      ),
     );
   }
 }

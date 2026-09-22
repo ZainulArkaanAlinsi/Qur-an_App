@@ -8,9 +8,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// A published release that is newer than the installed app.
 @immutable
 class AvailableUpdate {
-  const AvailableUpdate({required this.version, required this.url});
+  const AvailableUpdate({
+    required this.version,
+    required this.url,
+    this.apkUrl,
+    this.apkSize,
+  });
+
   final String version;
+
+  /// Halaman rilis, untuk dibuka di peramban.
   final Uri url;
+
+  /// Berkas APK pada rilis tersebut, bila ada, untuk pembaruan otomatis.
+  final Uri? apkUrl;
+
+  /// Ukuran APK menurut metadata rilis; dipakai memeriksa unduhan utuh.
+  final int? apkSize;
 }
 
 /// Checks GitHub Releases for a newer APK. The app is distributed outside
@@ -43,13 +57,34 @@ class UpdateCheckService {
       if (tag == null || page == null) return null;
       final version = tag.startsWith('v') ? tag.substring(1) : tag;
       if (compareVersions(version, appVersion) <= 0) return null;
-      return AvailableUpdate(version: version, url: Uri.parse(page));
+      final apk = _apkAsset(data['assets']);
+      return AvailableUpdate(
+        version: version,
+        url: Uri.parse(page),
+        apkUrl: apk?.$1,
+        apkSize: apk?.$2,
+      );
     } on Object catch (error) {
       debugPrint('Pemeriksaan pembaruan gagal: $error');
       return null;
     } finally {
       if (client == null) c.close();
     }
+  }
+
+  /// Berkas `.apk` pertama pada rilis beserta ukurannya.
+  static (Uri, int?)? _apkAsset(Object? assets) {
+    if (assets is! List) return null;
+    for (final asset in assets) {
+      if (asset is! Map) continue;
+      final name = asset['name'];
+      final url = asset['browser_download_url'];
+      if (name is! String || url is! String) continue;
+      if (!name.toLowerCase().endsWith('.apk')) continue;
+      final size = asset['size'];
+      return (Uri.parse(url), size is int ? size : null);
+    }
+    return null;
   }
 
   /// Like [check], but at most once per day (used on app start).

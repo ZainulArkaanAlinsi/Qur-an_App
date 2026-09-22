@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
@@ -8,6 +9,8 @@ import 'package:quran_app_2025/screens/quran_library_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/screens/settings_screen.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
+import 'package:quran_app_2025/services/auto_update_service.dart';
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
@@ -28,22 +31,46 @@ class _AppShellState extends State<AppShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _announceUpdate());
   }
 
-  /// APKs are installed outside Play, so tell users when a newer build is
-  /// published on GitHub Releases (checked at most once a day).
+  /// APK diedarkan di luar Play Store. Pembaruan diperiksa dan diunduh sendiri
+  /// (maksimal sekali sehari), lalu pemasang sistem dibuka. Android tetap
+  /// meminta konfirmasi, dan izin "pasang aplikasi tak dikenal" hanya diminta
+  /// sekali lewat tombol di bawah.
   Future<void> _announceUpdate() async {
-    final update = await UpdateCheckService.checkDaily();
-    if (update == null || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 10),
-        content: Text('Versi ${update.version} tersedia.'),
-        action: SnackBarAction(
-          label: 'Unduh',
-          onPressed: () =>
-              launchUrl(update.url, mode: LaunchMode.externalApplication),
-        ),
-      ),
-    );
+    if (!mounted) return;
+    final outcome = await AutoUpdateService(
+      isSupported: !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
+    ).run(enabled: SharedPreferencesService.getAutoUpdate());
+    if (!mounted) return;
+    switch (outcome) {
+      case AutoUpdateOutcome.nothingToDo:
+      case AutoUpdateOutcome.installerOpened:
+        return;
+      case AutoUpdateOutcome.needsInstallPermission:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 10),
+            content: const Text('Pembaruan siap dipasang.'),
+            action: SnackBarAction(
+              label: 'Izinkan',
+              onPressed: () => const ApkInstaller().openPermissionSettings(),
+            ),
+          ),
+        );
+      case AutoUpdateOutcome.failed:
+        final update = await UpdateCheckService.check();
+        if (update == null || !mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 10),
+            content: Text('Versi ${update.version} tersedia.'),
+            action: SnackBarAction(
+              label: 'Unduh',
+              onPressed: () =>
+                  launchUrl(update.url, mode: LaunchMode.externalApplication),
+            ),
+          ),
+        );
+    }
   }
 
   @override

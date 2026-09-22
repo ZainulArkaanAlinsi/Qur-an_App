@@ -58,6 +58,26 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    Tag harus diawali `v` dan berupa angka bertitik agar pemeriksa pembaruan
    di aplikasi dapat membandingkannya.
 
+## Pembaruan otomatis di perangkat pengguna
+
+Aplikasi memeriksa GitHub Releases maksimal sekali sehari, mengunduh APK
+rilis terbaru di latar belakang, lalu membuka pemasang Android. Batas yang
+tidak bisa dihindari: **Android selalu menampilkan dialog konfirmasi** untuk
+APK di luar Play Store, dan pengguna harus memberi izin "pasang aplikasi tak
+dikenal" satu kali (tersedia di Pengaturan > Pembaruan aplikasi).
+
+Agar rantai ini bekerja, setiap rilis wajib:
+
+- melampirkan berkas **`.apk`** sebagai aset rilis (pemeriksa memakai aset
+  `.apk` pertama beserta `size`-nya untuk memastikan unduhan utuh);
+- ditandatangani **kunci rilis yang sama**. Android menolak pemasangan APK
+  dengan tanda tangan berbeda, sehingga rilis dari kunci lain tidak akan
+  terpasang dan pengguna harus memasang ulang secara manual;
+- memakai `versionName` yang naik, karena perbandingan versi memakai tag.
+
+Pengguna dapat mematikan pembaruan otomatis di Pengaturan > Pembaruan
+aplikasi; aplikasi lalu kembali menampilkan pemberitahuan versi baru saja.
+
 ## Firebase untuk build rilis
 
 - SHA-1/SHA-256 kunci debug dan rilis terdaftar di aplikasi Firebase

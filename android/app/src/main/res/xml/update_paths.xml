@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Folder internal aplikasi tempat APK pembaruan diunduh. Tidak ada folder
+     lain yang dibagikan ke pemasang sistem. -->
+<paths>
+    <files-path name="updates_files" path="." />
+    <cache-path name="updates_cache" path="." />
+</paths>
