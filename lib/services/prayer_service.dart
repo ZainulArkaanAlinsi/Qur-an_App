@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:timezone/timezone.dart' as tz;
 
 class PrayerDay {
   const PrayerDay({
@@ -20,13 +21,33 @@ class PrayerDay {
   final String hijriMonth;
   final Map<String, String> prayers;
 
-  String get nextLabel {
-    final now = DateTime.now();
+  String get nextLabel => nextLabelAt(DateTime.now());
+
+  /// Next prayer after [now]. When the city's zone is known, compares real
+  /// instants so a city in another zone is labelled correctly; otherwise
+  /// compares against the phone's wall clock as before.
+  String nextLabelAt(DateTime now) {
+    final zone = _location();
     for (final entry in prayers.entries) {
-      final time = _toDateTime(entry.value, now);
-      if (time.isAfter(now)) return entry.key;
+      if (zone != null) {
+        final at = prayerInstant(this, entry.key, zone);
+        if (at != null && at.isAfter(now)) return entry.key;
+      } else {
+        final time = _toDateTime(entry.value, now);
+        if (time.isAfter(now)) return entry.key;
+      }
     }
     return 'Subuh besok';
+  }
+
+  tz.Location? _location() {
+    final name = timezone;
+    if (name == null) return null;
+    try {
+      return tz.getLocation(name);
+    } on Object {
+      return null;
+    }
   }
 
   DateTime? timeFor(String label) {
@@ -103,4 +124,34 @@ class PrayerService {
       prayers: prayers,
     );
   }
+}
+
+/// The moment [prayer] happens: its wall-clock time interpreted in the
+/// city's own zone ([PrayerDay.timezone]), not the phone's. A prayer city in
+/// another zone would otherwise be reminded hours early or late. Falls back
+/// to [fallback] when the city zone is missing or unknown.
+tz.TZDateTime? prayerInstant(
+  PrayerDay day,
+  String prayer,
+  tz.Location fallback,
+) {
+  final time = day.timeFor(prayer);
+  if (time == null) return null;
+  var location = fallback;
+  final zone = day.timezone;
+  if (zone != null) {
+    try {
+      location = tz.getLocation(zone);
+    } on Object {
+      location = fallback;
+    }
+  }
+  return tz.TZDateTime(
+    location,
+    time.year,
+    time.month,
+    time.day,
+    time.hour,
+    time.minute,
+  );
 }

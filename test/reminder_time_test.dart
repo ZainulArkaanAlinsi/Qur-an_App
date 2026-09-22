@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
-import 'package:quran_app_2025/services/reminder_service.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -57,5 +56,29 @@ void main() {
 
   test('nama salat yang tidak ada menghasilkan null', () {
     expect(prayerInstant(_day(), 'Dhuha', tz.UTC), isNull);
+  });
+
+  group('label salat berikutnya', () {
+    test('memakai zona kota: Subuh Makkah belum lewat saat 07:00 WIB', () {
+      // 07:00 WIB = 00:00 UTC = 03:00 Makkah, before Subuh 04:32 Makkah.
+      final now = DateTime.utc(2026, 9, 22, 0, 0);
+      expect(_day(timezone: 'Asia/Riyadh').nextLabelAt(now), 'Subuh');
+    });
+
+    test('setelah Isya kota, label menjadi Subuh besok', () {
+      // 19:30 Makkah = 16:30 UTC.
+      final now = DateTime.utc(2026, 9, 22, 16, 30);
+      expect(_day(timezone: 'Asia/Riyadh').nextLabelAt(now), 'Subuh besok');
+    });
+
+    test('di antara dua waktu memilih yang berikutnya', () {
+      // 12:00 Makkah = 09:00 UTC, after Dzuhur 11:48.
+      final now = DateTime.utc(2026, 9, 22, 9, 0);
+      expect(_day(timezone: 'Asia/Riyadh').nextLabelAt(now), 'Ashar');
+    });
+
+    test('tanpa zona kota tetap memakai jam perangkat', () {
+      expect(_day().nextLabelAt(DateTime(2026, 9, 22, 12)), 'Ashar');
+    });
   });
 }

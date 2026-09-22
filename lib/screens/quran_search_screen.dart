@@ -62,7 +62,7 @@ class _QuranSearchScreenState extends State<QuranSearchScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         final results = <_SearchResult>[];
-        if (_query.isNotEmpty)
+        if (_query.isNotEmpty) {
           for (var s = 0; s < snapshot.data!.length; s++) {
             for (var a = 0; a < snapshot.data![s].length; a++) {
               if (snapshot.data![s][a].contains(_query)) {
@@ -70,6 +70,7 @@ class _QuranSearchScreenState extends State<QuranSearchScreen> {
               }
             }
           }
+        }
         return Column(
           children: [
             Padding(

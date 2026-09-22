@@ -159,33 +159,3 @@ class ReminderService {
     androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
   );
 }
-
-/// The moment [prayer] happens: its wall-clock time interpreted in the
-/// city's own zone ([PrayerDay.timezone]), not the phone's. A prayer city in
-/// another zone would otherwise be reminded hours early or late. Falls back
-/// to [fallback] when the city zone is missing or unknown.
-tz.TZDateTime? prayerInstant(
-  PrayerDay day,
-  String prayer,
-  tz.Location fallback,
-) {
-  final time = day.timeFor(prayer);
-  if (time == null) return null;
-  var location = fallback;
-  final zone = day.timezone;
-  if (zone != null) {
-    try {
-      location = tz.getLocation(zone);
-    } on Object {
-      location = fallback;
-    }
-  }
-  return tz.TZDateTime(
-    location,
-    time.year,
-    time.month,
-    time.day,
-    time.hour,
-    time.minute,
-  );
-}
