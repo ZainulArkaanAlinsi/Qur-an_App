@@ -23,6 +23,8 @@
 
 ## Bukti pemeriksaan terbaru
 
+- 22 September 2026 (1.1.2, review ronde 3): unggahan dan hapus akun kini menunggu antrean tulis Firestore yang tersimpan di disk (`waitForPendingWrites`, termasuk dari sesi aplikasi sebelumnya), sehingga hapus akun tidak bisa didahului unggahan tertunda dan outbox tidak diulang setelah restart; inisialisasi Firebase, Google Sign-In, audio, dan pengingat sebelum `runApp` diberi batas waktu dan tidak lagi bisa menggantung atau meng-crash startup; pengingat salat dijadwalkan di zona waktu kota (`meta.timezone` AlAdhan), bukan zona HP; pencarian ayat menampilkan error dan tombol coba lagi alih-alih spinner tanpa akhir. `flutter test` 82 lulus.
+
 - 22 September 2026 (1.1.1, cek sebelum uji perangkat): semua commit/get Firestore dibatasi 30 detik dan dibaca dari server (sebelumnya sync bisa tertahan selamanya saat offline dan hapus akun offline hanya menghapus cache); waktu edit bookmark dibuat selalu naik dan unggah bookmark yang ditolak memicu penyelarasan ulang penuh (sebelumnya jam HP yang mundur bisa mengunci sync bookmark); sync tidak lagi mati diam-diam bila pembersihan lokal setelah hapus akun gagal. Dicek aman: izin INTERNET ada di manifest rilis, aturan R8 flutter_local_notifications v19 bawaan, pengingat memakai alarm tidak tepat (tanpa izin exact alarm). `flutter test` 75 lulus.
 
 - 22 September 2026 (rilis 1.1.0): nama aplikasi Ruang Tilawah, keystore rilis di luar repo, signing rilis dari `key.properties`, SHA rilis terdaftar di Firebase, API key Android dibatasi dan diverifikasi, kebijakan privasi di Firebase Hosting, pemeriksa pembaruan GitHub Releases. `flutter test` 73 lulus; APK rilis ditandatangani kunci rilis (diverifikasi `apksigner`). Belum dipasang di perangkat nyata.

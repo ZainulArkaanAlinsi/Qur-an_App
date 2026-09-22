@@ -13,8 +13,14 @@ class ReminderService {
   Future<void> initialize() async {
     if (_initialized) return;
     tz.initializeTimeZones();
-    final zone = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(zone));
+    try {
+      final zone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(zone));
+    } on Object {
+      // An unknown zone name must not stop the app from starting; UTC keeps
+      // reminders working, only shifted until the zone is recognised.
+      tz.setLocalLocation(tz.UTC);
+    }
     await _plugin.initialize(
       const InitializationSettings(
         android: AndroidInitializationSettings('@drawable/ic_stat_quran'),
@@ -75,9 +81,8 @@ class ReminderService {
       ) {
         final prayer = PrayerService.prayerNames[prayerOffset];
         if (!prayerNames.contains(prayer)) continue;
-        final time = scheduledDay.timeFor(prayer);
-        if (time == null) continue;
-        final scheduled = tz.TZDateTime.from(time, tz.local);
+        final scheduled = prayerInstant(scheduledDay, prayer, tz.local);
+        if (scheduled == null) continue;
         if (!scheduled.isAfter(now)) continue;
         await _schedule(
           1000 + dayOffset * 10 + prayerOffset,

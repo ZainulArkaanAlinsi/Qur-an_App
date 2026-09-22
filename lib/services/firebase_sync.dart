@@ -38,6 +38,22 @@ class FirestoreSyncRemote implements SyncRemote {
   Future<void> _commit(WriteBatch batch) =>
       _bounded(_pending.track(batch.commit()));
 
+  static const _pendingCheck = Duration(seconds: 10);
+
+  /// Fails while earlier writes are still queued, including ones persisted
+  /// by the SDK from a previous app session (an in-memory counter alone
+  /// would miss those after a restart). Uploading on top of them would
+  /// replay the outbox; deleting before them lets them recreate documents
+  /// after the account is gone.
+  Future<void> _ensureNoPendingWrites() async {
+    _pending.ensureSettled();
+    try {
+      await _db.waitForPendingWrites().timeout(_pendingCheck);
+    } on TimeoutException {
+      throw const WritesPendingException();
+    }
+  }
+
   CollectionReference<Map<String, dynamic>> _col(String uid, String name) =>
       _db.collection('users').doc(uid).collection(name);
 
@@ -46,7 +62,7 @@ class FirestoreSyncRemote implements SyncRemote {
     String collection,
     Iterable<MapEntry<String, Map<String, dynamic>>> docs,
   ) async {
-    _pending.ensureSettled();
+    await _ensureNoPendingWrites();
     var batch = _db.batch();
     var count = 0;
     for (final doc in docs) {
@@ -169,6 +185,7 @@ class FirestoreSyncRemote implements SyncRemote {
 
   @override
   Future<void> deleteAll(String uid) async {
+    await _ensureNoPendingWrites();
     for (final name in const ['sessions', 'bookmarks']) {
       while (true) {
         final page = await _bounded(
@@ -209,14 +226,17 @@ class AccountService with WidgetsBindingObserver {
   static const _minInterval = Duration(minutes: 1);
   DateTime? _lastAutoSync;
 
-  /// Initialises Firebase; failure only disables sync.
+  /// Initialises Firebase; failure only disables sync. Runs before the first
+  /// frame, so each step is time-bounded: a plugin that never completes
+  /// (e.g. no Google Play services) must not keep the app on a blank screen.
   Future<void> init() async {
+    const limit = Duration(seconds: 10);
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
-      );
+      ).timeout(limit);
+      await GoogleSignIn.instance.initialize().timeout(limit);
       sync = CloudSyncService(FirestoreSyncRemote(FirebaseFirestore.instance));
-      await GoogleSignIn.instance.initialize();
       available = true;
     } on Object catch (error) {
       debugPrint('Sinkronisasi cloud tidak aktif: $error');
