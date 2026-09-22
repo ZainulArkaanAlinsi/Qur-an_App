@@ -44,10 +44,17 @@ Centang per rilis/fase. Otomatis = ada tes/skrip; Manual = butuh manusia.
 
 ## Layout mushaf
 
+- [x] Otomatis: susunan baris 604 halaman (`tool/mushaf_layout_audit.dart`,
+      butuh dump) — 603 lulus, 589 ditolak (cacat data provider)
+- [x] Otomatis: judul/basmalah halaman 1, 2, 50, 76–77, 187, 604 dan
+      penolakan 589 (`test/mushaf_layout_test.dart`)
 - [ ] Otomatis: 604 halaman tanpa overflow/missing glyph/baris terpotong
 - [ ] Golden: halaman 1, 2, pembuka surah, sajdah, 604
-- [ ] Pasangan dua halaman: ganjil kanan, genap kiri; sisi kosong netral
-- [ ] Rotasi masuk/keluar mode landscape dipulihkan
+- [x] Pasangan dua halaman: ganjil kanan, genap kiri
+      (`test/debug_reader_prototype_test.dart`); sisi kosong netral ada di
+      kode tetapi 604 genap sehingga tidak pernah terpakai
+- [x] Rotasi masuk/keluar mode landscape dipulihkan (tes widget; perangkat
+      belum)
 - [ ] Visual regression vs render resmi edisi yang sama
 - [ ] Manual: sampling tiap juz + tiap halaman pembuka surah
 

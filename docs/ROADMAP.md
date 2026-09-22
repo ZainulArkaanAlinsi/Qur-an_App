@@ -25,8 +25,12 @@ lulus fase aktif terpenuhi. Definition of Done umum ada di
 - [x] Widget tajwid kartu ayat + layar pratinjau debug.
 - [ ] Uji font Amiri terhadap encoding teks tajwid QF (alif wavy hamza,
       dotless beh, small high rounded zero) — cek di perangkat via pratinjau.
-- [ ] Spike font QCF V2/V4: render halaman 1, 2, 50, 604 dari satu edisi.
-- [ ] Prototipe tiga layout (card, 1 halaman, 2 halaman) di belakang flag debug.
+- [x] Spike font QCF V2/V4: halaman 1, 2, 50, 76, 603, 604 dirender di host;
+      audit layout 604 halaman (603 lulus, 589 ditolak karena cacat data).
+- [x] Prototipe tiga layout (card, 1 halaman, 2 halaman), khusus debug.
+- [ ] Uji prototipe di perangkat: COLRv1 di Impeller, rotasi, swipe, zoom.
+- [ ] Bandingkan heuristik baris tengah dengan render resmi (atau dapatkan
+      data layout baris resmi yang memuat penanda baris tengah).
 - [ ] BFF minimal (proxy + cache + rate limit) di lingkungan staging.
 - [ ] Reviewer tajwid memeriksa nama hukum + prototipe.
 
