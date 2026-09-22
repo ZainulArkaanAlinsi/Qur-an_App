@@ -19,6 +19,12 @@ ketentuan untuk data yang **sudah dibundel** ada di
 
 ### Quran Foundation
 
+- Akses resmi: OAuth2 client credentials (scope `content`) lewat BFF di
+  `bff/`; dokumentasi provider melarang alur ini dijalankan dari aplikasi
+  mobile. Lingkungan prelive hanya memuat surah 1–2.
+- Developer Terms: konten tidak boleh disimpan lebih dari 1 minggu kecuali
+  lewat Content Sync (sinkron ulang minimal tiap 7 hari); menjual atau
+  meredistribusi raw API data butuh lisensi komersial tertulis.
 - Riset spike 22 September 2026 memakai endpoint publik
   `api.quran.com/api/v4/quran/verses/uthmani_tajweed` **hanya untuk analisis
   format**. Aplikasi produksi tidak boleh memanggilnya langsung; gunakan

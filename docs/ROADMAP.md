@@ -27,7 +27,10 @@ lulus fase aktif terpenuhi. Definition of Done umum ada di
       dotless beh, small high rounded zero) — cek di perangkat via pratinjau.
 - [ ] Spike font QCF V2/V4: render halaman 1, 2, 50, 604 dari satu edisi.
 - [ ] Prototipe tiga layout (card, 1 halaman, 2 halaman) di belakang flag debug.
-- [ ] BFF minimal (proxy + cache + rate limit) di lingkungan staging.
+- [x] Kerangka BFF (`bff/`): proxy + token OAuth + cache + rate limit +
+      timeout, 18 tes lulus.
+- [ ] Deploy BFF ke staging dan sambungkan aplikasi ke BFF (menunggu
+      kredensial Developer Console).
 - [ ] Reviewer tajwid memeriksa nama hukum + prototipe.
 
 Kriteria lulus: tiga prototipe jalan di emulator & perangkat nyata, tanpa secret
