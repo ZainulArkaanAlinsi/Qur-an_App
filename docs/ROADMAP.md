@@ -31,7 +31,10 @@ lulus fase aktif terpenuhi. Definition of Done umum ada di
 - [ ] Uji prototipe di perangkat: COLRv1 di Impeller, rotasi, swipe, zoom.
 - [ ] Bandingkan heuristik baris tengah dengan render resmi (atau dapatkan
       data layout baris resmi yang memuat penanda baris tengah).
-- [ ] BFF minimal (proxy + cache + rate limit) di lingkungan staging.
+- [x] Kerangka BFF (`bff/`): proxy + token OAuth + cache + rate limit +
+      timeout, 18 tes lulus.
+- [ ] Deploy BFF ke staging dan sambungkan aplikasi ke BFF (menunggu
+      kredensial Developer Console).
 - [ ] Reviewer tajwid memeriksa nama hukum + prototipe.
 
 Kriteria lulus: tiga prototipe jalan di emulator & perangkat nyata, tanpa secret

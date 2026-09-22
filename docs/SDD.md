@@ -138,13 +138,31 @@ Card / 1 Halaman / 2 Halaman, pilihan Mushaf Biasa (QCF V2) / Mushaf Tajwid
 - Font mushaf tidak dapat diganti bebas; pilihan hanya *Mushaf Biasa* /
   *Mushaf Tajwid*.
 
-## 6. BFF (rencana)
+## 6. BFF (kerangka sudah ada)
 
-Service Node.js ringan atau Next.js route handler (disarankan: Firebase
-Functions/Cloud Run agar satu project dengan Firebase yang ada — perlu plan
-Blaze). Endpoint: `/v1/resources/recitations`, `/v1/verses/by_page/:n`,
-`/v1/verses/tajweed/:chapter`, `/v1/audio/...`. Wajib: rate limit, cache sesuai
-terms, timeout, retry terbatas, validasi schema, log tanpa isi catatan pribadi.
+`bff/` — Node 20 + TypeScript + Hono (lihat `bff/README.md`). Belum dipakai
+aplikasi dan belum di-deploy.
+
+- Endpoint: `/v1/health`, `/v1/chapters`, `/v1/recitations`,
+  `/v1/mushaf/v2/pages/:page`, `/v1/chapters/:chapter/tajweed`. Respons memakai
+  bentuk milik aplikasi, bukan salinan mentah payload provider.
+- Auth (diverifikasi dari dokumentasi provider, 23 September 2026): Basic auth
+  ke `https://{prelive-,}oauth2.quran.foundation/oauth2/token`,
+  `grant_type=client_credentials`, scope `content`; setiap panggilan membawa
+  `x-auth-token` + `x-client-id`; base URL `.../content/api/v4`. Token 3600
+  detik tanpa refresh token, diperbarui 30 detik sebelum kedaluwarsa, satu
+  permintaan token untuk panggilan serentak, `401` dicoba ulang satu kali.
+  Dokumentasi provider menyatakan aplikasi mobile **tidak boleh** memakai alur
+  ini — itulah alasan BFF ada.
+- Developer Terms: konten tidak boleh disimpan > 1 minggu kecuali via Content
+  Sync, jadi `CACHE_TTL_*` divalidasi maksimal 604.800 detik. Font/aset mushaf
+  boleh di-cache/dibundel bila akun Developer Console aktif dan kredit Quran
+  Foundation ditampilkan.
+- Batas rate limit resmi tidak dipublikasikan; `RATE_LIMIT_PER_MINUTE` adalah
+  batas milik kita sendiri.
+- Lingkungan prelive hanya memuat surah 1–2; dataset penuh perlu persetujuan
+  akses produksi.
+- Deploy dan secret manager belum dipilih (kandidat: Cloud Run atau Render).
 
 ## 7. Offline
 
