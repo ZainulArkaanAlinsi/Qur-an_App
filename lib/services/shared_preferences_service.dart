@@ -49,9 +49,14 @@ class SharedPreferencesService {
     int ayah, {
     required bool deleted,
   }) async {
+    // Always newer than the version this device last saw, even if its clock
+    // runs behind another device's; otherwise the server (last write wins)
+    // would reject the edit forever.
+    final previous = _prefs?.getInt('bookmark_updated_${surah}_$ayah') ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
     await _prefs?.setInt(
       'bookmark_updated_${surah}_$ayah',
-      DateTime.now().millisecondsSinceEpoch,
+      now > previous ? now : previous + 1,
     );
     await _prefs?.setBool('bookmark_deleted_${surah}_$ayah', deleted);
     await _prefs?.setBool('bookmark_dirty_${surah}_$ayah', true);

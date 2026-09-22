@@ -18,6 +18,26 @@ class FirestoreSyncRemote implements SyncRemote {
   final FirebaseFirestore _db;
   static const _pageSize = 400;
 
+  // On mobile, commit() completes only after the server acknowledges, so
+  // offline it would wait forever and block every later sync. Bounding it
+  // turns "offline" into a normal failed sync; queued writes are still sent
+  // by the SDK later, and retries are idempotent (document ID = record ID).
+  static const _timeout = Duration(seconds: 30);
+
+  // Reads must come from the server: a cache fallback would make an offline
+  // sync look successful and would let deleteAll remove only cached docs.
+  static const _fromServer = GetOptions(source: Source.server);
+
+  static Future<T> _bounded<T>(Future<T> future) => future.timeout(_timeout);
+
+  final _pending = PendingWrites();
+
+  // A timeout stops waiting but does not cancel the write: the SDK keeps it
+  // queued. Commits are tracked so later passes do not queue the same
+  // outbox again while offline and replay it many times on reconnect.
+  Future<void> _commit(WriteBatch batch) =>
+      _bounded(_pending.track(batch.commit()));
+
   CollectionReference<Map<String, dynamic>> _col(String uid, String name) =>
       _db.collection('users').doc(uid).collection(name);
 
@@ -26,6 +46,7 @@ class FirestoreSyncRemote implements SyncRemote {
     String collection,
     Iterable<MapEntry<String, Map<String, dynamic>>> docs,
   ) async {
+    _pending.ensureSettled();
     var batch = _db.batch();
     var count = 0;
     for (final doc in docs) {
@@ -34,12 +55,12 @@ class FirestoreSyncRemote implements SyncRemote {
         'syncedAt': FieldValue.serverTimestamp(),
       });
       if (++count == _pageSize) {
-        await batch.commit();
+        await _commit(batch);
         batch = _db.batch();
         count = 0;
       }
     }
-    if (count > 0) await batch.commit();
+    if (count > 0) await _commit(batch);
   }
 
   Future<RemotePage<T>> _pull<T>(
@@ -60,7 +81,7 @@ class FirestoreSyncRemote implements SyncRemote {
           .orderBy('syncedAt')
           .limit(_pageSize);
       if (last != null) query = query.startAfterDocument(last);
-      final page = await query.get();
+      final page = await _bounded(query.get(_fromServer));
       for (final doc in page.docs) {
         final data = doc.data();
         final syncedAt = data['syncedAt'];
@@ -150,13 +171,15 @@ class FirestoreSyncRemote implements SyncRemote {
   Future<void> deleteAll(String uid) async {
     for (final name in const ['sessions', 'bookmarks']) {
       while (true) {
-        final page = await _col(uid, name).limit(_pageSize).get();
+        final page = await _bounded(
+          _col(uid, name).limit(_pageSize).get(_fromServer),
+        );
         if (page.docs.isEmpty) break;
         final batch = _db.batch();
         for (final doc in page.docs) {
           batch.delete(doc.reference);
         }
-        await batch.commit();
+        await _commit(batch);
       }
     }
   }

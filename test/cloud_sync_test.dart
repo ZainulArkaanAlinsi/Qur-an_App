@@ -231,6 +231,60 @@ void main() {
     expect(remote.bookmarks['user-1']!['2_255']!.$1.deleted, isTrue);
   });
 
+  test('bookmark basi di luar jendela cursor tidak mengunci sync', () async {
+    final future = DateTime.now().millisecondsSinceEpoch + 3600000;
+    final remote = FakeRemote();
+    // The server copy is newer (another phone) but was synced long ago...
+    await remote.pushBookmarks('user-1', [
+      BookmarkRecord(
+        surah: 2,
+        ayah: 255,
+        collection: 'Hafalan',
+        deleted: false,
+        updatedAtMs: future,
+      ),
+    ]);
+    // ...so this phone's cursor is already past it, while it holds an older,
+    // still-dirty local edit (e.g. its clock ran behind).
+    await _fresh({
+      'sync_owner_uid': 'user-1',
+      'bookmark_sync_adopted_v1': true,
+      'sync_bookmarks_cursor_user-1': 1 << 40,
+      'bookmark_2_255': true,
+      'bookmark_collection_2_255': 'Umum',
+      'bookmark_updated_2_255': 1000,
+      'bookmark_deleted_2_255': false,
+      'bookmark_dirty_2_255': true,
+    });
+    final sync = CloudSyncService(remote);
+
+    await sync.sync('user-1');
+    expect(sync.state.value, SyncState.done);
+    expect(SharedPreferencesService.getBookmarkCollection(2, 255), 'Hafalan');
+    expect(SharedPreferencesService.dirtyBookmarks(), isEmpty);
+
+    // Later edits on this phone are accepted again.
+    await SharedPreferencesService.setBookmarkCollection(2, 255, 'Favorit');
+    await sync.sync('user-1');
+    expect(sync.state.value, SyncState.done);
+    expect(remote.bookmarks['user-1']!['2_255']!.$1.collection, 'Favorit');
+  });
+
+  test(
+    'waktu edit bookmark selalu lebih baru dari versi yang dikenal',
+    () async {
+      final future = DateTime.now().millisecondsSinceEpoch + 3600000;
+      await _fresh({
+        'bookmark_2_255': true,
+        'bookmark_collection_2_255': 'Umum',
+        'bookmark_updated_2_255': future,
+      });
+      await SharedPreferencesService.setBookmarkCollection(2, 255, 'Hafalan');
+      final record = SharedPreferencesService.dirtyBookmarks().single;
+      expect(record.updatedAtMs, future + 1);
+    },
+  );
+
   test('bookmark lama (sebelum fitur sync) ikut terunggah', () async {
     await _fresh({'bookmark_18_10': true});
     final remote = FakeRemote();
@@ -366,6 +420,45 @@ void main() {
 
     expect(remote.pushedUids, ['user-a']);
     expect(store.pendingUpload().map((s) => s.id), contains('guest-later'));
+  });
+
+  group('PendingWrites', () {
+    test('menahan unggahan baru selama tulisan lama belum selesai', () async {
+      final pending = PendingWrites();
+      final network = Completer<void>();
+      final write = pending.track(network.future);
+
+      // A timed-out pass leaves the write queued; the next pass must not
+      // queue the outbox again.
+      expect(pending.hasPending, isTrue);
+      expect(pending.ensureSettled, throwsA(isA<WritesPendingException>()));
+
+      network.complete();
+      await write;
+      expect(pending.hasPending, isFalse);
+      pending.ensureSettled();
+    });
+
+    test('tulisan yang gagal juga dianggap selesai', () async {
+      final pending = PendingWrites();
+      final write = pending.track(Future<void>.error(StateError('ditolak')));
+      await expectLater(write, throwsStateError);
+      expect(pending.hasPending, isFalse);
+    });
+
+    test('batas waktu tidak membatalkan pencatatan tulisan', () async {
+      final pending = PendingWrites();
+      final network = Completer<void>();
+      final bounded = pending
+          .track(network.future)
+          .timeout(const Duration(milliseconds: 10));
+      await expectLater(bounded, throwsA(isA<TimeoutException>()));
+      // Still queued by the SDK, so still pending.
+      expect(pending.hasPending, isTrue);
+      network.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(pending.hasPending, isFalse);
+    });
   });
 
   group('mergedActiveSeconds', () {
