@@ -13,8 +13,14 @@ class ReminderService {
   Future<void> initialize() async {
     if (_initialized) return;
     tz.initializeTimeZones();
-    final zone = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(zone));
+    try {
+      final zone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(zone));
+    } on Object {
+      // An unknown zone name must not stop the app from starting; UTC keeps
+      // reminders working, only shifted until the zone is recognised.
+      tz.setLocalLocation(tz.UTC);
+    }
     await _plugin.initialize(
       const InitializationSettings(
         android: AndroidInitializationSettings('@drawable/ic_stat_quran'),
@@ -75,9 +81,8 @@ class ReminderService {
       ) {
         final prayer = PrayerService.prayerNames[prayerOffset];
         if (!prayerNames.contains(prayer)) continue;
-        final time = scheduledDay.timeFor(prayer);
-        if (time == null) continue;
-        final scheduled = tz.TZDateTime.from(time, tz.local);
+        final scheduled = prayerInstant(scheduledDay, prayer, tz.local);
+        if (scheduled == null) continue;
         if (!scheduled.isAfter(now)) continue;
         await _schedule(
           1000 + dayOffset * 10 + prayerOffset,
@@ -152,5 +157,35 @@ class ReminderService {
       ),
     ),
     androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+  );
+}
+
+/// The moment [prayer] happens: its wall-clock time interpreted in the
+/// city's own zone ([PrayerDay.timezone]), not the phone's. A prayer city in
+/// another zone would otherwise be reminded hours early or late. Falls back
+/// to [fallback] when the city zone is missing or unknown.
+tz.TZDateTime? prayerInstant(
+  PrayerDay day,
+  String prayer,
+  tz.Location fallback,
+) {
+  final time = day.timeFor(prayer);
+  if (time == null) return null;
+  var location = fallback;
+  final zone = day.timezone;
+  if (zone != null) {
+    try {
+      location = tz.getLocation(zone);
+    } on Object {
+      location = fallback;
+    }
+  }
+  return tz.TZDateTime(
+    location,
+    time.year,
+    time.month,
+    time.day,
+    time.hour,
+    time.minute,
   );
 }

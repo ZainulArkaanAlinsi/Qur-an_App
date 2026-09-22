@@ -8,9 +8,14 @@ class PrayerDay {
     required this.hijriDate,
     required this.hijriMonth,
     required this.prayers,
+    this.timezone,
   });
 
   final DateTime gregorianDate;
+
+  /// IANA zone of the chosen city (AlAdhan `meta.timezone`). Prayer times
+  /// are wall-clock times in this zone, which may differ from the phone's.
+  final String? timezone;
   final String hijriDate;
   final String hijriMonth;
   final Map<String, String> prayers;
@@ -89,7 +94,9 @@ class PrayerService {
       throw const FormatException('Waktu salat tidak valid.');
     }
     final month = hijri['month'] as Map<String, dynamic>?;
+    final meta = data?['meta'] as Map<String, dynamic>?;
     return PrayerDay(
+      timezone: meta?['timezone'] as String?,
       gregorianDate: day,
       hijriDate: '${hijri['day']} ${month?['en'] ?? ''} ${hijri['year']}',
       hijriMonth: month?['en'] as String? ?? '',

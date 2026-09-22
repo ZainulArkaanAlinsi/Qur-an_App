@@ -13,7 +13,14 @@ import 'package:quran_app_2025/services/quran_audio_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferencesService.init();
-  await ReminderService.instance.initialize();
+  try {
+    await ReminderService.instance.initialize().timeout(
+      const Duration(seconds: 10),
+    );
+  } on Object catch (error) {
+    // Reminders are optional; reading must still start.
+    debugPrint('Pengingat tidak aktif: $error');
+  }
   await QuranAudioService.instance.initSystemControls();
   // Optional cloud sync; the app works fully offline if this fails.
   await AccountService.instance.init();

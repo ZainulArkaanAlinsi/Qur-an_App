@@ -100,7 +100,8 @@ class QuranAudioService {
           androidNotificationOngoing: true,
           androidStopForegroundOnPause: true,
         ),
-      );
+        // Runs before the first frame; never let it block app start.
+      ).timeout(const Duration(seconds: 10));
     } catch (error) {
       debugPrint('Kontrol murottal sistem tidak aktif: $error');
     }

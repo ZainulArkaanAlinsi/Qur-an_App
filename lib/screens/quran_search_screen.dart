@@ -12,15 +12,18 @@ class QuranSearchScreen extends StatefulWidget {
 class _QuranSearchScreenState extends State<QuranSearchScreen> {
   String _query = '';
   late Future<List<List<String>>> _all;
+
+  Future<List<List<String>>> _load() => Future.wait(
+    List.generate(
+      114,
+      (index) => QuranTextRepository.instance.versesForSurah(index + 1),
+    ),
+  );
+
   @override
   void initState() {
     super.initState();
-    _all = Future.wait(
-      List.generate(
-        114,
-        (index) => QuranTextRepository.instance.versesForSurah(index + 1),
-      ),
-    );
+    _all = _load();
   }
 
   @override
@@ -29,6 +32,32 @@ class _QuranSearchScreenState extends State<QuranSearchScreen> {
     body: FutureBuilder<List<List<String>>>(
       future: _all,
       builder: (context, snapshot) {
+        // Checked before hasData: a failed load would otherwise leave the
+        // spinner running forever with no way to recover.
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline_rounded, size: 48),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Teks Al-Qur’an tidak dapat dimuat.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () => setState(() => _all = _load()),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Coba lagi'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
