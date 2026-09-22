@@ -19,8 +19,9 @@ Centang per rilis/fase. Otomatis = ada tes/skrip; Manual = butuh manusia.
 
 - [x] Otomatis: 114 surah, 6.236 ayat, jumlah ayat per surah
       (`test/quran_catalog_test.dart`, `test/translation_test.dart`)
-- [ ] Otomatis: SHA-256 aset `assets/quran/raw/*` = nilai di
-      `DATASET_ATTRIBUTION.md` (saat ini hanya tercatat, belum diuji)
+- [x] Otomatis: SHA-256 + ukuran aset `assets/quran/raw/*` (lewat
+      rootBundle) = nilai di `DATASET_ATTRIBUTION.md`
+      (`test/dataset_checksum_test.dart`)
 - [ ] Otomatis: basmalah — Al-Fatihah ayat 1, surah lain di header, At-Taubah
       tanpa basmalah, tidak ganda
 - [ ] Otomatis: golden test ayat dengan banyak harakat, waqaf, sajdah, ligatur
