@@ -51,9 +51,9 @@ class _DebugTajweedPreviewScreenState extends State<DebugTajweedPreviewScreen> {
 
   Future<Map<String, String>> _fetch(String field, int surah) async {
     final uri = Uri.parse('$_base/$field?chapter_number=$surah');
-    final response = await _client.get(uri).timeout(
-          const Duration(seconds: 20),
-        );
+    final response = await _client
+        .get(uri)
+        .timeout(const Duration(seconds: 20));
     if (response.statusCode != 200) {
       throw http.ClientException('HTTP ${response.statusCode}', uri);
     }
@@ -283,21 +283,21 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.cloud_off_rounded, size: 40),
-              const SizedBox(height: 12),
-              Text(
-                'Gagal memuat data tajwid.\n$message',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              FilledButton(onPressed: onRetry, child: const Text('Coba lagi')),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.cloud_off_rounded, size: 40),
+          const SizedBox(height: 12),
+          Text(
+            'Gagal memuat data tajwid.\n$message',
+            textAlign: TextAlign.center,
           ),
-        ),
-      );
+          const SizedBox(height: 12),
+          FilledButton(onPressed: onRetry, child: const Text('Coba lagi')),
+        ],
+      ),
+    ),
+  );
 }

@@ -153,10 +153,14 @@ class _TajweedVersePanelState extends State<TajweedVersePanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _arabic(Text.rich(TextSpan(
-          style: widget.arabicStyle,
-          children: _spans(context, verse),
-        ))),
+        _arabic(
+          Text.rich(
+            TextSpan(
+              style: widget.arabicStyle,
+              children: _spans(context, verse),
+            ),
+          ),
+        ),
         const SizedBox(height: 12),
         TajweedRuleChips(
           verse: verse,
@@ -168,9 +172,9 @@ class _TajweedVersePanelState extends State<TajweedVersePanel> {
   }
 
   Widget _arabic(Widget child) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: SizedBox(width: double.infinity, child: child),
-      );
+    textDirection: TextDirection.rtl,
+    child: SizedBox(width: double.infinity, child: child),
+  );
 
   List<InlineSpan> _spans(BuildContext context, TajweedVerse verse) {
     final brightness = Theme.of(context).brightness;
@@ -192,7 +196,8 @@ class _TajweedVersePanelState extends State<TajweedVersePanel> {
     final text = verse.text.substring(run.start, run.end);
     if (rule == null) return TextSpan(text: text);
     final color = widget.palette.colorFor(rule, brightness);
-    final isSelected = selected != null &&
+    final isSelected =
+        selected != null &&
         run.start >= selected.start &&
         run.end <= selected.end;
     return TextSpan(
@@ -232,10 +237,7 @@ class TajweedRuleChips extends StatelessWidget {
       runSpacing: 4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(
-          'Tajwid:',
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
+        Text('Tajwid:', style: Theme.of(context).textTheme.labelMedium),
         for (final rule in ordered)
           ActionChip(
             avatar: _Swatch(palette.colorFor(rule, brightness)),
@@ -259,10 +261,10 @@ class _Swatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 14,
-        height: 14,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      );
+    width: 14,
+    height: 14,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 }
 
 class _DraftNotice extends StatelessWidget {
@@ -270,11 +272,11 @@ class _DraftNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        'DRAF — nama hukum dan warna belum direview guru tajwid.',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
-      );
+    'DRAF — nama hukum dan warna belum direview guru tajwid.',
+    style: Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.error),
+  );
 }
 
 /// Menampilkan nama hukum saja, bukan uraian panjang (uraian ada di Akademi

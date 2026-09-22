@@ -43,6 +43,14 @@ ketentuan untuk data yang **sudah dibundel** ada di
   (2.026/6.236 identik); keduanya perlu dianggap edisi/encoding berbeda.
 - Layar pratinjau debug memanggil api.quran.com langsung dari perangkat;
   dibatasi `kDebugMode` sehingga tidak ada di build rilis.
+- Font QCF per halaman: `https://verses.quran.foundation/fonts/quran/hafs/
+  {v2/ttf|v4/colrv1/ttf}/p{N}.ttf`. Ketentuan: boleh di-cache/dibundel bila
+  memiliki akun aktif di Developer Console **dan** mencantumkan kredit Quran
+  Foundation di aplikasi; file tidak boleh ditawarkan terpisah; siapkan
+  strategi pembaruan karena font dapat dikoreksi. Prototipe debug mengunduh
+  font langsung tanpa cache disk.
+- Fixture `test/fixtures/qf_mushaf_v2_pages_sample.json` berisi kata 12
+  halaman (verbatim, hanya untuk tes).
 - Layout QCF adalah Mushaf Madinah; tampilkan namanya dengan jujur, jangan
   sebut Mushaf Standar Indonesia.
 

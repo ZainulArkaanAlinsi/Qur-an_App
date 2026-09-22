@@ -148,12 +148,14 @@ class TajweedMarkupParser {
           inEndSpan = false;
           endSpanClosed = true;
         } else if (rule != null && text.length > start) {
-          segments.add(TajweedSegment(
-            start: start,
-            end: text.length,
-            rule: rule,
-            depth: stack.where((open) => open.$1 == 'tajweed').length,
-          ));
+          segments.add(
+            TajweedSegment(
+              start: start,
+              end: text.length,
+              rule: rule,
+              depth: stack.where((open) => open.$1 == 'tajweed').length,
+            ),
+          );
         }
         continue;
       }
@@ -177,10 +179,14 @@ class TajweedMarkupParser {
     appendText(markup.substring(cursor));
 
     if (stack.isNotEmpty) {
-      throw FormatException('Tag <${stack.last.$1}> tidak ditutup di $verseKey');
+      throw FormatException(
+        'Tag <${stack.last.$1}> tidak ditutup di $verseKey',
+      );
     }
-    segments.sort((a, b) =>
-        a.start != b.start ? a.start.compareTo(b.start) : a.depth - b.depth);
+    segments.sort(
+      (a, b) =>
+          a.start != b.start ? a.start.compareTo(b.start) : a.depth - b.depth,
+    );
 
     return TajweedVerse(
       verseKey: verseKey,
