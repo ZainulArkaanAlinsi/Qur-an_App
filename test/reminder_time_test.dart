@@ -81,4 +81,16 @@ void main() {
       expect(_day().nextLabelAt(DateTime(2026, 9, 22, 12)), 'Ashar');
     });
   });
+
+  test('tanggal hari ini dihitung di zona kota', () {
+    // 00:30 WIB 23 Sep = 17:30 UTC 22 Sep = 07:30 Honolulu 22 Sep.
+    final now = DateTime.utc(2026, 9, 22, 17, 30);
+    expect(
+      PrayerService.cityDate('Pacific/Honolulu', now),
+      DateTime(2026, 9, 22),
+    );
+    expect(PrayerService.cityDate('Asia/Jakarta', now), DateTime(2026, 9, 23));
+    expect(PrayerService.cityDate('Mars/Olympus', now), isNull);
+    expect(PrayerService.cityDate(null, now), isNull);
+  });
 }

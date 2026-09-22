@@ -71,7 +71,34 @@ class PrayerDay {
 class PrayerService {
   static const prayerNames = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 
+  /// Prayer times for [date], or for *today in the city* when omitted. The
+  /// phone and the city can be on different calendar days (e.g. just after
+  /// midnight in Jakarta while Honolulu is still on the previous day), so an
+  /// omitted date is re-resolved in the city's zone.
   static Future<PrayerDay> fetch({
+    required String city,
+    required String country,
+    DateTime? date,
+  }) async {
+    final day = await _fetchDay(city: city, country: country, date: date);
+    if (date != null) return day;
+    final cityToday = cityDate(day.timezone, DateTime.now());
+    if (cityToday == null || cityToday == day.gregorianDate) return day;
+    return _fetchDay(city: city, country: country, date: cityToday);
+  }
+
+  /// Calendar date at [now] in [zone], or null if the zone is unknown.
+  static DateTime? cityDate(String? zone, DateTime now) {
+    if (zone == null) return null;
+    try {
+      final local = tz.TZDateTime.from(now, tz.getLocation(zone));
+      return DateTime(local.year, local.month, local.day);
+    } on Object {
+      return null;
+    }
+  }
+
+  static Future<PrayerDay> _fetchDay({
     required String city,
     required String country,
     DateTime? date,
