@@ -57,7 +57,8 @@ class MushafPageCanvas extends StatelessWidget {
     final keys = page.verseKeys;
 
     return Semantics(
-      label: 'Halaman ${page.number}'
+      label:
+          'Halaman ${page.number}'
           '${keys.isEmpty ? '' : ', ayat ${keys.first} sampai ${keys.last}'}',
       child: SizedBox.fromSize(
         size: mushafCanvasSize,
@@ -83,21 +84,21 @@ class MushafPageCanvas extends StatelessWidget {
                       width: _innerWidth,
                       child: switch (line) {
                         MushafTextLine(:final words) => _TextLine(
-                            words: words,
-                            fontFamily: fontFamily,
-                            color: ink,
-                            centered: page.isOpeningPage,
-                            selectedVerse: selectedVerse,
-                            onVerseTap: onVerseTap,
-                          ),
+                          words: words,
+                          fontFamily: fontFamily,
+                          color: ink,
+                          centered: page.isOpeningPage,
+                          selectedVerse: selectedVerse,
+                          onVerseTap: onVerseTap,
+                        ),
                         MushafSurahHeader(:final surah) => _SurahHeader(
-                            name: surahNames[surah] ?? '$surah',
-                            color: ink,
-                          ),
+                          name: surahNames[surah] ?? '$surah',
+                          color: ink,
+                        ),
                         MushafBasmalah() => _Basmalah(
-                            basmalah: basmalah,
-                            color: ink,
-                          ),
+                          basmalah: basmalah,
+                          color: ink,
+                        ),
                       },
                     ),
                 ],
@@ -144,9 +145,9 @@ class _TextLine extends StatelessWidget {
       natural += painter.width;
       painter.dispose();
     }
-    final highlight = Theme.of(context).colorScheme.primary.withValues(
-          alpha: .16,
-        );
+    final highlight = Theme.of(
+      context,
+    ).colorScheme.primary.withValues(alpha: .16);
     final children = [
       for (final word in words)
         GestureDetector(
@@ -166,8 +167,9 @@ class _TextLine extends StatelessWidget {
     final gap = mushafFontSize * .12;
     final row = Row(
       mainAxisSize: justify ? MainAxisSize.max : MainAxisSize.min,
-      mainAxisAlignment:
-          justify ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
+      mainAxisAlignment: justify
+          ? MainAxisAlignment.spaceBetween
+          : MainAxisAlignment.center,
       children: justify
           ? children
           : [
@@ -270,6 +272,6 @@ class _Basmalah extends StatelessWidget {
 
 /// Skala agar kanvas muat penuh di [available] tanpa distorsi.
 double mushafFitScale(Size available) => math.min(
-      available.width / mushafCanvasSize.width,
-      available.height / mushafCanvasSize.height,
-    );
+  available.width / mushafCanvasSize.width,
+  available.height / mushafCanvasSize.height,
+);

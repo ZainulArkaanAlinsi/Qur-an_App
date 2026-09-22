@@ -97,9 +97,8 @@ class MushafPage {
   }
 
   /// Surah yang teksnya muncul di halaman ini.
-  List<int> get surahs => {
-        for (final key in verseKeys) int.parse(key.split(':').first),
-      }.toList();
+  List<int> get surahs =>
+      {for (final key in verseKeys) int.parse(key.split(':').first)}.toList();
 }
 
 class MushafLayoutException implements Exception {
@@ -165,8 +164,10 @@ MushafPage buildMushafPage(int page, Iterable<MushafWord> words) {
   }
 
   final count = mushafLineCount(page);
-  final outside = [...byLine.keys, ...derived.keys]
-      .where((n) => n < 1 || n > count);
+  final outside = [
+    ...byLine.keys,
+    ...derived.keys,
+  ].where((n) => n < 1 || n > count);
   if (outside.isNotEmpty) {
     throw MushafLayoutException(page, 'baris di luar 1–$count: $outside');
   }
