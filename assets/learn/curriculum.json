@@ -338,12 +338,76 @@
       "order": 1,
       "title": "Tanda di mushaf",
       "summary": "Hamzah washal, tanda waqaf, sajdah, dan penanda juz.",
-      "objectives": ["Mengenali tanda-tanda yang sering muncul di mushaf"],
+      "objectives": [
+        "Mengenali hamzah washal dan kapan ia dibaca",
+        "Menyebut arti tanda-tanda waqaf yang umum",
+        "Mengenali penanda sajdah, hizb, dan juz"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "provenance": "Draf disusun asisten AI, BELUM ditinjau guru bersanad dan BELUM diterbitkan. Bagian tanda waqaf memuat penilaian ulama tentang tempat berhenti, jadi tahap ini menunggu peninjau — tidak seperti tahap 1–5 yang hanya membaca tanda.",
       "sources": [],
       "rule": "ham_wasl",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Selain huruf dan harakat, mushaf memuat tanda-tanda kecil lain. Sebagian mengatur cara membaca, sebagian lagi hanya penunjuk tempat."
+        },
+        {
+          "type": "text",
+          "text": "Hamzah washal adalah alif di awal kata yang membawa tanda kecil menyerupai huruf shad di atasnya. Alif ini dibaca kalau kamu memulai bacaan dari kata itu, dan dilewati kalau kata itu disambung dengan kata sebelumnya."
+        },
+        {
+          "type": "text",
+          "text": "Tanda waqaf memberi tahu tempat berhenti. Yang umum: mim berarti sebaiknya berhenti; lam-alif berarti jangan berhenti di situ; jim berarti boleh berhenti boleh lanjut; shad-lam-ya berarti lanjut lebih baik; qaf-lam-ya berarti berhenti lebih baik; dan tiga titik yang muncul dua kali berarti pilih salah satu tempat saja, jangan berhenti di keduanya."
+        },
+        {
+          "type": "tip",
+          "text": "Tanda waqaf bukan tanda baca biasa. Berhenti di tempat yang keliru bisa mengubah makna, karena itu tahap 15 membahasnya lebih dalam bersama cara memulai kembali."
+        },
+        {
+          "type": "text",
+          "text": "Tanda sajdah menandai ayat yang dianjurkan sujud tilawah setelah membacanya. Dalam mushaf ini ada lima belas tempat. Tata cara sujudnya tanyakan kepada guru; aplikasi ini hanya menunjukkan letaknya."
+        },
+        {
+          "type": "example",
+          "surah": 32,
+          "ayah": 15,
+          "note": "Salah satu ayat sajdah; perhatikan tanda di tepi barisnya pada mushaf cetak."
+        },
+        {
+          "type": "text",
+          "text": "Di tepi halaman ada penanda juz, hizb, dan rubu' hizb. Ketiganya hanya membagi mushaf menjadi bagian-bagian yang seimbang untuk memudahkan membaca rutin. Tidak ada aturan bacaan yang melekat padanya."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh hamzah washal saat disambung dan saat memulai",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "question": "Kapan hamzah washal dibaca?",
+          "options": [
+            "Saat memulai bacaan dari kata itu",
+            "Saat kata itu disambung dengan kata sebelumnya",
+            "Selalu dibaca",
+            "Tidak pernah dibaca"
+          ],
+          "answer": 0,
+          "explanation": "Hamzah washal dibaca kalau menjadi awal bacaan, dan dilewati kalau tersambung dengan kata sebelumnya."
+        },
+        {
+          "type": "quiz",
+          "question": "Penanda juz, hizb, dan rubu' di tepi halaman gunanya untuk apa?",
+          "options": [
+            "Membagi mushaf agar mudah dibaca rutin",
+            "Menandai tempat wajib berhenti",
+            "Menandai ayat sajdah",
+            "Menentukan panjang bacaan"
+          ],
+          "answer": 0,
+          "explanation": "Ketiganya penunjuk tempat, bukan aturan bacaan."
+        }
+      ]
     },
     {
       "id": "ayat-pendek",
