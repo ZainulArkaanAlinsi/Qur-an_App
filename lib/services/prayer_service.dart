@@ -71,6 +71,12 @@ class PrayerDay {
 class PrayerService {
   static const prayerNames = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 
+  /// Metode kalkulasi AlAdhan yang dipakai. Nomor dan namanya mengikuti
+  /// daftar resmi AlAdhan (aladhan.com/calculation-methods); ditampilkan di
+  /// layar salat supaya pengguna tahu jadwalnya dihitung dengan cara apa.
+  static const methodId = 20;
+  static const methodName = 'Kementerian Agama Republik Indonesia';
+
   /// Prayer times for [date], or for *today in the city* when omitted. The
   /// phone and the city can be on different calendar days (e.g. just after
   /// midnight in Jakarta while Honolulu is still on the previous day), so an
@@ -110,7 +116,7 @@ class PrayerService {
     final uri = Uri.https(
       'api.aladhan.com',
       '/v1/timingsByCity/$formattedDate',
-      {'city': city, 'country': country, 'method': '20'},
+      {'city': city, 'country': country, 'method': '$methodId'},
     );
     final response = await http.get(uri).timeout(const Duration(seconds: 12));
     if (response.statusCode != 200) {

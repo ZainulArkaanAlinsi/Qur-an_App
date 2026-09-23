@@ -1,7 +1,28 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/sacred_theme.dart';
-import 'package:quran_app_2025/services/reading_progress_service.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
+import 'package:quran_app_2025/app/widgets/sacred_heatmap.dart';
+import 'package:quran_app_2025/data/juz_repository.dart';
+import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/features/khatam/domain/juz_coverage.dart';
 import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
+import 'package:quran_app_2025/services/reading_progress_service.dart';
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
+
+/// Rentang yang ditampilkan heatmap.
+enum _Span {
+  minggu('Minggu', 7),
+  bulan('Bulan', 35),
+  tahun('Tahun', 364);
+
+  const _Span(this.label, this.days);
+  final String label;
+  final int days;
+}
+
+/// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
+const _bottomInset = 132.0;
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -12,6 +33,9 @@ class ProgressScreen extends StatefulWidget {
 
 class _ProgressScreenState extends State<ProgressScreen>
     with WidgetsBindingObserver {
+  _Span _span = _Span.minggu;
+  late Future<List<JuzBoundary>> _juz = JuzRepository.load();
+
   @override
   void initState() {
     super.initState();
@@ -29,302 +53,160 @@ class _ProgressScreenState extends State<ProgressScreen>
     if (state == AppLifecycleState.resumed && mounted) setState(() {});
   }
 
+  /// Satu sel per hari, memakai target yang berlaku pada hari itu.
+  List<HeatCell> _cells() {
+    final now = DateTime.now();
+    final today = ReadingProgressService.localDate(now);
+    final cells = <HeatCell>[];
+    for (var back = _span.days - 1; back >= 0; back--) {
+      final day = DateTime(now.year, now.month, now.day - back);
+      final key = ReadingProgressService.localDate(day);
+      cells.add(
+        HeatCell(
+          date: day,
+          seconds: SharedPreferencesService.getReadingSeconds(key),
+          targetSeconds: SharedPreferencesService.getTargetForDate(key),
+          isToday: key == today,
+        ),
+      );
+    }
+    return cells;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
     final progress = ReadingProgressService.read();
-    final completion = (progress.todaySeconds / progress.targetSeconds).clamp(
-      0.0,
-      1.0,
-    );
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-      children: [
-        Text(
-          'Progres',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            letterSpacing: -.7,
+    final remaining = (progress.remainingSeconds / 60).ceil();
+
+    // Layar ini juga dipakai tanpa Scaffold (mis. di dalam Profil), sedangkan
+    // segmented control dan tombolnya memakai InkWell yang butuh Material.
+    return Material(
+      type: MaterialType.transparency,
+      child: ListView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: _bottomInset),
+        children: [
+          const LargeTitle(
+            'Progres',
+            subtitle: 'Catatan kecil untuk menemani kebiasaan baikmu.',
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Catatan kecil untuk menemani kebiasaan baikmu.',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 24),
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: const LinearGradient(
-              colors: [SacredTheme.primaryContainer, SacredTheme.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: SegmentedPill<_Span>(
+              segments: {for (final span in _Span.values) span: span.label},
+              value: _span,
+              onChanged: (value) => setState(() => _span = value),
             ),
           ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 88,
-                height: 88,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Fill the 88px box; the default indicator is only 36px.
-                    SizedBox.expand(
-                      child: CircularProgressIndicator(
-                        value: completion,
-                        strokeWidth: 8,
-                        color: SacredTheme.gold,
-                        backgroundColor: Colors.white.withValues(alpha: .18),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          '${(completion * 100).round()}%',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Target hari ini',
-                      style: TextStyle(color: Color(0xFFD7F0E4)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${progress.todaySeconds ~/ 60} / ${progress.targetSeconds ~/ 60} menit',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      progress.completedToday
-                          ? 'Target hari ini telah tercapai.'
-                          : 'Lanjutkan dari halaman Qur’an.',
-                      style: const TextStyle(
-                        color: Color(0xFFD7F0E4),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'Kebiasaan membaca',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _MetricCard(
-                icon: Icons.local_fire_department_outlined,
-                label: 'Rentetan',
-                value: '${progress.currentStreak} hari',
-                tint: SacredTheme.gold,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _MetricCard(
-                icon: Icons.workspace_premium_outlined,
-                label: 'Terbaik',
-                value: '${progress.longestStreak} hari',
-                tint: const Color(0xFFB0F0D6),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _WeekStrip(days: progress.recentDays),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: SacredTheme.primary.withValues(alpha: .09),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    Icons.timelapse_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
+                _Card(
+                  title: 'Istiqamah',
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Total waktu membaca',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${progress.currentStreak}',
+                            style: SacredText.cardTitle.copyWith(
+                              color: tokens.ink,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // Fleksibel supaya tidak meluber pada teks besar.
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Text(
+                                'hari beruntun',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: SacredText.footnote.copyWith(
+                                  color: tokens.sec,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Text(
+                                'Terbaik ${progress.longestStreak} hari',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                                style: SacredText.footnote.copyWith(
+                                  color: tokens.sec,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 12),
+                      // IntrinsicHeight menyamakan tinggi dua kotak; `stretch`
+                      // sendirian di dalam daftar meminta tinggi tak terbatas.
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: _Metric(
+                                label: 'Baca',
+                                value: '${progress.totalSeconds ~/ 60} mnt',
+                                note: 'tercatat di perangkat ini',
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: _Metric(
+                                label: 'Dengar',
+                                value: 'Belum dicatat',
+                                // Jujur: durasi murottal memang belum pernah
+                                // dihitung, jadi angkanya tidak boleh dikarang.
+                                note: 'waktu murottal belum dihitung',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SacredHeatmap(
+                        cells: _cells(),
+                        cellSize: _span == _Span.tahun ? 10 : 22,
+                      ),
+                      const SizedBox(height: 12),
                       Text(
-                        '${progress.totalSeconds ~/ 60} menit tercatat di perangkat ini',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        progress.completedToday
+                            ? 'Target hari ini tercapai.'
+                            : 'Hari ini $remaining mnt lagi.',
+                        style: SacredText.footnote.copyWith(
+                          color: tokens.primaryText,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                _KhatamCard(
+                  juz: _juz,
+                  onRetry: () => setState(() => _juz = JuzRepository.load()),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Waktu ini adalah perkiraan saat pembaca aktif di depan layar, '
+                  'bukan ukuran ibadah.',
+                  style: SacredText.footnote.copyWith(color: tokens.sec),
+                ),
               ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.auto_stories_outlined),
-            title: const Text(
-              'Progres Khatam',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-            subtitle: const Text('Tandai surah yang telah selesai dibaca.'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const KhatamPlanScreen())),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            'Waktu ini adalah estimasi saat pembaca aktif di depan layar, bukan ukuran ibadah.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({required this.days});
-
-  /// Oldest-first qualifying flags; the last entry is today.
-  final List<bool> days;
-  static const _labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-
-  @override
-  Widget build(BuildContext context) {
-    if (days.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
-    final today = DateTime.now();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '7 hari terakhir',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                for (var i = 0; i < days.length; i++)
-                  Expanded(
-                    child: _DayDot(
-                      label:
-                          _labels[today
-                                  .subtract(Duration(days: days.length - 1 - i))
-                                  .weekday -
-                              1],
-                      done: days[i],
-                      isToday: i == days.length - 1,
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DayDot extends StatelessWidget {
-  const _DayDot({
-    required this.label,
-    required this.done,
-    required this.isToday,
-  });
-  final String label;
-  final bool done;
-  final bool isToday;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      label: '$label, ${done ? 'target tercapai' : 'belum tercapai'}',
-      excludeSemantics: true,
-      child: Column(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: done ? SacredTheme.primaryContainer : Colors.transparent,
-              border: Border.all(
-                color: isToday
-                    ? SacredTheme.gold
-                    : theme.colorScheme.outlineVariant,
-                width: isToday ? 2 : 1,
-              ),
-            ),
-            child: done
-                ? const Icon(
-                    Icons.check_rounded,
-                    size: 16,
-                    color: SacredTheme.gold,
-                  )
-                : null,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
             ),
           ),
         ],
@@ -333,35 +215,207 @@ class _DayDot extends StatelessWidget {
   }
 }
 
-class _MetricCard extends StatelessWidget {
-  const _MetricCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.tint,
-  });
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color tint;
+class _Card extends StatelessWidget {
+  const _Card({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tokens.surf,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: tokens.sep),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: SacredText.eyebrow.copyWith(color: tokens.sec),
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric({required this.label, required this.value, required this.note});
+
+  final String label;
+  final String value;
+  final String note;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: tokens.fill,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: tint),
-          const SizedBox(height: 18),
+          Text(label, style: SacredText.footnote.copyWith(color: tokens.sec)),
+          const SizedBox(height: 2),
+          Text(value, style: SacredText.headline.copyWith(color: tokens.ink)),
           Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+            note,
+            style: SacredText.footnote.copyWith(
+              color: tokens.sec,
+              fontSize: 11,
+            ),
           ),
-          const SizedBox(height: 3),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
-    ),
-  );
+    );
+  }
+}
+
+/// Grid 30 juz. Satu juz hanya hijau bila seluruh surah yang menyinggungnya
+/// sudah ditandai selesai, dan aturan itu ditulis apa adanya di kartunya.
+class _KhatamCard extends StatelessWidget {
+  const _KhatamCard({required this.juz, required this.onRetry});
+
+  final Future<List<JuzBoundary>> juz;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return _Card(
+      title: 'Rencana khatam',
+      child: FutureBuilder<List<JuzBoundary>>(
+        future: juz,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(CupertinoIcons.refresh),
+                label: const Text('Muat ulang batas juz'),
+              ),
+            );
+          }
+          if (!snapshot.hasData) {
+            // Teks diam, bukan indikator berputar: pemuatannya dari aset
+            // bawaan dan selesai seketika, sementara animasi tanpa akhir
+            // membuat layar ini tidak pernah "tenang".
+            return Text(
+              'Memuat batas juz…',
+              style: SacredText.footnote.copyWith(color: tokens.sec),
+            );
+          }
+          final boundaries = snapshot.data!;
+          final completedSurahs = SharedPreferencesService.getCompletedSurahs();
+          final done = JuzCoverage.completeJuz(completedSurahs, boundaries);
+          final next = JuzCoverage.nextIncomplete(completedSurahs, boundaries);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (var number = 1; number <= 30; number++)
+                    _JuzTile(
+                      number: number,
+                      complete: done.contains(number),
+                      isNext: number == next,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                next == null
+                    ? 'Seluruh 30 juz sudah ditandai selesai.'
+                    : 'Juz berikutnya: Juz $next.',
+                style: SacredText.footnote.copyWith(
+                  color: tokens.primaryText,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Aplikasi mencatat surah yang selesai, bukan tiap ayat. Karena '
+                'itu satu juz baru hijau setelah semua surah yang menyentuhnya '
+                'ditandai selesai — ${completedSurahs.length} dari '
+                '${surahCatalog.length} surah sejauh ini.',
+                style: SacredText.footnote.copyWith(color: tokens.sec),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const KhatamPlanScreen(),
+                  ),
+                ),
+                icon: const Icon(CupertinoIcons.checkmark_circle, size: 18),
+                label: const Text('Tandai surah selesai'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _JuzTile extends StatelessWidget {
+  const _JuzTile({
+    required this.number,
+    required this.complete,
+    required this.isNext,
+  });
+
+  final int number;
+  final bool complete;
+  final bool isNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final state = complete
+        ? 'selesai'
+        : isNext
+        ? 'berikutnya'
+        : 'belum';
+    // `container` + `excludeSemantics` di simpul yang sama: membungkus
+    // ExcludeSemantics justru membuat labelnya ikut hilang.
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label: 'Juz $number: $state',
+      child: Container(
+        width: 42,
+        height: 38,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: complete ? tokens.primary : tokens.fill,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isNext ? tokens.gold : tokens.sep,
+            width: isNext ? 1.8 : 1,
+          ),
+        ),
+        child: Text(
+          '$number',
+          style: SacredText.footnote.copyWith(
+            color: complete ? tokens.ctaInk : tokens.ink,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
 }

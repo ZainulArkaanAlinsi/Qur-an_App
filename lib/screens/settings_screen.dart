@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/theme_preview.dart';
 import 'package:quran_app_2025/core/app_version.dart';
+import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
@@ -23,6 +26,15 @@ class SettingsScreen extends StatefulWidget {
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
+
+/// Kecerahan yang akan berlaku untuk [mode], supaya pratinjau "Otomatis"
+/// menampilkan tema yang benar-benar dipakai perangkat saat ini.
+Brightness _brightnessFor(BuildContext context, ThemeMode mode) =>
+    switch (mode) {
+      ThemeMode.light => Brightness.light,
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.system => MediaQuery.platformBrightnessOf(context),
+    };
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late double _arabic;
@@ -72,34 +84,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 12),
-              SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: ThemeMode.system,
-                    label: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text('Sistem', maxLines: 1),
+              // Pratinjau memakai warna temanya sendiri, jadi yang terlihat
+              // memang yang akan dipakai.
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final mode in ThemeMode.values)
+                    ThemePreviewTile(
+                      tokens: SacredTheme.tokensFor(
+                        controller.palette,
+                        _brightnessFor(context, mode),
+                      ),
+                      label: switch (mode) {
+                        ThemeMode.system => 'Otomatis',
+                        ThemeMode.light => 'Terang',
+                        ThemeMode.dark => 'Gelap',
+                      },
+                      selected: controller.themeMode == mode,
+                      onTap: () => controller.setThemeMode(mode),
                     ),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.light,
-                    label: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text('Terang', maxLines: 1),
-                    ),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.dark,
-                    label: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text('Gelap', maxLines: 1),
-                    ),
-                  ),
                 ],
-                selected: {controller.themeMode},
-                showSelectedIcon: false,
-                onSelectionChanged: (value) =>
-                    controller.setThemeMode(value.first),
               ),
               const SizedBox(height: 18),
               const Text(
@@ -114,14 +119,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 10),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 10,
+                runSpacing: 10,
                 children: [
                   for (final palette in AppPalette.values)
-                    ChoiceChip(
-                      label: Text(palette.label),
+                    ThemePreviewTile(
+                      tokens: SacredTheme.tokensFor(
+                        palette,
+                        _brightnessFor(context, controller.themeMode),
+                      ),
+                      label: palette.label,
                       selected: controller.palette == palette,
-                      onSelected: (_) => controller.setPalette(palette),
+                      onTap: () => controller.setPalette(palette),
                     ),
                 ],
               ),
@@ -163,6 +172,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+              _ArabicPreview(size: _arabic, lineHeight: _lineHeight),
               Slider(
                 value: _arabic,
                 min: 22,
@@ -945,4 +956,51 @@ class _SectionTitle extends StatelessWidget {
       context,
     ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
   );
+}
+
+/// Pratinjau ukuran teks Arab memakai ayat sungguhan dari dataset, bukan
+/// kalimat contoh, supaya yang terlihat sama dengan yang dibaca nanti.
+class _ArabicPreview extends StatelessWidget {
+  const _ArabicPreview({required this.size, required this.lineHeight});
+
+  final double size;
+  final double lineHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tokens.fill,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: FutureBuilder<List<String>>(
+        future: QuranTextRepository.instance.versesForSurah(1),
+        builder: (context, snapshot) {
+          final verse = snapshot.data?.first;
+          if (verse == null) {
+            return Text(
+              'Pratinjau sedang dimuat…',
+              style: Theme.of(context).textTheme.bodySmall,
+            );
+          }
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: Text(
+              verse,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontFamily: SacredText.quran,
+                fontSize: size,
+                height: lineHeight,
+                color: tokens.ink,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

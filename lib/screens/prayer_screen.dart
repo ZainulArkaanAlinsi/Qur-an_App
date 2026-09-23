@@ -184,6 +184,15 @@ class _PrayerScreenState extends State<PrayerScreen> {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    // Cara jadwal ini dihitung, bukan angka yang muncul entah
+                    // dari mana. Zona waktu diambil dari respons AlAdhan.
+                    Text(
+                      'Metode ${PrayerService.methodName} '
+                      '(AlAdhan #${PrayerService.methodId}) · '
+                      '${day.timezone ?? 'zona waktu tidak dilaporkan'}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
