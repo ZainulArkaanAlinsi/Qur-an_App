@@ -98,6 +98,56 @@ Rilis terakhir v1.2.1.
 ### Yang tidak ada di desain
 
 Desain memakai **4 tab** (Beranda, Qur'an, Progres, Pengaturan) + tombol Cari
-bulat. Aplikasi sekarang memakai **5 tab** (Beranda, Baca, Belajar, Hafalan,
-Profil) dengan tab Belajar (hub Juz Amma) dan Hafalan yang dirilis di 1.2.0–1.2.1.
-Keduanya tidak boleh hilang, jadi tempat barunya menunggu keputusan pemilik.
+bulat. Saat brief ini ditulis aplikasi memakai **5 tab** (Beranda, Baca, Belajar,
+Hafalan, Profil) dengan tab Belajar (hub Juz Amma) dan Hafalan yang dirilis di
+1.2.0–1.2.1. Keduanya tidak boleh hilang, jadi tempat barunya menunggu keputusan
+pemilik.
+
+> **Catatan 23 September 2026:** redesign berjalan terus dan tab bar sekarang
+> **sudah 4 tab** (`lib/app/app_shell.dart:19-40`), sementara keputusan pemilik
+> di atas belum pernah diambil. Belajar dan Hafalan kini hanya bisa dicapai dari
+> tab Progres. Lihat `docs/revisi-v2/TAHAP_0_AUDIT.md` §3.3.
+
+## Redesign "Sacred Serenity · edisi iOS" — selesai (23 September 2026)
+
+Semua layar brief dibangun ulang dari nilai di mockup, dirilis sebagai **v1.4.0**
+(tag `v1.4.0`, PR #16, squash `cebc758`). Beranda, Qur'an, Pembaca, Fokus,
+Progres, Pengaturan, Salat, Cari dirombak; layar **Murottal penuh** dibuat baru
+(sebelumnya hanya mini-player). Transisi halaman memakai
+`CupertinoPageTransitionsBuilder` di semua platform.
+
+Yang sengaja **tidak** dikarang: bentuk gelombang Murottal diganti posisi
+pemutaran sungguhan (tidak ada data gelombang), tombol unduh di Murottal
+dinonaktifkan beserta alasannya, dan waktu mendengar tetap tertulis "belum
+dicatat" di Progres karena memang belum pernah dihitung.
+
+Belum diuji di perangkat nyata: seluruh layar hasil rombakan v1.4.0.
+
+## Revisi v2 — Tahap 0 (23 September 2026)
+
+Branch `revisi-v2` dari `main` (`cebc758`), versi `1.4.0+9`. Brief pemilik ada di
+`docs/revisi-v2/` (spesifikasi, riset sumber, foto referensi).
+
+Baseline sebelum menyentuh apa pun: `flutter pub get` sukses,
+`dart analyze lib test` **tanpa isu**, `flutter test` **252 lulus**.
+
+Hasil audit lengkap beserta bukti baris-per-baris:
+**`docs/revisi-v2/TAHAP_0_AUDIT.md`**. Ringkasnya: dari 23 klaim di brief,
+**19 benar, 3 sebagian, 1 salah** (daftar Juz 'Amma tidak diduplikasi; yang
+dipakai bersama hanya widget `MemorizationTile`).
+
+Temuan tambahan yang tidak ada di brief:
+
+- Halaman 273 pada foto (An-Nahl 55–64) **cocok persis** dengan batas halaman
+  Tanzil di `assets/quran/raw/quran-data.xml`, jadi target tata letaknya
+  terkonfirmasi Mushaf Madinah 604 halaman. Data **baris** (15 baris, rentang
+  kata) belum ada dan masih diambil dari jaringan.
+- Foto sampul referensi adalah mushaf **blok warna** (latar diwarnai), sedangkan
+  spesifikasi §C mewajibkan standar LPMQ yang mewarnai **huruf + harakat**.
+  Bertentangan; menunggu keputusan pemilik.
+- Tidak ada font mushaf yang dibundel; font QCF diunduh runtime, dan
+  membundelnya terikat syarat akun Quran Foundation Developer Console.
+
+Menunggu keputusan pemilik: struktur navigasi, gaya warna tajwid, izin menghapus
+`islamic_news_screen.dart` + `search_screen.dart`, dan status akun Quran
+Foundation.
