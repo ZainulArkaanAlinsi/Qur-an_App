@@ -23,8 +23,12 @@ if (Test-Path $outDir) {
     } | Remove-Item -Force
 }
 
-Write-Host "Build rilis versi $version"
-flutter build apk --release
+# Hanya arsitektur ARM yang dibundel: x86_64 praktis cuma dipakai emulator dan
+# sebagian Chromebook, dan menambah ~20 MB pada unduhan setiap pengguna.
+# Filter abiFilters di Gradle diabaikan Flutter untuk APK gabungan, jadi
+# pembatasannya harus lewat --target-platform.
+Write-Host "Build rilis versi $version (arm + arm64)"
+flutter build apk --release --target-platform android-arm,android-arm64
 if ($LASTEXITCODE -ne 0) { throw 'flutter build apk gagal' }
 
 $built = Join-Path $outDir 'app-release.apk'
