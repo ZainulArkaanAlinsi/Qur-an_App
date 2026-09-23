@@ -37,7 +37,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('aset kurikulum yang dibundel', () {
-    test('terbaca dan seluruhnya masih draf', () async {
+    test('terbaca dan tahapnya lengkap', () async {
       final raw = await rootBundle.loadString(CurriculumRepository.asset);
       final curriculum = CurriculumRepository.parse(raw);
 
@@ -47,15 +47,48 @@ void main() {
         List.generate(17, (index) => index),
         reason: 'tahap 0 sampai 16 lengkap dan berurutan',
       );
-
-      // Aturan repo: hanya materi terbit yang boleh tampil di rilis. Selama
-      // belum ada peninjau, tidak boleh ada satu pun yang berstatus terbit.
-      expect(
-        curriculum.visible(includeDrafts: false),
-        isEmpty,
-        reason: 'materi agama tanpa peninjau tidak boleh tampil di rilis',
-      );
       expect(curriculum.visible(includeDrafts: true), hasLength(17));
+    });
+
+    test('tidak ada pelajaran terbit yang kosong', () async {
+      final raw = await rootBundle.loadString(CurriculumRepository.asset);
+      // Menerbitkan kerangka kosong berarti pengguna mengetuk sebuah tahap
+      // lalu disambut layar tanpa isi. Kalau belum ditulis, biarkan draf.
+      for (final lesson in CurriculumRepository.parse(
+        raw,
+      ).visible(includeDrafts: false)) {
+        expect(
+          lesson.hasContent,
+          isTrue,
+          reason: 'pelajaran terbit "${lesson.id}" tidak punya isi',
+        );
+      }
+    });
+
+    test('pelajaran terbit tetap menyebut asal materinya', () async {
+      final raw = await rootBundle.loadString(CurriculumRepository.asset);
+      // Menaikkan status tidak boleh menyembunyikan dari mana teksnya datang.
+      for (final lesson in CurriculumRepository.parse(
+        raw,
+      ).visible(includeDrafts: false)) {
+        expect(lesson.sources, isNotEmpty, reason: lesson.id);
+        expect(lesson.provenance, contains('asisten AI'), reason: lesson.id);
+      }
+    });
+
+    test('tahap hukum tajwid belum diterbitkan', () async {
+      final raw = await rootBundle.loadString(CurriculumRepository.asset);
+      // Literasi Arab dasar boleh terbit atas keputusan pemilik; hukum tajwid
+      // menunggu peninjau bersanad (docs/RELIGIOUS_CONTENT_GOVERNANCE.md).
+      for (final lesson in CurriculumRepository.parse(raw).lessons) {
+        if (lesson.rule != null) {
+          expect(
+            lesson.isPublished,
+            isFalse,
+            reason: 'pelajaran hukum "${lesson.id}" terbit tanpa peninjau',
+          );
+        }
+      }
     });
 
     test('setiap pelajaran menyebut asal materinya', () async {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_catatan": "Jalur belajar 16 tahap. SELURUH entri berstatus draft dan tidak tampil di build rilis. Teks Al-Qur'an tidak pernah diketik di berkas ini; contoh ayat hanya berupa rujukan surah+ayah yang diambil dari dataset Tanzil saat ditampilkan.",
+  "_catatan": "Jalur belajar 16 tahap. Entri berstatus published tampil di rilis; yang masih draft hanya tampil di build debug dengan label DRAF. Yang diterbitkan baru tahap berisi literasi Arab dasar — tahap hukum tajwid tetap draft sampai ada peninjau. Teks Al-Qur'an tidak pernah diketik di berkas ini; contoh ayat hanya berupa rujukan surah+ayah yang diambil dari dataset Tanzil saat ditampilkan.",
   "lessons": [
     {
       "id": "mulai",
@@ -12,9 +12,15 @@
         "Tahu urutan 16 tahap dari huruf sampai bacaan gharib",
         "Bisa memilih tahap yang sesuai kemampuan sekarang"
       ],
-      "review": "draft",
-      "provenance": "Kerangka jalur disusun dari daftar tahap pada docs/revisi-v2/SPESIFIKASI_REVISI_V2.md bagian B milik pemilik aplikasi. Teks pengantarnya draf, belum diperiksa siapa pun.",
-      "sources": [],
+      "review": "published",
+      "provenance": "Kerangka jalur disusun dari daftar tahap pada docs/revisi-v2/SPESIFIKASI_REVISI_V2.md bagian B milik pemilik aplikasi. Teks pengantarnya draf asisten AI, diterbitkan atas keputusan pemilik pada 24 September 2026.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
       "blocks": [
         {
           "type": "text",
@@ -40,9 +46,15 @@
         "Menyebut nama 28 huruf hijaiyah",
         "Membedakan huruf yang bentuknya mirip"
       ],
-      "review": "draft",
-      "provenance": "Draf disusun asisten AI sebagai bahan awal. BELUM diperiksa terhadap kitab rujukan mana pun. Peninjau: mohon tulis ulang dan cocokkan dengan pegangan Anda sendiri sebelum status dinaikkan.",
-      "sources": [],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas literasi Arab dasar, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
       "blocks": [
         {
           "type": "text",
@@ -80,9 +92,15 @@
         "Mengenali bentuk awal, tengah, dan akhir",
         "Menyebut enam huruf yang tidak menyambung ke kiri"
       ],
-      "review": "draft",
-      "provenance": "Draf disusun asisten AI sebagai bahan awal. BELUM diperiksa terhadap kitab rujukan mana pun. Peninjau: mohon tulis ulang dan cocokkan dengan pegangan Anda sendiri sebelum status dinaikkan.",
-      "sources": [],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas literasi Arab dasar, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
       "blocks": [
         {
           "type": "text",
@@ -111,9 +129,15 @@
         "Membedakan bunyi fathah, kasrah, dan dhammah",
         "Membaca suku kata sederhana"
       ],
-      "review": "draft",
-      "provenance": "Draf disusun asisten AI sebagai bahan awal. BELUM diperiksa terhadap kitab rujukan mana pun. Peninjau: mohon tulis ulang dan cocokkan dengan pegangan Anda sendiri sebelum status dinaikkan.",
-      "sources": [],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas literasi Arab dasar, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
       "blocks": [
         {
           "type": "text",

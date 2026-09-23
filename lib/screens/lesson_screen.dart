@@ -43,6 +43,7 @@ class _LessonScreenState extends State<LessonScreen> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           // Materi yang belum ditinjau tidak boleh tampak seolah sudah sahih.
+          // Yang sudah terbit pun tetap menyebutkan asalnya, di bawah.
           if (!lesson.isPublished) _DraftBanner(provenance: lesson.provenance),
           Text(
             lesson.title,
@@ -73,6 +74,12 @@ class _LessonScreenState extends State<LessonScreen> {
           if (lesson.sources.isNotEmpty) ...[
             const SizedBox(height: 6),
             _Sources(sources: lesson.sources),
+          ],
+          // Asal materi ikut tampil walau sudah terbit, supaya menaikkan
+          // statusnya tidak pernah menyembunyikan dari mana teksnya datang.
+          if (lesson.isPublished) ...[
+            const SizedBox(height: 10),
+            _Provenance(text: lesson.provenance),
           ],
           const SizedBox(height: 20),
           if (lesson.hasContent)
@@ -476,6 +483,29 @@ class _Sources extends StatelessWidget {
               style: SacredText.cardNote.copyWith(color: tokens.sec),
             ),
           ),
+      ],
+    );
+  }
+}
+
+/// Keterangan asal materi untuk pelajaran yang sudah terbit.
+class _Provenance extends StatelessWidget {
+  const _Provenance({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'ASAL MATERI',
+          style: SacredText.eyebrow.copyWith(color: tokens.sec),
+        ),
+        const SizedBox(height: 6),
+        Text(text, style: SacredText.cardNote.copyWith(color: tokens.sec)),
       ],
     );
   }
