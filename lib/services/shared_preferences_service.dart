@@ -6,6 +6,7 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
+import 'package:quran_app_2025/features/learn/domain/quiz_session.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 
@@ -322,6 +323,56 @@ class SharedPreferencesService {
       await _prefs?.setStringList('belajar_selesai', current.toList()..sort());
     }
     learnRevision.value++;
+  }
+
+  /// Riwayat jawaban kuis satu pelajaran, per id soal.
+  ///
+  /// Dipakai menyusun ronde berikutnya: soal yang belum pernah dijawab dan
+  /// yang pernah salah didahulukan. Entri rusak dilewati, bukan menjatuhkan
+  /// seluruh riwayatnya.
+  static Map<String, QuizRecord> getQuizHistory(String lessonId) {
+    final raw = _prefs?.getString('belajar_kuis_$lessonId');
+    if (raw == null || raw.isEmpty) return const {};
+    Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      return const {};
+    }
+    if (decoded is! Map<String, dynamic>) return const {};
+    final history = <String, QuizRecord>{};
+    for (final entry in decoded.entries) {
+      final value = entry.value;
+      if (value is! Map<String, dynamic>) continue;
+      final record = QuizRecord.fromJson(value);
+      if (record != null) history[entry.key] = record;
+    }
+    return history;
+  }
+
+  static Future<void> recordQuizAnswer(
+    String lessonId,
+    String quizId, {
+    required bool isCorrect,
+  }) async {
+    final history = Map<String, QuizRecord>.from(getQuizHistory(lessonId));
+    history[quizId] = (history[quizId] ?? const QuizRecord()).answered(
+      isCorrect: isCorrect,
+    );
+    await _prefs?.setString(
+      'belajar_kuis_$lessonId',
+      jsonEncode({
+        for (final entry in history.entries) entry.key: entry.value.toJson(),
+      }),
+    );
+  }
+
+  /// Nomor ronde latihan berikutnya, dipakai sebagai benih pengacakan supaya
+  /// susunan soalnya berbeda tiap kali latihan dimulai.
+  static Future<int> nextQuizRound() async {
+    final next = (_prefs?.getInt('belajar_kuis_ronde') ?? 0) + 1;
+    await _prefs?.setInt('belajar_kuis_ronde', next);
+    return next;
   }
 
   /// Catatan hafalan per ayat untuk satu surah.

@@ -4,6 +4,7 @@ import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
+import 'package:quran_app_2025/screens/lesson_quiz_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 /// Apakah materi draf boleh ditampilkan. Rilis: tidak; debug: ya, berlabel
@@ -67,10 +68,25 @@ class _LessonScreenState extends State<LessonScreen> {
                   'dan pemeriksaan pengajar sebelum bisa dibaca.',
             )
           else
-            for (final block in lesson.blocks) ...[
-              _BlockView(block: block),
-              const SizedBox(height: 14),
-            ],
+            // Soal dikeluarkan dari alur bacaan; semuanya dikumpulkan di
+            // layar latihan supaya bisa dibagi per halaman dan diacak.
+            for (final block in lesson.blocks)
+              if (block is! LessonQuiz) ...[
+                _BlockView(block: block),
+                const SizedBox(height: 14),
+              ],
+          if (lesson.quizzes.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            FilledButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => LessonQuizScreen(lesson: lesson),
+                ),
+              ),
+              icon: const Icon(Icons.quiz_outlined),
+              label: Text('Latihan · ${lesson.quizzes.length} soal'),
+            ),
+          ],
           if (lesson.sources.isNotEmpty) ...[
             const SizedBox(height: 6),
             _Sources(sources: lesson.sources),
@@ -179,7 +195,7 @@ class _BlockView extends StatelessWidget {
     LessonTip(:final text) => _Tip(text: text),
     final LessonExample example => _Example(example: example),
     final LessonAudio audio => _Audio(audio: audio),
-    final LessonQuiz quiz => _Quiz(quiz: quiz),
+    LessonQuiz() => const SizedBox.shrink(),
   };
 }
 
@@ -325,134 +341,6 @@ class _Audio extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Soal pemahaman. Bukan penilaian bacaan.
-class _Quiz extends StatefulWidget {
-  const _Quiz({required this.quiz});
-
-  final LessonQuiz quiz;
-
-  @override
-  State<_Quiz> createState() => _QuizState();
-}
-
-class _QuizState extends State<_Quiz> {
-  int? _picked;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final quiz = widget.quiz;
-    final answered = _picked != null;
-    final correct = _picked == quiz.answer;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tokens.surf,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: tokens.sep),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'LATIHAN',
-            style: SacredText.eyebrow.copyWith(color: tokens.goldText),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            quiz.question,
-            style: SacredText.listName.copyWith(color: tokens.ink),
-          ),
-          const SizedBox(height: 12),
-          for (var i = 0; i < quiz.options.length; i++)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _Option(
-                label: quiz.options[i],
-                selected: _picked == i,
-                // Jawaban benar hanya ditandai setelah dijawab, supaya tidak
-                // bocor dari warnanya sebelum dipilih.
-                isAnswer: answered && i == quiz.answer,
-                onTap: answered ? null : () => setState(() => _picked = i),
-              ),
-            ),
-          if (answered) ...[
-            const SizedBox(height: 4),
-            Text(
-              correct ? 'Betul.' : 'Belum tepat.',
-              style: SacredText.listName.copyWith(
-                color: correct ? tokens.primaryText : tokens.goldText,
-              ),
-            ),
-            if (quiz.explanation.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                quiz.explanation,
-                style: SacredText.cardNote.copyWith(color: tokens.sec),
-              ),
-            ],
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => setState(() => _picked = null),
-              child: const Text('Coba lagi'),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _Option extends StatelessWidget {
-  const _Option({
-    required this.label,
-    required this.selected,
-    required this.isAnswer,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final bool isAnswer;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final highlighted = isAnswer || selected;
-    return Semantics(
-      button: onTap != null,
-      selected: selected,
-      container: true,
-      excludeSemantics: true,
-      label: label,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: isAnswer ? tokens.primarySoft : tokens.bg,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: highlighted ? tokens.primaryText : tokens.sep,
-              width: highlighted ? 1.6 : 1,
-            ),
-          ),
-          child: Text(
-            label,
-            style: SacredText.body.copyWith(
-              color: isAnswer ? tokens.primaryText : tokens.ink,
-            ),
-          ),
-        ),
       ),
     );
   }

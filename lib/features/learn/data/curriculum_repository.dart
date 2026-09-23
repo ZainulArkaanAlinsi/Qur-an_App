@@ -197,9 +197,15 @@ class CurriculumRepository {
         );
 
       case 'quiz':
+        final quizId = _string(item['id']);
         final question = _string(item['question']);
         final options = _strings(item['options'], id, 'options');
         final answer = item['answer'];
+        if (quizId.isEmpty) {
+          // Tanpa id tetap, riwayat jawaban akan menunjuk soal yang keliru
+          // begitu urutannya digeser.
+          throw FormatException('Soal pada "$id" tanpa "id".');
+        }
         if (question.isEmpty) {
           throw FormatException('Soal pada "$id" tanpa pertanyaan.');
         }
@@ -210,6 +216,7 @@ class CurriculumRepository {
           throw FormatException('Kunci jawaban pada "$id" di luar pilihan.');
         }
         return LessonQuiz(
+          id: quizId,
           question: question,
           options: options,
           answer: answer,

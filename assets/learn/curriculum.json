@@ -75,10 +75,77 @@
         },
         {
           "type": "quiz",
+          "id": "huruf-1",
           "question": "Huruf mana yang dibedakan dari 'ba' hanya oleh jumlah dan letak titiknya?",
           "options": ["ta dan tsa", "mim dan nun", "wau dan ya", "lam dan kaf"],
           "answer": 0,
           "explanation": "Ba, ta, dan tsa memakai bentuk dasar yang sama; yang membedakan hanya titiknya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-2",
+          "question": "Ada berapa huruf hijaiyah?",
+          "options": ["26", "28", "30", "32"],
+          "answer": 1,
+          "explanation": "Huruf hijaiyah ada 28, dari alif sampai ya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-3",
+          "question": "Huruf apa yang berada tepat sesudah jim?",
+          "options": ["kha", "ha", "dal", "tsa"],
+          "answer": 1,
+          "explanation": "Urutannya jim, ha, kha — ketiganya berbentuk sama dan dibedakan titiknya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-4",
+          "question": "Pasangan mana yang bentuknya sama dan hanya dibedakan satu titik?",
+          "options": ["dal dan dzal", "alif dan lam", "mim dan wau", "sin dan shad"],
+          "answer": 0,
+          "explanation": "Dzal adalah dal yang diberi satu titik di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-5",
+          "question": "Berapa titik yang membedakan sin dari syin?",
+          "options": ["Satu", "Dua", "Tiga", "Tidak ada titik"],
+          "answer": 2,
+          "explanation": "Syin adalah sin dengan tiga titik di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-6",
+          "question": "Kenapa titik pada huruf penting?",
+          "options": [
+            "Titik menentukan hurufnya, dan huruf menentukan artinya",
+            "Titik hanya hiasan penulisan",
+            "Titik menandakan panjang bacaan",
+            "Titik menandakan tempat berhenti"
+          ],
+          "answer": 0,
+          "explanation": "Salah titik berarti salah huruf, dan salah huruf bisa mengubah arti."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-7",
+          "question": "Huruf apa yang berada di urutan terakhir?",
+          "options": ["wau", "ha", "ya", "nun"],
+          "answer": 2,
+          "explanation": "Urutan penutupnya nun, wau, ha, lalu ya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-8",
+          "question": "Pasangan 'ain dan ghain dibedakan oleh apa?",
+          "options": [
+            "Satu titik di atas ghain",
+            "Bentuk ekornya",
+            "Jumlah titik di bawahnya",
+            "Ukuran hurufnya"
+          ],
+          "answer": 0,
+          "explanation": "Ghain adalah 'ain yang diberi satu titik di atasnya."
         }
       ]
     },
@@ -112,10 +179,61 @@
         },
         {
           "type": "quiz",
+          "id": "sambung-1",
           "question": "Mana yang tidak menyambung ke huruf sesudahnya?",
           "options": ["ba", "ra", "sin", "mim"],
           "answer": 1,
           "explanation": "Ra termasuk enam huruf yang tidak menyambung ke kiri: alif, dal, dzal, ra, zai, wau."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-2",
+          "question": "Ada berapa huruf yang tidak menyambung ke huruf sesudahnya?",
+          "options": ["Empat", "Lima", "Enam", "Tujuh"],
+          "answer": 2,
+          "explanation": "Enam: alif, dal, dzal, ra, zai, dan wau."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-3",
+          "question": "Huruf sesudah 'dal' di tengah kata memakai bentuk apa?",
+          "options": ["Bentuk awal", "Bentuk tengah", "Bentuk akhir", "Bentuk tunggal"],
+          "answer": 0,
+          "explanation": "Karena dal tidak menyambung ke kiri, huruf sesudahnya memulai lagi dengan bentuk awal."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-4",
+          "question": "Satu huruf bisa punya berapa bentuk tergantung posisinya?",
+          "options": [
+            "Selalu satu",
+            "Awal, tengah, dan akhir",
+            "Hanya awal dan akhir",
+            "Berubah setiap kata"
+          ],
+          "answer": 1,
+          "explanation": "Bentuknya menyesuaikan posisi: awal, tengah, atau akhir kata."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-5",
+          "question": "Mana yang termasuk enam huruf itu?",
+          "options": ["wau", "nun", "ya", "lam"],
+          "answer": 0,
+          "explanation": "Wau termasuk; nun, ya, dan lam menyambung ke huruf sesudahnya."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-6",
+          "question": "Kenapa bentuk huruf berubah-ubah?",
+          "options": [
+            "Karena huruf Arab ditulis bersambung",
+            "Karena hurufnya berbeda-beda",
+            "Karena mengikuti harakatnya",
+            "Karena mengikuti panjang bacaan"
+          ],
+          "answer": 0,
+          "explanation": "Tulisan Arab bersambung, jadi bentuk huruf menyesuaikan sambungannya."
         }
       ]
     },
@@ -160,10 +278,56 @@
         },
         {
           "type": "quiz",
+          "id": "harakat-1",
           "question": "Tanda apa yang diletakkan di bawah huruf?",
           "options": ["Fathah", "Kasrah", "Dhammah", "Sukun"],
           "answer": 1,
           "explanation": "Kasrah ditulis di bawah huruf dan berbunyi 'i'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-2",
+          "question": "Fathah berbunyi apa?",
+          "options": ["a", "i", "u", "n"],
+          "answer": 0,
+          "explanation": "Fathah adalah garis miring di atas huruf, berbunyi 'a'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-3",
+          "question": "Dhammah bentuknya menyerupai huruf apa?",
+          "options": ["Alif kecil", "Wau kecil", "Nun kecil", "Ya kecil"],
+          "answer": 1,
+          "explanation": "Dhammah ditulis di atas huruf, bentuknya menyerupai wau kecil, dan berbunyi 'u'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-4",
+          "question": "Kenapa huruf Arab perlu harakat?",
+          "options": [
+            "Karena hurufnya tidak membawa vokal sendiri",
+            "Karena hurufnya terlalu pendek",
+            "Karena menandakan tempat berhenti",
+            "Karena membedakan huruf mirip"
+          ],
+          "answer": 0,
+          "explanation": "Huruf Arab hanya konsonan; vokalnya ditentukan harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-5",
+          "question": "Huruf berharakat kasrah dibaca bagaimana?",
+          "options": ["Bi", "Ba", "Bu", "Ban"],
+          "answer": 0,
+          "explanation": "Kasrah berbunyi 'i', jadi huruf ba berharakat kasrah dibaca 'bi'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-6",
+          "question": "Mana yang bukan harakat?",
+          "options": ["Fathah", "Kasrah", "Dhammah", "Tasydid"],
+          "answer": 3,
+          "explanation": "Tasydid bukan penentu vokal; ia menandakan huruf dibaca ganda."
         }
       ]
     },
@@ -216,6 +380,7 @@
         },
         {
           "type": "quiz",
+          "id": "tanwin-1",
           "question": "Tanwin yang ditulis di bawah huruf berbunyi apa?",
           "options": ["an", "in", "un", "ai"],
           "answer": 1,
@@ -223,6 +388,7 @@
         },
         {
           "type": "quiz",
+          "id": "tanwin-2",
           "question": "Apa beda tanwin dengan harakat biasa?",
           "options": [
             "Tanwin menambah bunyi 'n' di belakangnya",
@@ -232,6 +398,51 @@
           ],
           "answer": 0,
           "explanation": "Harakat biasa berbunyi a, i, u. Tanwin berbunyi an, in, un — ada tambahan 'n' yang tidak ditulis sebagai huruf."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-3",
+          "question": "Fathatain berbunyi apa?",
+          "options": ["an", "in", "un", "aa"],
+          "answer": 0,
+          "explanation": "Fathatain adalah dua garis miring di atas huruf, berbunyi 'an'."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-4",
+          "question": "Bunyi 'n' pada tanwin ditulis sebagai apa?",
+          "options": [
+            "Tidak ditulis sebagai huruf",
+            "Huruf nun kecil",
+            "Huruf mim kecil",
+            "Alif kecil"
+          ],
+          "answer": 0,
+          "explanation": "Bunyi 'n' pada tanwin hanya terdengar; tidak ada huruf nun yang ditulis."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-5",
+          "question": "Tanwin muncul di bagian mana dari kata?",
+          "options": ["Akhir kata", "Awal kata", "Tengah kata", "Di mana saja"],
+          "answer": 0,
+          "explanation": "Tanwin ditulis di akhir kata."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-6",
+          "question": "Dhammatain berbunyi apa?",
+          "options": ["un", "an", "in", "uu"],
+          "answer": 0,
+          "explanation": "Dhammatain berbunyi 'un'."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-7",
+          "question": "Fathatain sering terlihat menempel pada huruf apa di akhir kata?",
+          "options": ["Alif", "Wau", "Ya", "Nun"],
+          "answer": 0,
+          "explanation": "Fathatain biasanya disandarkan pada alif di akhir kata."
         }
       ]
     },
@@ -287,6 +498,7 @@
         },
         {
           "type": "quiz",
+          "id": "sukun-1",
           "question": "Huruf yang memakai sukun dibaca bagaimana?",
           "options": [
             "Mati, tanpa bunyi a, i, atau u",
@@ -299,10 +511,76 @@
         },
         {
           "type": "quiz",
+          "id": "sukun-2",
           "question": "Berapa kali huruf bertasydid dibaca?",
           "options": ["Sekali", "Dua kali", "Tiga kali", "Tergantung harakatnya"],
           "answer": 1,
           "explanation": "Dua kali: huruf pertama mati, huruf kedua mengikuti harakat yang tertulis bersama tasydidnya."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-3",
+          "question": "Tanda sukun bentuknya seperti apa?",
+          "options": [
+            "Bulatan kecil di atas huruf",
+            "Garis miring di atas huruf",
+            "Dua garis di bawah huruf",
+            "Kepala sin kecil di atas huruf"
+          ],
+          "answer": 0,
+          "explanation": "Sukun berupa bulatan kecil; kepala sin kecil itu tasydid."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-4",
+          "question": "Huruf bersukun dibaca menempel pada huruf yang mana?",
+          "options": [
+            "Huruf sebelumnya",
+            "Huruf sesudahnya",
+            "Tidak menempel",
+            "Huruf pertama kata"
+          ],
+          "answer": 0,
+          "explanation": "Huruf mati menempel pada huruf sebelumnya yang berharakat."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-5",
+          "question": "Huruf bertasydid: bagian mana yang mati?",
+          "options": [
+            "Yang pertama",
+            "Yang kedua",
+            "Keduanya",
+            "Tidak ada yang mati"
+          ],
+          "answer": 0,
+          "explanation": "Yang pertama mati, yang kedua berharakat sesuai tanda yang menyertainya."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-6",
+          "question": "Kalau tasydid disertai kasrah, tandanya ditulis di mana?",
+          "options": [
+            "Di bawah huruf",
+            "Di atas huruf",
+            "Di dalam tasydid",
+            "Tidak ditulis"
+          ],
+          "answer": 0,
+          "explanation": "Kasrah tetap ditulis di bawah huruf walau ada tasydid di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-7",
+          "question": "Mana yang benar tentang tasydid?",
+          "options": [
+            "Selalu disertai harakat lain",
+            "Berdiri sendiri tanpa harakat",
+            "Hanya muncul di akhir kata",
+            "Menandakan huruf tidak dibaca"
+          ],
+          "answer": 0,
+          "explanation": "Tasydid tidak pernah sendirian; selalu ada harakat yang menyertainya."
         }
       ]
     },
@@ -385,6 +663,7 @@
         },
         {
           "type": "quiz",
+          "id": "tanda-1",
           "question": "Kapan hamzah washal dibaca?",
           "options": [
             "Saat memulai bacaan dari kata itu",
@@ -397,6 +676,7 @@
         },
         {
           "type": "quiz",
+          "id": "tanda-2",
           "question": "Penanda juz, hizb, dan rubu' di tepi halaman gunanya untuk apa?",
           "options": [
             "Membagi mushaf agar mudah dibaca rutin",

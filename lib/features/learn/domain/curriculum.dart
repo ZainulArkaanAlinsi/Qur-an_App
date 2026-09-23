@@ -67,11 +67,16 @@ class LessonAudio extends LessonBlock {
 @immutable
 class LessonQuiz extends LessonBlock {
   const LessonQuiz({
+    required this.id,
     required this.question,
     required this.options,
     required this.answer,
     required this.explanation,
   });
+
+  /// Pengenal tetap, dipakai menyimpan riwayat jawaban. Harus tidak berubah
+  /// walau urutan soal di berkas materi digeser.
+  final String id;
 
   final String question;
   final List<String> options;
