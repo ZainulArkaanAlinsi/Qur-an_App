@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
+import 'package:quran_app_2025/screens/murottal_screen.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 
 /// Murottal controls shared by the reader and the main shell. Hidden while
@@ -99,6 +100,16 @@ class AudioMiniPlayer extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const MurottalScreen(),
+                            ),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.open_in_full_rounded),
+                          tooltip: 'Buka layar murottal',
                         ),
                         IconButton(
                           onPressed: audio.stop,
