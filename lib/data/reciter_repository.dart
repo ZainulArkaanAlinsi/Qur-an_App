@@ -6,6 +6,34 @@ import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Menyaring respons edisi menjadi daftar qari yang benar-benar layak tampil.
+///
+/// Endpoint Al Quran Cloud mengembalikan semua edisi audio, termasuk **audio
+/// terjemahan** (mis. `en.walk`, `ur.khan`, `fr.leclerc`) yang bukan bacaan
+/// Al-Qur'an, dan edisi **riwayat selain Hafs** seperti Warsh. Sebelumnya
+/// semuanya ikut masuk daftar qari, sehingga pengguna bisa memilih suara yang
+/// tidak cocok dengan teks Hafs di layar. Penyaringannya dipisah ke fungsi
+/// murni agar bisa diuji tanpa jaringan.
+List<Reciter> keepRecitations(List<Map<String, dynamic>> editions) {
+  final seen = <String>{};
+  final kept = <Reciter>[];
+  for (final edition in editions) {
+    if (edition['identifier'] is! String) continue;
+    // Bacaan Al-Qur'an selalu berbahasa Arab; sisanya audio terjemahan.
+    // Entri yang tidak menyebut bahasa tetap disimpan: kalau suatu saat
+    // provider mengganti nama field ini, daftar qari jangan sampai ambruk
+    // jadi kosong — lebih baik longgar daripada fiturnya mati diam-diam.
+    final language = edition['language'];
+    if (language is String && language != 'ar') continue;
+    final reciter = Reciter.fromEdition(edition);
+    if (reciter.narration != Narration.hafs) continue;
+    if (!seen.add(reciter.identifier)) continue;
+    kept.add(reciter);
+  }
+  kept.sort((a, b) => a.displayName.compareTo(b.displayName));
+  return kept;
+}
+
 /// Daftar qari murottal per ayat dari Al Quran Cloud (tanpa API key).
 ///
 /// Daftarnya diambil dari endpoint resources, bukan ditulis tetap di kode,
@@ -62,10 +90,9 @@ class ReciterRepository {
         }
         final body =
             jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-        return [
-          for (final edition in body['data'] as List)
-            Reciter.fromEdition(edition as Map<String, dynamic>),
-        ];
+        return keepRecitations(
+          (body['data'] as List).cast<Map<String, dynamic>>(),
+        );
       });
       if (reciters.isEmpty) throw const FormatException('Daftar qari kosong');
       await prefs.setString(
