@@ -65,12 +65,12 @@ void main() {
     expect(find.text('Kalender Hijriah butuh koneksi'), findsOneWidget);
 
     expect(find.text('AYAT HARI INI'), findsOneWidget);
-    final reference = find.textContaining('QS ');
+    final reference = find.textContaining('QS. ');
     expect(reference, findsOneWidget);
 
     // Teksnya harus sama persis dengan dataset, bukan ditulis ulang.
     final label = tester.widget<Text>(reference).data!;
-    final match = RegExp(r'QS (.+) : (\d+) ·').firstMatch(label)!;
+    final match = RegExp(r'QS\. (.+) \d+:(\d+)').firstMatch(label)!;
     final chosen = surahCatalog.firstWhere(
       (item) => item.displayName == match[1],
     );

@@ -351,4 +351,56 @@ abstract final class SacredText {
   /// Label kecil huruf kapital dengan jarak huruf lebar.
   static TextStyle get eyebrow =>
       _font(ui, 11, 14, 800).copyWith(letterSpacing: 11 * .12);
+
+  // Gaya di bawah ini diambil langsung dari mockup di folder handoff
+  // (`docs/design/ios-redesign/html/`). Setiap ukuran punya nama supaya tidak
+  // ada lagi angka lepas yang ditulis berbeda-beda di tiap layar.
+
+  /// Beranda: baris tanggal Masehi dan baris Hijriah di bawahnya.
+  static TextStyle get dateLine => _font(ui, 13, 17, 700);
+  static TextStyle get dateSub => _font(ui, 13, 17, 500);
+
+  /// "Assalamu'alaikum," di atas nama.
+  static TextStyle get greetingSmall => _font(ui, 15, 20, 600);
+
+  /// Inisial pada lingkaran profil.
+  static TextStyle get avatar => _font(serif, 21, 24, 500);
+
+  /// Judul surah pada kartu hero.
+  static TextStyle get heroTitle => _font(serif, 32, 36, 500);
+  static TextStyle get heroCta => _font(ui, 15, 20, 800);
+  static TextStyle get heroAction => _font(ui, 15, 20, 700);
+
+  /// Angka persen di samping bar kemajuan.
+  static TextStyle get percent => _font(ui, 12, 16, 800);
+
+  /// Judul kecil di dalam kartu, dan keterangan di bawahnya.
+  static TextStyle get cardLabel => _font(ui, 13, 17, 700);
+  static TextStyle get cardNote => _font(ui, 12, 16, 600);
+
+  /// Angka besar pada kartu target dan istiqamah, beserta satuannya.
+  static TextStyle get metric => _font(ui, 22, 26, 800);
+  static TextStyle get metricUnit => _font(ui, 14, 18, 600);
+
+  /// Persen kecil di tengah cincin target.
+  static TextStyle get ringLabel => _font(ui, 12, 14, 800);
+
+  /// Chip kecil seperti "MENUNGGU".
+  static TextStyle get chip => _font(ui, 10.5, 13, 800);
+
+  /// Label pada pintasan Surah/Bookmark/Khatam.
+  static TextStyle get chipLabel => _font(ui, 14, 18, 700);
+
+  /// Huruf hari di bawah titik istiqamah.
+  static TextStyle get dayLetter => _font(ui, 10, 13, 700);
+
+  /// Strip salat: nama dan jam, lalu pil hitung mundur.
+  static TextStyle get stripTitle => _font(ui, 15, 20, 800);
+  static TextStyle get stripPill => _font(ui, 12.5, 16, 800).copyWith(
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+
+  /// Terjemahan pada kartu ayat hari ini.
+  static TextStyle get verseTranslation =>
+      _font(serif, 19, 25, 400).copyWith(fontStyle: FontStyle.italic);
 }
