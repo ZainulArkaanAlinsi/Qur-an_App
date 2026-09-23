@@ -200,6 +200,54 @@ belum ada tangkapan layar terang/gelap karena tidak ada perangkat/emulator
 tersambung; mode gelap, teks 200 %, dan layar sempit hanya tercakup oleh
 `test/qa_states_test.dart`.
 
+## Revisi v2 — Tahap 1: lisensi (23 September 2026)
+
+Hasil lengkap: **`docs/revisi-v2/TAHAP_1_LISENSI.md`**.
+
+**Mode Mushaf persis cetakan tidak bisa masuk rilis sekarang.** Data tata letak
+baris dari QUL — satu-satunya bahan yang wajib ada — **tidak punya keterangan
+lisensi sama sekali** di halaman resource mana pun; FAQ-nya menyuruh memeriksa
+lisensi "yang disediakan pembuat resource", padahal keterangan itu tidak ada.
+Tanpa izin tertulis, datanya tidak diunduh, tidak dibundel, dan tidak dirilis.
+
+Tiga bahan lain justru bersih: font KFGQPC Uthmanic Hafs boleh didistribusikan
+gratis (tapi **dilarang di-subset atau dikonversi**), data tajwid
+`cpfair/quran-tajweed` CC BY 4.0 (**kodenya tanpa lisensi — jangan disalin**),
+dan QuranEnc boleh dibundel dengan tujuh syarat, dua di antaranya mengubah
+desain: nomor versi wajib tampil dan aplikasi wajib punya jalur pembaruan.
+
+Catatan teknis penting untuk Tahap 2: offset anotasi cpfair menunjuk ke salinan
+Tanzil April 2017, sedangkan yang dibundel di sini v1.0.2 yang lebih baru. Jadi
+anotasinya **tidak boleh langsung ditempel** ke teks kita — persis pola yang
+sudah dilarang ADR-2. Harus dicocokkan ayat per ayat lebih dulu, dengan tes.
+
+## Revisi v2 — Tahap 3 & 5 & sebagian 6 (23 September 2026)
+
+**Qari (§E).** Daftar qari sebelumnya adalah apa pun yang dikembalikan endpoint
+Al Quran Cloud, tanpa penyaringan sama sekali — termasuk **audio terjemahan**
+(`en.walk`, `ur.khan`, `fr.leclerc`) yang bukan bacaan, dan edisi **riwayat
+Warsh** yang tidak cocok dengan teks Hafs di layar. Model `Reciter` kini membawa
+gaya, riwayat, penyedia, atribusi, dan penanda data waktu per kata. Gaya dibaca
+dari nama edisi penyedia; kalau tidak disebut, ditulis belum dipastikan, bukan
+ditebak murattal. Cache lama tanpa field baru tetap terbaca.
+
+**Hafalan (§D).** Status hafalan dulu hanya satu per surah tanpa jadwal apa pun,
+sehingga tidak ada yang memberi tahu apa yang harus diulang hari ini. Sekarang
+tiap ayat punya jarak ulang dan tanggal jatuh tempo sendiri, dengan tangga yang
+bisa dibaca langsung di layar: 1 → 3 → 7 → 14 → 30 hari, naik saat lancar, tetap
+saat ragu, kembali ke 1 hari saat salah. Layar latihan dapat tiga tombol penanda;
+yang menilai tetap orangnya. Layar Hafalan menjelaskan ziyadah/murajaah/tasmi'.
+Beranda menampilkan baris murajaah hanya bila memang ada yang jatuh tempo.
+
+**Sinkronisasi cloud untuk data hafalan belum dikerjakan** — itu perlu mengubah
+dan men-deploy aturan Firestore, dan itu tidak dilakukan tanpa pengawasan.
+
+**Sebagian §E.** Lima warna lencana ikon dulu konstanta `const` yang ditulis dua
+kali di dua layar, sehingga tetap pekat di mode gelap; sekarang satu tempat dan
+ikut kecerahan tema. Baris sumber murottal dulu selalu menyebut "Alafasy, 128
+kbps" apa pun qari yang dipilih karena grupnya `const`; sekarang menyebut qari
+dan bitrate yang benar-benar dipakai.
+
 ### Belum dikerjakan dari daftar Tahap 0.5
 
 Warna chip hardcode di Pengaturan dan Belajar, 23 warna hardcode di Beranda,
