@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/screens/quran_library_screen.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
@@ -10,15 +11,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('daftar Quran dapat dicari dan difilter', (tester) async {
+    // Pembacaan aset hanya berjalan di luar waktu semu, jadi setiap kali
+    // layar memuat metadata kita beri satu putaran waktu nyata dulu.
+    Future<void> loadAssets() async {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+    }
+
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: QuranLibraryScreen())),
+      MaterialApp(
+        theme: SacredTheme.themeFor(AppPalette.sacred, Brightness.light),
+        home: const Scaffold(body: QuranLibraryScreen()),
+      ),
     );
+    await tester.pump();
     expect(find.text('Al-Fatihah'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'Yasin');
     await tester.pump();
+    // Teks yang diketik juga cocok dengan find.text, jadi batasi ke daftar.
     expect(
-      find.descendant(of: find.byType(Card), matching: find.text('Yasin')),
+      find.descendant(of: find.byType(ListView), matching: find.text('Yasin')),
       findsOneWidget,
     );
     expect(find.text('Al-Fatihah'), findsNothing);
@@ -32,7 +45,14 @@ void main() {
 
     await tester.tap(find.text('Juz'));
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await loadAssets();
+    expect(find.text('Juz 1'), findsOneWidget);
+
+    // Halaman 1 memuat Al-Fatihah; halaman berikutnya sudah Al-Baqarah.
+    await tester.tap(find.text('Halaman'));
+    await tester.pump();
+    await loadAssets();
+    expect(find.text('Al-Fatihah'), findsOneWidget);
   });
 
   test('metadata Juz memiliki 30 batas berurutan', () {

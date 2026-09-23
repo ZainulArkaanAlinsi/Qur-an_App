@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/screens/qibla_screen.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
@@ -118,7 +119,18 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Jadwal salat & Hijriah')),
+    appBar: AppBar(
+      title: const Text('Jadwal salat & Hijriah'),
+      actions: [
+        IconButton(
+          tooltip: 'Arah kiblat',
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => const QiblaScreen())),
+          icon: const Icon(Icons.explore_outlined),
+        ),
+      ],
+    ),
     body: FutureBuilder<PrayerDay>(
       future: _day,
       builder: (context, snapshot) {

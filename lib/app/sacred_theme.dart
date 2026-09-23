@@ -30,9 +30,8 @@ abstract final class SacredTheme {
       AppPalette.sacred => isDark ? SacredTokens.dark : SacredTokens.light,
       // Sepia adalah tema baca terang; versi gelapnya memakai token gelap.
       AppPalette.sepia => isDark ? SacredTokens.dark : SacredTokens.sepia,
-      AppPalette.highContrast => isDark
-          ? SacredTokens.highContrastDark
-          : SacredTokens.highContrastLight,
+      AppPalette.highContrast =>
+        isDark ? SacredTokens.highContrastDark : SacredTokens.highContrastLight,
     };
   }
 
@@ -113,8 +112,14 @@ abstract final class SacredTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
+      // Tanpa ini komponen Material (tombol, daftar, dialog) tetap memakai
+      // font bawaan sistem dan terlihat lepas dari desainnya.
+      fontFamily: SacredText.ui,
       scaffoldBackgroundColor: scheme.surface,
+      // Typography bawaan menuliskan nama font sistem secara eksplisit, yang
+      // menimpa `fontFamily` di atas; jadi disetel ulang di sini.
       textTheme: ThemeData(brightness: brightness).textTheme.apply(
+        fontFamily: SacredText.ui,
         bodyColor: isDark ? const Color(0xFFE7EEE9) : ink,
         displayColor: isDark ? const Color(0xFFE7EEE9) : ink,
       ),

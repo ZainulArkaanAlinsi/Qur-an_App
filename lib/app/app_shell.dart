@@ -1,20 +1,43 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
-import 'package:quran_app_2025/screens/learn_screen.dart';
-import 'package:quran_app_2025/screens/memorization_screen.dart';
-import 'package:quran_app_2025/screens/profile_screen.dart';
-import 'package:quran_app_2025/screens/qibla_screen.dart';
+import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/quran_library_screen.dart';
+import 'package:quran_app_2025/screens/quran_search_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
+import 'package:quran_app_2025/screens/settings_screen.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/services/auto_update_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
+
+const _tabs = [
+  SacredTab(
+    icon: Icons.home_outlined,
+    activeIcon: Icons.home_rounded,
+    label: 'Beranda',
+  ),
+  SacredTab(
+    icon: Icons.menu_book_outlined,
+    activeIcon: Icons.menu_book_rounded,
+    label: 'Qur’an',
+  ),
+  SacredTab(
+    icon: Icons.insights_outlined,
+    activeIcon: Icons.insights_rounded,
+    label: 'Progres',
+  ),
+  SacredTab(
+    icon: Icons.tune_outlined,
+    activeIcon: Icons.tune_rounded,
+    label: 'Pengaturan',
+  ),
+];
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -85,85 +108,75 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
     final pages = [
-      HomeScreen(
-        onOpenQuran: () => setState(() => _index = 1),
-        onOpenQibla: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const QiblaScreen())),
-      ),
+      HomeScreen(onOpenQuran: () => setState(() => _index = 1)),
       const QuranLibraryScreen(),
-      const LearnScreen(),
-      const MemorizationScreen(),
-      const ProfileScreen(),
+      const ProgressScreen(),
+      const _SettingsTab(),
     ];
     return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(index: _index, children: pages),
-      ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AudioMiniPlayer(
-              onOpen: (surah, ayah) => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      ReaderScreen(surah: surah, initialVerse: ayah),
+      backgroundColor: tokens.bg,
+      // Tab bar mengambang di atas isi layar; tiap halaman menyisakan ruang
+      // kosong di bawah daftarnya sendiri supaya tidak ada yang tertutup.
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: SafeArea(
+              bottom: false,
+              child: IndexedStack(index: _index, children: pages),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: AudioMiniPlayer(
+                    onOpen: (surah, ayah) => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            ReaderScreen(surah: surah, initialVerse: ayah),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: QuranAudioService.instance.queue,
-              builder: (context, queue, _) =>
-                  SizedBox(height: queue == null ? 0 : 8),
-            ),
-            GlassSurface(
-              borderRadius: BorderRadius.circular(26),
-              // Five labels must fit one row; cap scaling so none is clipped.
-              child: MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.3,
-                child: NavigationBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  selectedIndex: _index,
-                  onDestinationSelected: (value) =>
-                      setState(() => _index = value),
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home_rounded),
-                      label: 'Beranda',
+                FloatingTabBar(
+                  tabs: _tabs,
+                  currentIndex: _index,
+                  onSelected: (value) => setState(() => _index = value),
+                  onSearch: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const QuranSearchScreen(),
                     ),
-                    NavigationDestination(
-                      icon: Icon(Icons.menu_book_outlined),
-                      selectedIcon: Icon(Icons.menu_book_rounded),
-                      label: 'Baca',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.school_outlined),
-                      selectedIcon: Icon(Icons.school_rounded),
-                      label: 'Belajar',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.psychology_outlined),
-                      selectedIcon: Icon(Icons.psychology_rounded),
-                      label: 'Hafalan',
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.person_outline_rounded),
-                      selectedIcon: Icon(Icons.person_rounded),
-                      label: 'Profil',
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// Tab Pengaturan. [SettingsScreen] adalah daftar tanpa Scaffold sendiri, jadi
+/// judul besarnya dipasang di sini.
+class _SettingsTab extends StatelessWidget {
+  const _SettingsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LargeTitle('Pengaturan'),
+        Expanded(child: SettingsScreen()),
+      ],
     );
   }
 }

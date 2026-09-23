@@ -1,450 +1,819 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/app_shell.dart';
-import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
+import 'package:quran_app_2025/data/juz_repository.dart';
+import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
-import 'package:quran_app_2025/screens/reader_screen.dart';
+import 'package:quran_app_2025/screens/bookmark_screen.dart';
+import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
+import 'package:quran_app_2025/screens/learn_screen.dart';
+import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/prayer_screen.dart';
-import 'package:quran_app_2025/screens/islamic_news_screen.dart';
+import 'package:quran_app_2025/screens/reader_screen.dart';
+import 'package:quran_app_2025/services/prayer_service.dart';
+import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
+/// Beranda edisi iOS. Urutannya mengikuti panduan: lanjut baca, target hari
+/// ini, istiqamah, pintasan, strip salat, lalu ayat hari ini.
+///
+/// Semua angka berasal dari data nyata perangkat; tidak ada angka contoh.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({
-    super.key,
-    required this.onOpenQuran,
-    required this.onOpenQibla,
-  });
+  const HomeScreen({super.key, required this.onOpenQuran});
+
+  /// Pindah ke tab Qur'an.
   final VoidCallback onOpenQuran;
-  final VoidCallback onOpenQibla;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late Future<_HomeData> _data = _load();
+  late Future<PrayerDay?> _prayer = _loadPrayer();
+
+  /// Data dari perangkat sendiri. Sengaja tidak menunggu jaringan supaya isi
+  /// beranda tetap muncul saat luring.
+  Future<_HomeData> _load() async {
+    List<JuzBoundary> juz;
+    try {
+      juz = await JuzRepository.load();
+    } on Object {
+      juz = const [];
+    }
+    return _HomeData(juz: juz, verse: await _verseOfDay());
+  }
+
+  Future<PrayerDay?> _loadPrayer() async {
+    try {
+      return await PrayerService.fetch(
+        city: SharedPreferencesService.getPrayerCity(),
+        country: SharedPreferencesService.getPrayerCountry(),
+      );
+    } on Object {
+      return null; // Luring: strip salat diganti keadaan jujur.
+    }
+  }
+
+  /// Ayat hari ini diambil dari dataset yang sudah diverifikasi, dipilih
+  /// berdasarkan tanggal supaya tetap sama sepanjang hari, dan selalu tampil
+  /// bersama rujukannya. Tidak ada teks yang diketik ulang.
+  Future<_VerseOfDay?> _verseOfDay() async {
+    try {
+      final today = DateTime.now();
+      final seed = today.year * 1000 + _dayOfYear(today);
+      final surah = surahCatalog[seed % surahCatalog.length];
+      final ayah = seed % surah.ayahCount + 1;
+      final arabic = await QuranTextRepository.instance.versesForSurah(
+        surah.number,
+      );
+      String? translation;
+      try {
+        final list = await TranslationRepository.instance.forSurah(
+          surah.number,
+        );
+        translation = list[ayah - 1];
+      } on Object {
+        translation = null;
+      }
+      return _VerseOfDay(
+        surah: surah,
+        ayah: ayah,
+        arabic: arabic[ayah - 1],
+        translation: translation,
+      );
+    } on Object {
+      return null;
+    }
+  }
+
+  static int _dayOfYear(DateTime date) =>
+      date.difference(DateTime(date.year)).inDays;
+
+  void _openReader(SurahMeta surah, {int? verse}) {
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) => ReaderScreen(
+              surah: surah,
+              initialVerse:
+                  verse ??
+                  SharedPreferencesService.getLastReadVerse(surah.number),
+            ),
+          ),
+        )
+        .then((_) {
+          if (mounted) setState(() {});
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lastRead = SharedPreferencesService.getLastReadSurah();
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final lastReadNumber = SharedPreferencesService.getLastReadSurah();
     final surah = surahCatalog.firstWhere(
-      (item) => item.number == lastRead,
+      (item) => item.number == lastReadNumber,
       orElse: () => surahCatalog.first,
     );
+    final verse = SharedPreferencesService.getLastReadVerse(surah.number);
     final progress = ReadingProgressService.read();
-    final completion = (progress.todaySeconds / progress.targetSeconds).clamp(
-      0.0,
-      1.0,
-    );
-    final theme = Theme.of(context);
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-          sliver: SliverToBoxAdapter(
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: SacredTheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.auto_stories_rounded,
-                    color: SacredTheme.gold,
+    return FutureBuilder<_HomeData>(
+      future: _data,
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        return RefreshIndicator(
+          onRefresh: () async => setState(() {
+            _data = _load();
+            _prayer = _loadPrayer();
+          }),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 140),
+            children: [
+              _PrayerBuilder(
+                future: _prayer,
+                builder: (day, loading) => _Header(hijri: day),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Assalamu’alaikum,',
+                style: SacredText.body.copyWith(color: tokens.sec),
+              ),
+              Text(
+                'Selamat membaca',
+                style: SacredText.greeting.copyWith(color: tokens.ink),
+              ),
+              const SizedBox(height: 16),
+              _ContinueCard(
+                surah: surah,
+                verse: verse,
+                juz: data?.juzOf(surah.number, verse),
+                onContinue: () => _openReader(surah, verse: verse),
+                onListen: () async {
+                  try {
+                    await QuranAudioService.instance.toggle(
+                      surah: surah.number,
+                      ayah: verse,
+                    );
+                  } on Object {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Murottal belum dapat diputar.'),
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              _TargetAndStreak(progress: progress),
+              const SizedBox(height: 12),
+              _Shortcuts(
+                onQuran: widget.onOpenQuran,
+                onBookmark: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const BookmarkScreen(),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
+                onKhatam: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const KhatamPlanScreen(),
+                  ),
+                ),
+                onLearn: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(
+                      appBar: AppBar(title: const Text('Belajar')),
+                      body: const SafeArea(child: LearnScreen()),
+                    ),
+                  ),
+                ),
+                onMemorize: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const MemorizationScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _PrayerBuilder(
+                future: _prayer,
+                builder: (day, loading) =>
+                    _PrayerStrip(day: day, loading: loading),
+              ),
+              const SizedBox(height: 12),
+              _VerseCard(verse: data?.verse),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Menyalurkan hasil jadwal salat ke dua tempat: tanggal Hijriah di kepala
+/// halaman dan strip salat di bawah.
+class _PrayerBuilder extends StatelessWidget {
+  const _PrayerBuilder({required this.future, required this.builder});
+
+  final Future<PrayerDay?> future;
+  final Widget Function(PrayerDay? day, bool loading) builder;
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<PrayerDay?>(
+    future: future,
+    builder: (context, snapshot) => builder(
+      snapshot.data,
+      snapshot.connectionState != ConnectionState.done,
+    ),
+  );
+}
+
+class _HomeData {
+  const _HomeData({required this.juz, required this.verse});
+
+  final List<JuzBoundary> juz;
+  final _VerseOfDay? verse;
+
+  /// Juz tempat ayat berada, dari batas Tanzil yang sudah tervalidasi.
+  int? juzOf(int surah, int ayah) {
+    int? number;
+    for (final boundary in juz) {
+      if (boundary.surah < surah ||
+          (boundary.surah == surah && boundary.verse <= ayah)) {
+        number = boundary.number;
+      }
+    }
+    return number;
+  }
+}
+
+class _VerseOfDay {
+  const _VerseOfDay({
+    required this.surah,
+    required this.ayah,
+    required this.arabic,
+    required this.translation,
+  });
+
+  final SurahMeta surah;
+  final int ayah;
+  final String arabic;
+  final String? translation;
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.hijri});
+
+  final PrayerDay? hijri;
+
+  static const _months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+  static const _days = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final now = DateTime.now();
+    final day = hijri;
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${_days[now.weekday - 1]}, ${now.day} '
+                '${_months[now.month - 1]}',
+                style: SacredText.headline.copyWith(color: tokens.ink),
+              ),
+              Text(
+                day == null
+                    ? 'Kalender Hijriah butuh koneksi'
+                    : '${day.hijriDate} ${day.hijriMonth}',
+                style: SacredText.footnote.copyWith(color: tokens.sec),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          tooltip: 'Bookmark',
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const BookmarkScreen()),
+          ),
+          icon: Icon(Icons.bookmark_border_rounded, color: tokens.ink),
+        ),
+      ],
+    );
+  }
+}
+
+/// Kartu hero "Lanjutkan membaca".
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({
+    required this.surah,
+    required this.verse,
+    required this.juz,
+    required this.onContinue,
+    required this.onListen,
+  });
+
+  final SurahMeta surah;
+  final int verse;
+  final int? juz;
+  final VoidCallback onContinue;
+  final VoidCallback onListen;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final fraction = (verse / surah.ayahCount).clamp(0.0, 1.0);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(26),
+      child: Container(
+        color: tokens.art,
+        child: Stack(
+          children: [
+            const Positioned.fill(child: GeometricPattern(opacity: .10)),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Text(
-                          'Assalamu’alaikum',
-                          maxLines: 1,
-                          style: theme.textTheme.labelLarge,
+                      SizedBox(
+                        width: 78,
+                        height: 104,
+                        child: MihrabFrame(
+                          background: tokens.art,
+                          child: RosetteBadge(
+                            label: '${surah.number}',
+                            size: 40,
+                            textColor: tokens.artInk,
+                          ),
                         ),
                       ),
-                      Text(
-                        'Ruang tilawahmu',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -.4,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'LANJUTKAN MEMBACA',
+                              style: SacredText.eyebrow.copyWith(
+                                color: tokens.artInk,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              surah.displayName,
+                              style: SacredText.cardTitle.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              'Ayat $verse dari ${surah.ayahCount}'
+                              '${juz == null ? '' : ' · Juz $juz'}',
+                              style: SacredText.footnote.copyWith(
+                                color: Colors.white.withValues(alpha: .82),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(99),
+                                    child: LinearProgressIndicator(
+                                      value: fraction,
+                                      minHeight: 6,
+                                      backgroundColor: Colors.white.withValues(
+                                        alpha: .22,
+                                      ),
+                                      valueColor: AlwaysStoppedAnimation(
+                                        tokens.artInk,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${(fraction * 100).round()}%',
+                                  style: SacredText.footnote.copyWith(
+                                    color: tokens.artInk,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                IconButton.filledTonal(
-                  onPressed: () => openBookmarks(context),
-                  tooltip: 'Bookmark',
-                  icon: const Icon(Icons.bookmark_outline_rounded),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-          sliver: SliverToBoxAdapter(
-            child: _ContinueCard(
-              surah: surah,
-              onTap: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ReaderScreen(
-                      surah: surah,
-                      initialVerse: SharedPreferencesService.getLastReadVerse(
-                        surah.number,
-                      ),
-                    ),
-                  ),
-                );
-                if (mounted) setState(() {});
-              },
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-          sliver: SliverToBoxAdapter(
-            child: _SectionHeader(
-              title: 'Ritme hari ini',
-              trailing: '${progress.todaySeconds ~/ 60} menit',
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-          sliver: SliverToBoxAdapter(
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        _ProgressRing(value: completion),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                progress.completedToday
-                                    ? 'Target hari ini tercapai'
-                                    : progress.pendingToday
-                                    ? 'Jaga rentetanmu hari ini'
-                                    : 'Sedikit demi sedikit',
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                progress.pendingToday
-                                    ? 'Baca ${(progress.remainingSeconds / 60).ceil()} menit lagi agar tetap berlanjut'
-                                    : '${progress.todaySeconds ~/ 60} dari ${progress.targetSeconds ~/ 60} menit membaca',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: tokens.artInk,
+                            foregroundColor: const Color(0xFF1F1A05),
+                            minimumSize: const Size.fromHeight(46),
                           ),
+                          onPressed: onContinue,
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          label: const Text('Lanjutkan'),
                         ),
-                        const SizedBox(width: 8),
-                        _StreakChip(
-                          days: progress.currentStreak,
-                          active: progress.completedToday,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: BorderSide(
+                              color: Colors.white.withValues(alpha: .5),
+                            ),
+                            minimumSize: const Size.fromHeight(46),
+                          ),
+                          onPressed: onListen,
+                          icon: const Icon(Icons.headphones_rounded),
+                          label: const Text('Dengarkan'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TargetAndStreak extends StatelessWidget {
+  const _TargetAndStreak({required this.progress});
+
+  final ReadingProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final minutes = (progress.todaySeconds / 60).floor();
+    final target = (progress.targetSeconds / 60).round();
+    final remaining = (progress.remainingSeconds / 60).ceil();
+    // Target bisa disetel 0; jangan biarkan pembagian itu jadi NaN.
+    final fraction = progress.targetSeconds <= 0
+        ? 1.0
+        : (progress.todaySeconds / progress.targetSeconds).clamp(0.0, 1.0);
+
+    // IntrinsicHeight menyamakan tinggi kedua kartu; tanpa itu `stretch` di
+    // dalam daftar yang bisa digulir meminta tinggi tak terbatas.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _Panel(
+              title: 'Target hari ini',
+              child: Row(
+                children: [
+                  SizedBox.square(
+                    dimension: 52,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          value: fraction,
+                          strokeWidth: 6,
+                          backgroundColor: tokens.surf2,
+                          valueColor: AlwaysStoppedAnimation(tokens.primary),
+                        ),
+                        Text(
+                          '${(fraction * 100).round()}%',
+                          style: SacredText.footnote.copyWith(
+                            color: tokens.ink,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(99),
-                      child: LinearProgressIndicator(
-                        value: completion,
-                        minHeight: 7,
-                        backgroundColor: SacredTheme.primary.withValues(
-                          alpha: .10,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$minutes/$target mnt',
+                          style: SacredText.headline.copyWith(
+                            color: tokens.ink,
+                          ),
                         ),
-                      ),
+                        Text(
+                          progress.completedToday
+                              ? 'Target tercapai'
+                              : '$remaining mnt lagi',
+                          style: SacredText.footnote.copyWith(
+                            color: tokens.sec,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-          sliver: SliverToBoxAdapter(
-            child: _SectionHeader(title: 'Jelajahi', trailing: null),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _QuickAction(
-                        icon: Icons.menu_book_rounded,
-                        label: 'Daftar surah',
-                        caption: '114 surah',
-                        onTap: widget.onOpenQuran,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _QuickAction(
-                        icon: Icons.bookmark_outline_rounded,
-                        label: 'Tersimpan',
-                        caption:
-                            '${SharedPreferencesService.getBookmarks().length} bookmark',
-                        onTap: () => openBookmarks(context),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _QuickAction(
-                        icon: Icons.mosque_outlined,
-                        label: 'Jadwal salat',
-                        caption: 'Hijriah & pengingat',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const PrayerScreen(),
-                          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _Panel(
+              title: 'Istiqamah',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '${progress.currentStreak}',
+                        style: SacredText.headline.copyWith(
+                          color: tokens.ink,
+                          fontSize: 22,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _QuickAction(
-                        icon: Icons.newspaper_outlined,
-                        label: 'Berita Islam',
-                        caption: 'Update harian',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const IslamicNewsScreen(),
+                      const SizedBox(width: 4),
+                      Text(
+                        'hari',
+                        style: SacredText.footnote.copyWith(color: tokens.sec),
+                      ),
+                      const Spacer(),
+                      if (progress.pendingToday)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: tokens.goldSoft,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Text(
+                            'MENUNGGU',
+                            style: SacredText.eyebrow.copyWith(
+                              color: tokens.goldText,
+                              fontSize: 9,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _QuickAction(
-                  icon: Icons.explore_rounded,
-                  label: 'Arah kiblat',
-                  caption: 'Lokasi presisi dan kompas perangkat',
-                  onTap: widget.onOpenQibla,
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      for (var i = 0; i < progress.recentDays.length; i++)
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: progress.recentDays[i]
+                                ? tokens.gold
+                                : tokens.surf2,
+                            border: i == progress.recentDays.length - 1
+                                ? Border.all(color: tokens.gold, width: 1.4)
+                                : null,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _ContinueCard extends StatelessWidget {
-  const _ContinueCard({required this.surah, required this.onTap});
-  final SurahMeta surah;
-  final VoidCallback onTap;
+class _Panel extends StatelessWidget {
+  const _Panel({required this.title, required this.child});
 
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.transparent,
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [SacredTheme.primaryContainer, SacredTheme.primary],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -48,
-              right: -42,
-              child: Container(
-                width: 182,
-                height: 182,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: SacredTheme.gold.withValues(alpha: .10),
-                ),
-              ),
-            ),
-            Positioned(
-              right: 18,
-              bottom: 4,
-              child: Text(
-                'اقرأ',
-                style: TextStyle(
-                  fontFamily: 'Amiri',
-                  fontSize: 72,
-                  height: 1,
-                  color: Colors.white.withValues(alpha: .13),
-                ),
-              ),
-            ),
-            // Grows with large text instead of clipping; keeps 216 at 1x.
-            ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 216),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .12),
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                        child: const Text(
-                          'LANJUTKAN BACA',
-                          style: TextStyle(
-                            color: SacredTheme.gold,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        surah.displayName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${surah.revelation} · ${surah.ayahCount} ayat',
-                        style: const TextStyle(color: Color(0xFFD7F0E4)),
-                      ),
-                      const SizedBox(height: 14),
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            color: SacredTheme.gold,
-                            size: 19,
-                          ),
-                          SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              'Buka pembaca',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-class _ProgressRing extends StatelessWidget {
-  const _ProgressRing({required this.value});
-  final double value;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 54,
-    height: 54,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox.expand(
-          child: CircularProgressIndicator(value: value, strokeWidth: 6),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(9),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              '${(value * 100).round()}%',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _StreakChip extends StatelessWidget {
-  const _StreakChip({required this.days, required this.active});
-  final int days;
-  final bool active;
+  final String title;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    // Gold is used as a fill only; text stays emerald for contrast on ivory.
-    final background = active
-        ? SacredTheme.gold
-        : SacredTheme.primary.withValues(alpha: .08);
-    final foreground = active
-        ? SacredTheme.primary
-        : Theme.of(context).colorScheme.onSurfaceVariant;
-    return Semantics(
-      label: 'Rentetan membaca $days hari',
-      excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tokens.surf,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: tokens.sep),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: SacredText.footnote.copyWith(color: tokens.sec)),
+          const SizedBox(height: 8),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _Shortcuts extends StatelessWidget {
+  const _Shortcuts({
+    required this.onQuran,
+    required this.onBookmark,
+    required this.onKhatam,
+    required this.onLearn,
+    required this.onMemorize,
+  });
+
+  final VoidCallback onQuran;
+  final VoidCallback onBookmark;
+  final VoidCallback onKhatam;
+  final VoidCallback onLearn;
+  final VoidCallback onMemorize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            _ShortcutChip(
+              icon: Icons.menu_book_outlined,
+              label: 'Surah',
+              onTap: onQuran,
+            ),
+            const SizedBox(width: 10),
+            _ShortcutChip(
+              icon: Icons.bookmark_border_rounded,
+              label: 'Bookmark',
+              onTap: onBookmark,
+            ),
+            const SizedBox(width: 10),
+            _ShortcutChip(
+              icon: Icons.check_circle_outline_rounded,
+              label: 'Khatam',
+              onTap: onKhatam,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _ShortcutChip(
+              icon: Icons.school_outlined,
+              label: 'Belajar',
+              onTap: onLearn,
+            ),
+            const SizedBox(width: 10),
+            _ShortcutChip(
+              icon: Icons.psychology_outlined,
+              label: 'Hafalan',
+              onTap: onMemorize,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ShortcutChip extends StatelessWidget {
+  const _ShortcutChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: tokens.surf,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: tokens.sep),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20, color: tokens.primaryText),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: SacredText.footnote.copyWith(
+                    color: tokens.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PrayerStrip extends StatelessWidget {
+  const _PrayerStrip({required this.day, required this.loading});
+
+  final PrayerDay? day;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final period = SkyPeriod.fromHour(DateTime.now().hour);
+    final prayer = day;
+    if (prayer == null) {
+      return Container(
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(99),
+          color: tokens.surf,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: tokens.sep),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.local_fire_department_rounded,
-              size: 16,
-              color: foreground,
+            Icon(Icons.schedule_rounded, color: tokens.sec),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                loading
+                    ? 'Memuat jadwal salat…'
+                    : 'Jadwal salat butuh koneksi internet.',
+                style: SacredText.footnote.copyWith(color: tokens.sec),
+              ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              '$days',
-              style: TextStyle(color: foreground, fontWeight: FontWeight.w800),
+          ],
+        ),
+      );
+    }
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const PrayerScreen())),
+      child: SkyStrip(
+        period: period,
+        child: Row(
+          children: [
+            const Icon(Icons.wb_sunny_outlined, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                prayer.nextLabel,
+                style: SacredText.headline.copyWith(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -453,82 +822,65 @@ class _StreakChip extends StatelessWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.trailing});
-  final String title;
-  final String? trailing;
+class _VerseCard extends StatelessWidget {
+  const _VerseCard({required this.verse});
+
+  final _VerseOfDay? verse;
 
   @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-      Expanded(
-        child: Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-        ),
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final data = verse;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tokens.goldSoft,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: tokens.sep),
       ),
-      if (trailing != null) const SizedBox(width: 12),
-      if (trailing != null)
-        Text(
-          trailing!,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'AYAT HARI INI',
+            style: SacredText.eyebrow.copyWith(color: tokens.goldText),
           ),
-        ),
-    ],
-  );
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.caption,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final String caption;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: SacredTheme.primary.withValues(alpha: .10),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: Theme.of(context).colorScheme.primary),
-            ),
-            const SizedBox(height: 18),
-            // Scales down instead of splitting a single word at large text.
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: AlignmentDirectional.centerStart,
+          const SizedBox(height: 10),
+          if (data == null)
+            Text(
+              'Ayat hari ini belum dapat dimuat.',
+              style: SacredText.footnote.copyWith(color: tokens.sec),
+            )
+          else ...[
+            Directionality(
+              textDirection: TextDirection.rtl,
               child: Text(
-                label,
-                maxLines: 1,
-                style: const TextStyle(fontWeight: FontWeight.w800),
+                data.arabic,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontFamily: SacredText.quran,
+                  fontSize: SharedPreferencesService.getArabicFontSize(),
+                  height: SharedPreferencesService.getArabicLineHeight(),
+                  color: tokens.ink,
+                ),
               ),
             ),
-            const SizedBox(height: 3),
-            Text(caption, style: Theme.of(context).textTheme.bodySmall),
+            if (data.translation != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                data.translation!,
+                style: SacredText.body.copyWith(color: tokens.ink),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              'QS ${data.surah.displayName} : ${data.ayah} · Teks Tanzil, '
+              'terjemahan Kemenag via Tanzil',
+              style: SacredText.footnote.copyWith(color: tokens.sec),
+            ),
           ],
-        ),
+        ],
       ),
-    ),
-  );
+    );
+  }
 }
