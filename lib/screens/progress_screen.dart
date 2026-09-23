@@ -162,27 +162,6 @@ class _ProgressScreenState extends State<ProgressScreen>
   }
 }
 
-/// Kartu putih bersudut 24 dengan bayangan setipis mockup-nya.
-class _SoftCard extends StatelessWidget {
-  const _SoftCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tokens.surf,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: tokens.sep),
-      ),
-      child: child,
-    );
-  }
-}
-
 class _StreakCard extends StatelessWidget {
   const _StreakCard({
     required this.progress,
@@ -207,7 +186,7 @@ class _StreakCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final remaining = (progress.remainingSeconds / 60).ceil();
-    return _SoftCard(
+    return SoftCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -319,7 +298,7 @@ class _KhatamCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return _SoftCard(
+    return SoftCard(
       child: FutureBuilder<_KhatamData>(
         future: data,
         builder: (context, snapshot) {

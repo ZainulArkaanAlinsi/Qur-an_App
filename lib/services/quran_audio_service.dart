@@ -312,6 +312,19 @@ class QuranAudioService {
     );
   }
 
+  /// Memutar Al-Fatihah ayat 1 dengan [reciter] sebagai contoh suara.
+  ///
+  /// Dipakai pemilih qari supaya bisa didengar sebelum dipilih. Sengaja tidak
+  /// lewat `_load`: contoh ini tidak boleh menyentuh antrean yang sedang
+  /// berjalan maupun mengubah qari yang tersimpan.
+  Future<void> playPreview(Reciter reciter) async {
+    await stop();
+    await _player
+        .setAudioSource(AudioSource.uri(urlFor(1, 1, reciter: reciter)))
+        .timeout(_loadTimeout);
+    _play();
+  }
+
   /// Toggles playback, or forces a direction when [resume] is given, as
   /// media buttons do.
   Future<void> togglePlayPause({bool? resume}) async {

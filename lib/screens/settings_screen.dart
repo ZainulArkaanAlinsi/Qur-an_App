@@ -12,6 +12,7 @@ import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/screens/reciter_picker.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
@@ -460,33 +461,13 @@ class _ReciterCardState extends State<_ReciterCard> {
     if (!mounted) return;
     setState(() => _busy = false);
 
-    final picked = await showModalBottomSheet<Reciter>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (context) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * .7,
-          child: ListView.builder(
-            itemCount: reciters.length,
-            itemBuilder: (context, index) {
-              final reciter = reciters[index];
-              final isSelected = reciter.identifier == _selected.identifier;
-              return ListTile(
-                leading: Icon(
-                  isSelected
-                      ? Icons.radio_button_checked_rounded
-                      : Icons.radio_button_unchecked_rounded,
-                ),
-                title: Text(reciter.displayName),
-                subtitle: Text(reciter.name),
-                selected: isSelected,
-                onTap: () => Navigator.pop(context, reciter),
-              );
-            },
-          ),
-        ),
-      ),
+    final picked = await showReciterPicker(
+      context,
+      reciters: reciters,
+      selected: _selected,
+      // Contoh diputar dengan qari yang sedang disorot, bukan qari terpilih,
+      // supaya bisa dibandingkan sebelum memutuskan.
+      onPreview: (reciter) => _preview(reciter),
     );
     if (picked == null || !mounted) return;
 
@@ -510,6 +491,31 @@ class _ReciterCardState extends State<_ReciterCard> {
     // tercampur di tengah surah.
     await QuranAudioService.instance.stop();
     if (mounted) setState(() => _selected = resolved);
+  }
+
+  /// Memutar Al-Fatihah ayat 1 dengan [reciter] sebagai contoh suara.
+  ///
+  /// Bitrate-nya belum tentu tersedia, jadi dipastikan dulu; kalau tidak ada,
+  /// dikatakan apa adanya alih-alih memutar berkas yang tidak ada.
+  Future<void> _preview(Reciter reciter) async {
+    final resolved = await _repository.resolveBitrate(reciter);
+    if (!mounted) return;
+    if (resolved == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Contoh ${reciter.displayName} belum tersedia.'),
+        ),
+      );
+      return;
+    }
+    try {
+      await QuranAudioService.instance.playPreview(resolved);
+    } on Object {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Contoh gagal diputar. Periksa koneksi.')),
+      );
+    }
   }
 
   Future<void> _toggleLowData(bool value) async {
@@ -894,7 +900,8 @@ class _SyncCardState extends State<_SyncCard> {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final sync = service.sync;
     if (!service.available || sync == null) {
-      return _Card(
+      return SoftCard(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         child: Text(
           'Sinkronisasi cloud tidak tersedia di perangkat ini. Semua data '
           'tetap tersimpan secara lokal.',
@@ -914,7 +921,8 @@ class _SyncCardState extends State<_SyncCard> {
         final busy = service.busy.value;
         final syncing = sync.state.value == SyncState.syncing;
         if (account == null) {
-          return _Card(
+          return SoftCard(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -946,7 +954,8 @@ class _SyncCardState extends State<_SyncCard> {
           );
         }
         final name = account.name ?? account.email ?? 'Akun Google';
-        return _Card(
+        return SoftCard(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1025,27 +1034,6 @@ class _SyncCardState extends State<_SyncCard> {
           ),
         );
       },
-    );
-  }
-}
-
-/// Kartu tunggal tanpa judul kelompok, radius 24 seperti kartu profil.
-class _Card extends StatelessWidget {
-  const _Card({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: tokens.surf,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: tokens.sep),
-      ),
-      child: child,
     );
   }
 }
