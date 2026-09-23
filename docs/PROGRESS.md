@@ -69,3 +69,35 @@
 1. Tambahkan test deterministik untuk bookmark, last read, streak, dan aksesibilitas Reader.
 2. Uji pengingat pada perangkat nyata, termasuk setelah reboot dan mode hemat baterai.
 3. Siapkan backend berita HTTPS dan konfigurasi signing rilis saat kredensial tersedia.
+
+## Redesign "Sacred Serenity · edisi iOS" — Tahap 0 (23 September 2026)
+
+Branch `redesign/ios-sacred` dari `main` (93aecef). Brief dan aset ada di
+`quran-ios-redesign-handoff/docs/design/ios-redesign/`.
+
+Baseline sebelum menyentuh tampilan: `flutter pub get` sukses,
+`dart analyze lib test tool` tanpa isu, `flutter test` **186 lulus**.
+Rilis terakhir v1.2.1.
+
+### Pemetaan layar desain ke kode sekarang
+
+| Layar desain | File sekarang | Tindakan |
+|---|---|---|
+| Pembuka | `flutter_native_splash` di `pubspec.yaml` | Samakan warna & ornamen |
+| Beranda | `lib/screens/home_screen.dart` | Rombak: hero lanjut baca, target, istiqamah, pintasan, strip salat, ayat hari ini |
+| Qur'an | `lib/screens/quran_library_screen.dart` | Rombak: segmented Surah/Juz/Halaman + terakhir dibaca |
+| Cari | `lib/screens/quran_search_screen.dart`, `search_screen.dart` | Jadikan layar tersendiri; tombol bulat di tab bar |
+| Pembaca | `lib/screens/reader_screen.dart` | Rombak: nav kaca, bingkai mihrab, penanda ayat |
+| Fokus | mode fokus di `reader_screen.dart` | Rombak sesuai desain |
+| Murottal | `lib/widgets/audio_mini_player.dart` | Tambah sheet murottal + mini player kaca |
+| Progres | `lib/screens/progress_screen.dart` | Rombak: heatmap istiqamah, grid 30 juz |
+| Salat | `lib/screens/prayer_screen.dart` | Rombak: gradien langit, metode & zona waktu tampil |
+| Pengaturan | `lib/screens/settings_screen.dart` | Rombak: inset grouped, pratinjau tema & ukuran teks |
+| Offline, Font 200% | — | Kondisi yang diuji, bukan layar baru |
+
+### Yang tidak ada di desain
+
+Desain memakai **4 tab** (Beranda, Qur'an, Progres, Pengaturan) + tombol Cari
+bulat. Aplikasi sekarang memakai **5 tab** (Beranda, Baca, Belajar, Hafalan,
+Profil) dengan tab Belajar (hub Juz Amma) dan Hafalan yang dirilis di 1.2.0–1.2.1.
+Keduanya tidak boleh hilang, jadi tempat barunya menunggu keputusan pemilik.

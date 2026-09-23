@@ -5,9 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/features/mushaf/domain/mushaf_layout.dart';
 
 final List<MushafWord> _words = [
-  for (final row in (jsonDecode(
-    File('test/fixtures/qf_mushaf_v2_pages_sample.json').readAsStringSync(),
-  ) as Map<String, dynamic>)['words'] as List)
+  for (final row
+      in (jsonDecode(
+                File(
+                  'test/fixtures/qf_mushaf_v2_pages_sample.json',
+                ).readAsStringSync(),
+              )
+              as Map<String, dynamic>)['words']
+          as List)
     _word(row as List),
 ];
 
@@ -26,22 +31,24 @@ MushafWord _word(List row) {
 }
 
 List<String> _kinds(MushafPage page) => [
-      for (final line in page.lines)
-        switch (line) {
-          MushafTextLine() => 'T',
-          MushafSurahHeader(:final surah) => 'H$surah',
-          MushafBasmalah(:final surah) => 'B$surah',
-        },
-    ];
+  for (final line in page.lines)
+    switch (line) {
+      MushafTextLine() => 'T',
+      MushafSurahHeader(:final surah) => 'H$surah',
+      MushafBasmalah(:final surah) => 'B$surah',
+    },
+];
 
 void main() {
-  test('halaman 1: judul Al-Fatihah lalu 7 baris teks, tanpa basmalah terpisah',
-      () {
-    final page = buildMushafPage(1, _words);
-    expect(_kinds(page), ['H1', 'T', 'T', 'T', 'T', 'T', 'T', 'T']);
-    expect(page.isOpeningPage, isTrue);
-    expect(page.verseKeys, ['1:1', '1:2', '1:3', '1:4', '1:5', '1:6', '1:7']);
-  });
+  test(
+    'halaman 1: judul Al-Fatihah lalu 7 baris teks, tanpa basmalah terpisah',
+    () {
+      final page = buildMushafPage(1, _words);
+      expect(_kinds(page), ['H1', 'T', 'T', 'T', 'T', 'T', 'T', 'T']);
+      expect(page.isOpeningPage, isTrue);
+      expect(page.verseKeys, ['1:1', '1:2', '1:3', '1:4', '1:5', '1:6', '1:7']);
+    },
+  );
 
   test('halaman 2: judul dan basmalah Al-Baqarah, 8 baris', () {
     final page = buildMushafPage(2, _words);
@@ -52,12 +59,14 @@ void main() {
     expect(_kinds(buildMushafPage(3, _words)), List.filled(15, 'T'));
   });
 
-  test('halaman 50: Ali Imran dibuka dengan judul dan basmalah di baris 1–2',
-      () {
-    final kinds = _kinds(buildMushafPage(50, _words));
-    expect(kinds.take(2), ['H3', 'B3']);
-    expect(kinds.skip(2), everyElement('T'));
-  });
+  test(
+    'halaman 50: Ali Imran dibuka dengan judul dan basmalah di baris 1–2',
+    () {
+      final kinds = _kinds(buildMushafPage(50, _words));
+      expect(kinds.take(2), ['H3', 'B3']);
+      expect(kinds.skip(2), everyElement('T'));
+    },
+  );
 
   test('judul An-Nisa tumpah ke akhir halaman 76, basmalah di awal 77', () {
     final p76 = _kinds(buildMushafPage(76, _words));
@@ -87,7 +96,8 @@ void main() {
       for (final line in page.lines.whereType<MushafTextLine>()) {
         for (final word in line.words) {
           if (previous != null) {
-            final forward = word.surah > previous.surah ||
+            final forward =
+                word.surah > previous.surah ||
                 (word.surah == previous.surah &&
                     (word.ayah > previous.ayah ||
                         (word.ayah == previous.ayah &&
@@ -103,11 +113,13 @@ void main() {
   test('cacat data provider di halaman 589 (84:21) ditolak', () {
     expect(
       () => buildMushafPage(589, _words),
-      throwsA(isA<MushafLayoutException>().having(
-        (e) => e.message,
-        'message',
-        contains('84:21'),
-      )),
+      throwsA(
+        isA<MushafLayoutException>().having(
+          (e) => e.message,
+          'message',
+          contains('84:21'),
+        ),
+      ),
     );
   });
 
@@ -120,7 +132,10 @@ void main() {
   });
 
   test('nomor halaman di luar 1–604 ditolak', () {
-    expect(() => buildMushafPage(0, _words), throwsA(isA<MushafLayoutException>()));
+    expect(
+      () => buildMushafPage(0, _words),
+      throwsA(isA<MushafLayoutException>()),
+    );
     expect(
       () => buildMushafPage(605, _words),
       throwsA(isA<MushafLayoutException>()),

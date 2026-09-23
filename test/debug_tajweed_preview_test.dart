@@ -21,8 +21,8 @@ MockClient _client({Set<int> broken = const {}, int ayahCount = 7}) {
           'text_$field': field == 'uthmani'
               ? 'polos $i'
               : broken.contains(i)
-                  ? 'a$i</tajweed>b'
-                  : 'a$i<tajweed class=ikhafa>b</tajweed><span class=end>$i</span>',
+              ? 'a$i</tajweed>b'
+              : 'a$i<tajweed class=ikhafa>b</tajweed><span class=end>$i</span>',
         },
     ];
     return http.Response.bytes(
@@ -34,10 +34,12 @@ MockClient _client({Set<int> broken = const {}, int ayahCount = 7}) {
 }
 
 Future<void> _pump(WidgetTester tester, http.Client client) async {
-  await tester.pumpWidget(MaterialApp(
-    theme: SacredTheme.light,
-    home: DebugTajweedPreviewScreen(client: client),
-  ));
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: SacredTheme.light,
+      home: DebugTajweedPreviewScreen(client: client),
+    ),
+  );
   // Aset terjemahan dimuat dengan I/O nyata, sedangkan spinner membuat
   // pumpAndSettle tidak pernah tenang: tunggu sampai spinner hilang.
   for (var i = 0; i < 100; i++) {
@@ -56,8 +58,9 @@ void main() {
     await SharedPreferencesService.init();
   });
 
-  testWidgets('menampilkan ayat bertajwid dan melaporkan markup rusak',
-      (tester) async {
+  testWidgets('menampilkan ayat bertajwid dan melaporkan markup rusak', (
+    tester,
+  ) async {
     await _pump(tester, _client(broken: {3}));
 
     expect(find.text('1:1'), findsOneWidget);
@@ -88,8 +91,9 @@ void main() {
     expect(find.text('a1b'), findsOneWidget);
   });
 
-  testWidgets('respons tidak cocok manifest ditolak dengan tombol coba lagi',
-      (tester) async {
+  testWidgets('respons tidak cocok manifest ditolak dengan tombol coba lagi', (
+    tester,
+  ) async {
     await _pump(tester, _client(ayahCount: 6));
 
     expect(find.textContaining('tidak cocok manifest'), findsOneWidget);

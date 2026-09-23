@@ -67,8 +67,10 @@ class QuranAudioService {
     );
   }
   static final instance = QuranAudioService._();
+
   /// Qari bawaan bila pengguna belum memilih; lihat [SharedPreferencesService.getReciter].
   static const reciterEdition = 'ar.alafasy';
+
   /// Nama qari yang sedang dipakai, untuk mini-player dan notifikasi media.
   /// Sebelumnya tetap "Mishary Alafasy" walau qari lain dipilih.
   static String get reciterName =>
@@ -88,6 +90,17 @@ class QuranAudioService {
 
   /// Last playback failure message, for the reader to surface once.
   final error = ValueNotifier<String?>(null);
+
+  /// Kecepatan pemutaran yang sedang dipakai.
+  final speed = ValueNotifier<double>(1);
+
+  /// Waktu pemutaran akan berhenti sendiri, atau null bila tidak disetel.
+  final sleepAt = ValueNotifier<DateTime?>(null);
+  Timer? _sleepTimer;
+
+  /// Posisi dan durasi ayat yang sedang diputar, untuk bar kemajuan.
+  Stream<Duration> get positionStream => _player.positionStream;
+  Stream<Duration?> get durationStream => _player.durationStream;
 
   // Incremented on every new load so a slower, older load can never
   // overwrite the state of the verses the user picked afterwards.
@@ -262,9 +275,31 @@ class QuranAudioService {
     repeat.value = mode;
   }
 
+  /// Kecepatan dibatasi pada rentang yang masih terdengar jelas.
+  Future<void> setSpeed(double value) async {
+    final next = value.clamp(0.75, 1.5).toDouble();
+    await _player.setSpeed(next);
+    speed.value = next;
+  }
+
+  /// Menghentikan pemutaran setelah [after]; null membatalkan timer.
+  void setSleepTimer(Duration? after) {
+    _sleepTimer?.cancel();
+    if (after == null) {
+      _sleepTimer = null;
+      sleepAt.value = null;
+      return;
+    }
+    sleepAt.value = DateTime.now().add(after);
+    _sleepTimer = Timer(after, () => unawaited(stop()));
+  }
+
   Future<void> stop() async {
     ++_generation;
     _loading = false;
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    sleepAt.value = null;
     queue.value = null;
     playingVerse.value = null;
     repeat.value = AudioRepeat.off;

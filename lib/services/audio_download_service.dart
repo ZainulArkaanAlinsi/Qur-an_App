@@ -106,9 +106,7 @@ class AudioDownloadService {
       final response = await client
           .head(uri)
           .timeout(const Duration(seconds: 15));
-      final length = int.tryParse(
-        response.headers['content-length'] ?? '',
-      );
+      final length = int.tryParse(response.headers['content-length'] ?? '');
       if (response.statusCode != 200 || length == null || length <= 0) {
         return null;
       }
@@ -141,7 +139,9 @@ class AudioDownloadService {
     try {
       for (var ayah = 1; ayah <= total; ayah++) {
         if (_cancelled.contains(key)) return DownloadOutcome.cancelled;
-        final file = File('${folder.path}/${globalAyahNumber(surah, ayah)}.mp3');
+        final file = File(
+          '${folder.path}/${globalAyahNumber(surah, ayah)}.mp3',
+        );
         if (!file.existsSync() || file.lengthSync() == 0) {
           final uri = Uri.https(
             'cdn.islamic.network',

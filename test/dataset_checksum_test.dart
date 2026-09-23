@@ -40,9 +40,9 @@ void main() {
   }
 
   test('checksum di dokumen atribusi sama dengan checksum yang diuji', () {
-    final doc = File('docs/DATASET_ATTRIBUTION.md')
-        .readAsStringSync()
-        .toLowerCase();
+    final doc = File(
+      'docs/DATASET_ATTRIBUTION.md',
+    ).readAsStringSync().toLowerCase();
     for (final MapEntry(key: asset, value: expected) in _expected.entries) {
       expect(doc, contains(expected.sha256), reason: asset);
     }

@@ -82,9 +82,24 @@ flutter:
     - assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt
 
   fonts:
+    # Teks Al-Qur'an. Amiri Quran dan Amiri sama-sama mencakup seluruh 68
+    # karakter dataset Tanzil (diuji di test/font_coverage_test.dart).
+    - family: AmiriQuran
+      fonts:
+        - asset: assets/fonts/AmiriQuran-Regular.ttf
     - family: Amiri
       fonts:
         - asset: assets/fonts/Amiri-Regular.ttf
+    # Font variabel, dipangkas ke Latin agar hemat ruang (1,74 MB -> 0,7 MB).
+    # Ketebalan diatur lewat fontVariations pada SacredTokens.
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-wght-Latin.ttf
+    - family: EBGaramond
+      fonts:
+        - asset: assets/fonts/EBGaramond-wght-Latin.ttf
+        - asset: assets/fonts/EBGaramond-Italic-wght-Latin.ttf
+          style: italic
   #   - family: ScheherazadeNew
   #     fonts:
   #       - asset: assets/fonts/ScheherazadeNew-Regular.ttf

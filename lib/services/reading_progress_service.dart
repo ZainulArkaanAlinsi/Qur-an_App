@@ -211,6 +211,9 @@ class ReadingSessionTracker with WidgetsBindingObserver {
 
   bool get paused => _paused || needsConfirmation;
 
+  /// Lama sesi yang sedang berjalan, untuk ditampilkan di mode fokus.
+  Duration get elapsed => _clock.elapsed;
+
   void interact() {
     _lastInteraction = _clock.elapsed.inSeconds;
   }

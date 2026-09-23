@@ -215,7 +215,26 @@ class SharedPreferencesService {
 
   static Future<void> setLastReadVerse(int surah, int verse) async {
     await _prefs?.setInt('last_read_verse_$surah', verse);
+    await _prefs?.setInt(
+      'last_read_at_$surah',
+      DateTime.now().millisecondsSinceEpoch,
+    );
     await setLastReadSurah(surah);
+  }
+
+  /// Surah yang pernah dibaca, terbaru lebih dulu.
+  ///
+  /// Hanya surah yang punya cap waktu yang dihitung; riwayat dari versi lama
+  /// belum menyimpan cap waktu, jadi urutannya tidak ditebak-tebak.
+  static List<int> getRecentSurahs({int limit = 8}) {
+    final stamped = <int, int>{};
+    for (var surah = 1; surah <= surahCatalog.length; surah++) {
+      final at = _prefs?.getInt('last_read_at_$surah');
+      if (at != null) stamped[surah] = at;
+    }
+    final sorted = stamped.keys.toList()
+      ..sort((a, b) => stamped[b]!.compareTo(stamped[a]!));
+    return sorted.take(limit).toList();
   }
 
   /// Qari murottal pilihan, lengkap dengan bitrate yang sudah terbukti ada.

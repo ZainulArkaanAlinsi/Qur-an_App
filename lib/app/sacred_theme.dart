@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
 
 /// Pilihan warna aplikasi. Sepia untuk membaca lama di ruangan terang,
 /// kontras tinggi untuk mata yang butuh pemisahan warna lebih tegas.
@@ -22,8 +23,21 @@ abstract final class SacredTheme {
   static ThemeData get light => _theme(Brightness.light);
   static ThemeData get dark => _theme(Brightness.dark);
 
+  /// Token desain untuk palet dan kecerahan tertentu.
+  static SacredTokens tokensFor(AppPalette palette, Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    return switch (palette) {
+      AppPalette.sacred => isDark ? SacredTokens.dark : SacredTokens.light,
+      // Sepia adalah tema baca terang; versi gelapnya memakai token gelap.
+      AppPalette.sepia => isDark ? SacredTokens.dark : SacredTokens.sepia,
+      AppPalette.highContrast =>
+        isDark ? SacredTokens.highContrastDark : SacredTokens.highContrastLight,
+    };
+  }
+
   static ThemeData themeFor(AppPalette palette, Brightness brightness) {
-    final base = _theme(brightness);
+    final tokens = tokensFor(palette, brightness);
+    final base = _theme(brightness).copyWith(extensions: [tokens]);
     final isDark = brightness == Brightness.dark;
     return switch (palette) {
       AppPalette.sacred => base,
@@ -61,6 +75,7 @@ abstract final class SacredTheme {
       outlineVariant: outline,
     );
     return base.copyWith(
+      // `extensions` ikut terbawa dari `base`, jadi token tetap tersedia.
       colorScheme: scheme,
       scaffoldBackgroundColor: surface,
       textTheme: base.textTheme.apply(bodyColor: ink, displayColor: ink),
@@ -97,8 +112,14 @@ abstract final class SacredTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
+      // Tanpa ini komponen Material (tombol, daftar, dialog) tetap memakai
+      // font bawaan sistem dan terlihat lepas dari desainnya.
+      fontFamily: SacredText.ui,
       scaffoldBackgroundColor: scheme.surface,
+      // Typography bawaan menuliskan nama font sistem secara eksplisit, yang
+      // menimpa `fontFamily` di atas; jadi disetel ulang di sini.
       textTheme: ThemeData(brightness: brightness).textTheme.apply(
+        fontFamily: SacredText.ui,
         bodyColor: isDark ? const Color(0xFFE7EEE9) : ink,
         displayColor: isDark ? const Color(0xFFE7EEE9) : ink,
       ),
