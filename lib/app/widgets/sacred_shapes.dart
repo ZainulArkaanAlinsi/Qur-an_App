@@ -123,6 +123,7 @@ class RosetteBadge extends StatelessWidget {
     this.textColor,
     this.textStyle,
     this.semanticsLabel,
+    this.outlined = false,
   });
 
   /// Penanda akhir ayat memakai angka Arab-Indik dan warna emas.
@@ -152,6 +153,9 @@ class RosetteBadge extends StatelessWidget {
   final TextStyle? textStyle;
   final String? semanticsLabel;
 
+  /// Versi garis, seperti nomor surah pada daftar Qur'an di mockup.
+  final bool outlined;
+
   /// 123 -> ١٢٣
   static String arabicNumerals(int value) => value
       .toString()
@@ -169,7 +173,7 @@ class RosetteBadge extends StatelessWidget {
       child: SizedBox.square(
         dimension: size,
         child: CustomPaint(
-          painter: _RosettePainter(shape),
+          painter: _RosettePainter(shape, outlined: outlined),
           child: Center(
             child: Text(
               label,
@@ -188,24 +192,36 @@ class RosetteBadge extends StatelessWidget {
 }
 
 class _RosettePainter extends CustomPainter {
-  const _RosettePainter(this.color);
+  const _RosettePainter(this.color, {this.outlined = false});
 
   final Color color;
+  final bool outlined;
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Ukuran relatif mengikuti mockup: persegi 62% sisi, lingkaran r 24%.
     final side = size.width * .62;
     final center = Offset(size.width / 2, size.height / 2);
-    final paint = Paint()..color = color.withValues(alpha: .28);
     final rect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: center, width: side, height: side),
       Radius.circular(size.width * .05),
     );
+    final paint = outlined
+        ? (Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = size.width * .038
+            ..color = color)
+        : (Paint()..color = color.withValues(alpha: .28));
 
     canvas.drawCircle(
       center,
       size.width * .24,
-      Paint()..color = color.withValues(alpha: .55),
+      outlined
+          ? (Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = size.width * .023
+              ..color = color.withValues(alpha: .55))
+          : (Paint()..color = color.withValues(alpha: .55)),
     );
     for (final turns in [0.0, 0.125]) {
       canvas
@@ -219,7 +235,8 @@ class _RosettePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RosettePainter old) => old.color != color;
+  bool shouldRepaint(_RosettePainter old) =>
+      old.color != color || old.outlined != outlined;
 }
 
 /// Pola bintang delapan sudut yang diulang. Digambar dengan painter di dalam

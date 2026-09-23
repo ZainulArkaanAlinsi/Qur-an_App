@@ -29,17 +29,19 @@ void main() {
 
     await tester.enterText(find.byType(TextField), 'Yasin');
     await tester.pump();
-    // Teks yang diketik juga cocok dengan find.text, jadi batasi ke daftar.
-    expect(
-      find.descendant(of: find.byType(ListView), matching: find.text('Yasin')),
-      findsOneWidget,
-    );
+    // Teks yang diketik ikut cocok dengan find.text, jadi yang diperiksa
+    // baris daftarnya lewat keterangan yang hanya dimiliki baris itu.
+    expect(find.text('Makkiyah · 83 ayat'), findsOneWidget);
     expect(find.text('Al-Fatihah'), findsNothing);
 
     await tester.enterText(find.byType(TextField), '');
     await tester.pump();
-    await tester.tap(find.text('Madinah'));
-    await tester.pump();
+
+    // Penyaring tempat turun kini menu di dalam kolom cari, bukan chip.
+    await tester.tap(find.byTooltip('Saring tempat turun'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Madaniyah').last);
+    await tester.pumpAndSettle();
     expect(find.text('Al-Fatihah'), findsNothing);
     expect(find.text('Al-Baqarah'), findsOneWidget);
 

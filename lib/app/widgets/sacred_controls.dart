@@ -102,11 +102,14 @@ class SegmentedPill<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    // Tinggi 36, radius 12, padding 3; segmen aktif radius 9 berlatar putih
+    // dengan dua bayangan (Quran.html, Progres.html, Cari.html).
     return Container(
+      height: 36,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: tokens.fill,
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -116,20 +119,24 @@ class SegmentedPill<T> extends StatelessWidget {
                 selected: entry.key == value,
                 button: true,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(11),
+                  borderRadius: BorderRadius.circular(9),
                   onTap: () => onChanged(entry.key),
                   child: Container(
-                    constraints: const BoxConstraints(minHeight: 36),
                     alignment: Alignment.center,
                     decoration: entry.key == value
                         ? BoxDecoration(
-                            color: tokens.surf,
-                            borderRadius: BorderRadius.circular(11),
-                            boxShadow: [
+                            color: const Color(0xFFFFFFFF),
+                            borderRadius: BorderRadius.circular(9),
+                            boxShadow: const [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: .06),
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
+                                color: Color(0x1A000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 3),
+                              ),
+                              BoxShadow(
+                                color: Color(0x0F000000),
+                                blurRadius: 1,
+                                offset: Offset(0, 1),
                               ),
                             ],
                           )
@@ -140,12 +147,11 @@ class SegmentedPill<T> extends StatelessWidget {
                         entry.value,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: SacredText.footnote.copyWith(
-                          color: entry.key == value ? tokens.ink : tokens.sec,
-                          fontWeight: entry.key == value
-                              ? FontWeight.w800
-                              : FontWeight.w600,
-                        ),
+                        style:
+                            (entry.key == value
+                                    ? SacredText.segmentActive
+                                    : SacredText.segmentIdle)
+                                .copyWith(color: tokens.ink),
                       ),
                     ),
                   ),
@@ -373,6 +379,65 @@ class _TabButton extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tombol lingkaran 40 px seperti di mockup, dengan target sentuh 44 px supaya
+/// nyaman ditekan dan tidak bertabrakan dengan tombol sebelahnya.
+class SacredCircleButton extends StatelessWidget {
+  const SacredCircleButton({
+    super.key,
+    required this.tooltip,
+    required this.onTap,
+    required this.child,
+    this.background,
+    this.bordered = true,
+  });
+
+  final String tooltip;
+  final VoidCallback onTap;
+  final Widget child;
+  final Color? background;
+
+  /// Lingkaran terang memakai garis rambut dan bayangan tipis; lingkaran
+  /// berwarna pekat tidak.
+  final bool bordered;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Tooltip(
+      message: tooltip,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 26,
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: background ?? tokens.surf,
+                shape: BoxShape.circle,
+                border: bordered ? Border.all(color: tokens.sep) : null,
+                boxShadow: bordered
+                    ? const [
+                        BoxShadow(
+                          color: Color(0x0F00281C),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: child,
             ),
           ),
         ),

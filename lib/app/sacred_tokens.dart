@@ -403,4 +403,40 @@ abstract final class SacredText {
   /// Terjemahan pada kartu ayat hari ini.
   static TextStyle get verseTranslation =>
       _font(serif, 19, 25, 400).copyWith(fontStyle: FontStyle.italic);
+
+  /// Judul besar layar Qur'an, Progres, Pengaturan, dan Salat.
+  static TextStyle get screenTitle =>
+      _font(serif, 42, 46, 400).copyWith(letterSpacing: 42 * -.01);
+  static TextStyle get screenSubtitle => _font(ui, 14, 19, 500);
+
+  /// Kolom pencarian dan segmented control.
+  static TextStyle get searchInput => _font(ui, 16, 21, 500);
+  static TextStyle get segmentActive => _font(ui, 14, 18, 700);
+  static TextStyle get segmentIdle => _font(ui, 14, 18, 600);
+
+  /// Tautan teks seperti "Lihat semua" dan "Ganti kota".
+  static TextStyle get linkLabel => _font(ui, 13, 17, 700);
+
+  /// Baris daftar surah.
+  static TextStyle get listName => _font(ui, 16, 21, 700);
+  static TextStyle get listMeta => _font(ui, 12.5, 17, 500);
+
+  /// Nomor di dalam rosette daftar.
+  static TextStyle get rosetteNumber => _font(ui, 12.5, 14, 800).copyWith(
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+
+  /// Kartu "terakhir dibaca" pada layar Qur'an.
+  static TextStyle get recentName => _font(ui, 15, 20, 800);
+  static TextStyle get recentMeta => _font(ui, 12, 16, 500);
+
+  /// Baris pengaturan bergaya iOS.
+  static TextStyle get settingTitle => _font(ui, 16, 21, 600);
+  static TextStyle get settingValue => _font(ui, 15, 20, 500);
+
+  /// Nama dan jam pada daftar salat.
+  static TextStyle get prayerName => _font(ui, 16, 21, 600);
+  static TextStyle get prayerTime => _font(ui, 17, 22, 800).copyWith(
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 }
