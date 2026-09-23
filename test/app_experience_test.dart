@@ -106,14 +106,17 @@ void main() {
       await tester.pumpWidget(_host(const LearnScreen()));
       await tester.pumpAndSettle();
 
+      // Jalur belajar berada di atas: materi yang belum ada disebut apa
+      // adanya, bukan tombol kosong.
+      expect(find.text('Akademi Tajwid'), findsOneWidget);
+      expect(find.text('Sedang disusun'), findsOneWidget);
+
+      // Daftar Juz Amma ada di bawahnya.
+      await _scrollTo(tester, find.text('An-Naba’'));
       expect(find.text('An-Naba’'), findsOneWidget);
 
       await _scrollTo(tester, find.text('An-Nas'));
       expect(find.text('An-Nas'), findsOneWidget);
-
-      // Kartu "belum tersedia" berada di bawah daftar Juz Amma.
-      await _scrollTo(tester, find.text('Akademi Tajwid'));
-      expect(find.text('Belum tersedia'), findsWidgets);
     },
   );
 
@@ -121,6 +124,7 @@ void main() {
     await tester.pumpWidget(_host(const LearnScreen()));
     await tester.pumpAndSettle();
 
+    await _scrollTo(tester, find.byTooltip('Ubah status hafalan').first);
     await tester.tap(find.byTooltip('Ubah status hafalan').first);
     await tester.pumpAndSettle();
 

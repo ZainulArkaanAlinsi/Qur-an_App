@@ -49,6 +49,74 @@ class AudioQueue {
   int get hashCode => Object.hash(surah, firstAyah, lastAyah);
 }
 
+/// Cara sebuah rentang diputar sebanyak N kali.
+///
+/// Dipisahkan dari [QuranAudioService] supaya aturannya bisa diuji tanpa
+/// pemutar sungguhan — di sinilah dulu bug 3×/5×/10× bersarang.
+@immutable
+class RangePlan {
+  const RangePlan({
+    required this.mode,
+    required this.copies,
+    required this.passTarget,
+  });
+
+  /// Rencana untuk rentang sepanjang [length] ayat yang diminta diulang
+  /// [repeatCount] kali; `null` berarti tanpa batas.
+  factory RangePlan.of({required int length, required int? repeatCount}) {
+    if (repeatCount == null) {
+      // Tanpa batas: satu salinan rentang, diulang terus oleh pemutar.
+      return const RangePlan(
+        mode: AudioRepeat.range,
+        copies: 1,
+        passTarget: null,
+      );
+    }
+    final passes = repeatCount < 1 ? 1 : repeatCount;
+    if (passes == 1) {
+      // Sekali jalan: daftar dibatasi rentangnya, tanpa pengulangan sama
+      // sekali, sehingga berhenti di ayat terakhir rentang — bukan di akhir
+      // surah seperti perilaku lama.
+      return const RangePlan(mode: AudioRepeat.off, copies: 1, passTarget: 1);
+    }
+    if (length == 1) {
+      // Rentang satu ayat tidak pernah berpindah indeks, jadi putarannya tidak
+      // bisa dihitung dari perpindahan; daftarnya digandakan saja.
+      return RangePlan(
+        mode: AudioRepeat.off,
+        copies: passes,
+        passTarget: passes,
+      );
+    }
+    return RangePlan(mode: AudioRepeat.range, copies: 1, passTarget: passes);
+  }
+
+  final AudioRepeat mode;
+
+  /// Berapa kali daftar ayat disalin berurutan.
+  final int copies;
+
+  /// Jumlah putaran yang diminta; `null` berarti tanpa batas.
+  final int? passTarget;
+
+  /// Jumlah berkas audio yang akan dimuat.
+  int items(int length) => length * copies;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RangePlan &&
+      other.mode == mode &&
+      other.copies == copies &&
+      other.passTarget == passTarget;
+
+  @override
+  int get hashCode => Object.hash(mode, copies, passTarget);
+
+  @override
+  String toString() =>
+      'RangePlan(mode: $mode, copies: $copies, passTarget: $passTarget)';
+}
+
 /// Single shared player for per-verse recitation.
 ///
 /// Resource: Mishary Rashid Alafasy, 128 kbps, per-verse files from the
@@ -97,6 +165,15 @@ class QuranAudioService {
   /// Waktu pemutaran akan berhenti sendiri, atau null bila tidak disetel.
   final sleepAt = ValueNotifier<DateTime?>(null);
   Timer? _sleepTimer;
+
+  /// Putaran rentang yang sedang berjalan, mulai dari 1.
+  final rangePass = ValueNotifier<int>(1);
+
+  /// Jumlah putaran yang diminta, atau null bila tanpa batas.
+  final rangeTarget = ValueNotifier<int?>(null);
+
+  /// Indeks terakhir yang dilaporkan player, untuk mengenali putaran baru.
+  int _lastIndex = 0;
 
   /// Posisi dan durasi ayat yang sedang diputar, untuk bar kemajuan.
   Stream<Duration> get positionStream => _player.positionStream;
@@ -173,6 +250,21 @@ class QuranAudioService {
   void _syncIndex(int? index) {
     final q = queue.value;
     playingVerse.value = q == null || index == null ? null : q.keyAt(index);
+    if (q == null || index == null) return;
+
+    final target = rangeTarget.value;
+    if (repeat.value == AudioRepeat.range && target != null && q.length > 1) {
+      // Kembali ke awal rentang berarti satu putaran selesai.
+      if (index == 0 && _lastIndex == q.length - 1) {
+        rangePass.value = rangePass.value + 1;
+      }
+      // Pada ayat terakhir putaran pamungkas, pengulangan dimatikan supaya
+      // daftar berakhir sendiri alih-alih terpotong di tengah ayat pertama.
+      if (rangePass.value >= target && index == q.length - 1) {
+        unawaited(_player.setLoopMode(LoopMode.off));
+      }
+    }
+    _lastIndex = index;
   }
 
   void _syncState(PlayerState state) {
@@ -197,14 +289,28 @@ class QuranAudioService {
     await _load(AudioQueue.from(surah, ayah), AudioRepeat.off);
   }
 
+  /// Memutar [fromAyah]–[toAyah] sebanyak [repeatCount] putaran; null berarti
+  /// tanpa batas.
+  ///
+  /// Sebelumnya berapa pun angkanya selalu dipetakan ke `LoopMode.all`,
+  /// sehingga 3×, 5×, dan 10× sama-sama tidak pernah berhenti. Sekarang
+  /// jumlahnya benar-benar dihitung, dan satu putaran memutar rentangnya saja
+  /// — bukan sampai akhir surah.
   Future<void> playRange({
     required int surah,
     required int fromAyah,
     required int toAyah,
-  }) => _load(
-    AudioQueue.from(surah, fromAyah, toAyah: toAyah),
-    AudioRepeat.range,
-  );
+    int? repeatCount = 1,
+  }) {
+    final next = AudioQueue.from(surah, fromAyah, toAyah: toAyah);
+    final plan = RangePlan.of(length: next.length, repeatCount: repeatCount);
+    return _load(
+      next,
+      plan.mode,
+      copies: plan.copies,
+      passTarget: plan.passTarget,
+    );
+  }
 
   /// Toggles playback, or forces a direction when [resume] is given, as
   /// media buttons do.
@@ -303,6 +409,9 @@ class QuranAudioService {
     queue.value = null;
     playingVerse.value = null;
     repeat.value = AudioRepeat.off;
+    rangePass.value = 1;
+    rangeTarget.value = null;
+    _lastIndex = 0;
     buffering.value = false;
     // Listeners have already shown any message; reset so a repeat of the
     // same failure still notifies.
@@ -314,6 +423,8 @@ class QuranAudioService {
     AudioQueue next,
     AudioRepeat mode, {
     Duration? position,
+    int? passTarget,
+    int copies = 1,
   }) async {
     final generation = ++_generation;
     _loading = true;
@@ -322,6 +433,9 @@ class QuranAudioService {
     repeat.value = mode;
     playingVerse.value = next.keyAt(0);
     buffering.value = true;
+    rangePass.value = 1;
+    rangeTarget.value = passTarget ?? (copies > 1 ? copies : null);
+    _lastIndex = 0;
     try {
       await _player.setLoopMode(switch (mode) {
         AudioRepeat.off => LoopMode.off,
@@ -334,10 +448,11 @@ class QuranAudioService {
       final folder = await AudioDownloadService().folderPath(reciter);
       await _player
           .setAudioSources([
-            for (var ayah = next.firstAyah; ayah <= next.lastAyah; ayah++)
-              AudioSource.uri(
-                sourceFor(next.surah, ayah, reciter: reciter, folder: folder),
-              ),
+            for (var copy = 0; copy < copies; copy++)
+              for (var ayah = next.firstAyah; ayah <= next.lastAyah; ayah++)
+                AudioSource.uri(
+                  sourceFor(next.surah, ayah, reciter: reciter, folder: folder),
+                ),
           ], initialPosition: position)
           .timeout(_loadTimeout);
       if (generation != _generation) return;

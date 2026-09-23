@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 
@@ -303,6 +304,66 @@ class SharedPreferencesService {
     }
     memorizationRevision.value++;
   }
+
+  /// Catatan hafalan per ayat untuk satu surah.
+  ///
+  /// Status per surah (`hafalan_status_*`) tetap ada sebagai ringkasan; yang
+  /// ini menyimpan jadwal murajaah tiap ayat. Entri yang rusak dilewati, bukan
+  /// ditebak jadwalnya, dan tidak menjatuhkan seluruh surahnya.
+  static List<AyahMemorization> getAyahMemorization(int surah) {
+    final raw = _prefs?.getString('hafalan_ayat_$surah');
+    if (raw == null || raw.isEmpty) return const [];
+    Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      return const [];
+    }
+    if (decoded is! Map<String, dynamic>) return const [];
+    final items = <AyahMemorization>[];
+    for (final entry in decoded.entries) {
+      final ayah = int.tryParse(entry.key);
+      final value = entry.value;
+      if (ayah == null || ayah < 1 || value is! Map<String, dynamic>) continue;
+      if (ayah > surahCatalog[surah - 1].ayahCount) continue;
+      final item = AyahMemorization.fromJson(surah, ayah, value);
+      if (item != null) items.add(item);
+    }
+    items.sort((a, b) => a.ayah.compareTo(b.ayah));
+    return items;
+  }
+
+  /// Menyimpan satu ayat; [item] null menghapus catatannya.
+  static Future<void> setAyahMemorization(
+    int surah,
+    int ayah,
+    AyahMemorization? item,
+  ) async {
+    final current = {
+      for (final existing in getAyahMemorization(surah))
+        existing.ayah.toString(): existing.toJson(),
+    };
+    if (item == null) {
+      current.remove(ayah.toString());
+    } else {
+      current[ayah.toString()] = item.toJson();
+    }
+    if (current.isEmpty) {
+      await _prefs?.remove('hafalan_ayat_$surah');
+    } else {
+      await _prefs?.setString('hafalan_ayat_$surah', jsonEncode(current));
+    }
+    memorizationRevision.value++;
+  }
+
+  /// Seluruh catatan ayat dari surah yang sedang ditandai.
+  static List<AyahMemorization> allAyahMemorization() => [
+    for (final surah in memorizationTracked()) ...getAyahMemorization(surah),
+  ];
+
+  /// Banyaknya ayat yang perlu diulang hari ini, termasuk yang terlewat.
+  static int dueTodayCount([DateTime? today]) =>
+      dueForReview(allAyahMemorization(), today ?? DateTime.now()).length;
 
   /// Surah yang sudah ditandai (selain "belum mulai"), urut nomor surah.
   static List<int> memorizationTracked() {

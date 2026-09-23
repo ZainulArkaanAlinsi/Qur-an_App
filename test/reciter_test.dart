@@ -16,7 +16,13 @@ http.Response _editions(List<String> identifiers) => http.Response.bytes(
     jsonEncode({
       'data': [
         for (final id in identifiers)
-          {'identifier': id, 'name': 'اسم $id', 'englishName': 'Nama $id'},
+          // Bentuknya mengikuti respons asli, yang selalu menyebut bahasa.
+          {
+            'identifier': id,
+            'language': 'ar',
+            'name': 'اسم $id',
+            'englishName': 'Nama $id',
+          },
       ],
     }),
   ),
@@ -180,6 +186,92 @@ void main() {
       await prefs.setString('reciter', 'bukan json');
       await SharedPreferencesService.init();
       expect(SharedPreferencesService.getReciter(), defaultReciter);
+    });
+  });
+
+  group('penyaringan daftar qari', () {
+    // Endpoint mengembalikan semua edisi audio, termasuk audio terjemahan
+    // dan riwayat selain Hafs. Dulu semuanya ikut masuk daftar qari.
+    const editions = [
+      {'identifier': 'ar.alafasy', 'language': 'ar', 'englishName': 'Alafasy'},
+      {
+        'identifier': 'ar.husary',
+        'language': 'ar',
+        'englishName': 'Husary Muallim',
+      },
+      {
+        'identifier': 'ar.abdulbasitmujawwad',
+        'language': 'ar',
+        'englishName': 'Abdul Basit Mujawwad',
+      },
+      {
+        'identifier': 'ar.warsh',
+        'language': 'ar',
+        'englishName': 'Warsh recitation',
+      },
+      {
+        'identifier': 'en.walk',
+        'language': 'en',
+        'englishName': 'Ibrahim Walk',
+      },
+      {'identifier': 'ur.khan', 'language': 'ur', 'englishName': 'Shamshad'},
+      {'identifier': 'fr.leclerc', 'language': 'fr', 'englishName': 'Leclerc'},
+    ];
+
+    test('audio terjemahan dibuang', () {
+      final kept = keepRecitations([
+        for (final edition in editions) Map<String, dynamic>.from(edition),
+      ]).map((reciter) => reciter.identifier);
+      expect(kept, isNot(contains('en.walk')));
+      expect(kept, isNot(contains('ur.khan')));
+      expect(kept, isNot(contains('fr.leclerc')));
+    });
+
+    test('riwayat selain Hafs dibuang', () {
+      final kept = keepRecitations([
+        for (final edition in editions) Map<String, dynamic>.from(edition),
+      ]).map((reciter) => reciter.identifier);
+      expect(kept, isNot(contains('ar.warsh')));
+      expect(kept, contains('ar.alafasy'));
+    });
+
+    test('entri kembar hanya muncul sekali', () {
+      final kept = keepRecitations([
+        {'identifier': 'ar.alafasy', 'language': 'ar', 'englishName': 'A'},
+        {'identifier': 'ar.alafasy', 'language': 'ar', 'englishName': 'A'},
+      ]);
+      expect(kept, hasLength(1));
+    });
+
+    test('entri tanpa identifier tidak menjatuhkan seluruh daftar', () {
+      final kept = keepRecitations([
+        {'language': 'ar', 'englishName': 'Tanpa id'},
+        {'identifier': 'ar.alafasy', 'language': 'ar', 'englishName': 'A'},
+      ]);
+      expect(kept.single.identifier, 'ar.alafasy');
+    });
+
+    test('gaya bacaan dibaca dari nama, bukan ditebak', () {
+      expect(Reciter.styleOf('Husary Muallim'), RecitationStyle.muallim);
+      expect(Reciter.styleOf('Abdul Basit Mujawwad'), RecitationStyle.mujawwad);
+      expect(Reciter.styleOf('Minshawi Murattal'), RecitationStyle.murattal);
+      // Tidak disebut berarti belum dipastikan, bukan otomatis murattal.
+      expect(Reciter.styleOf('Alafasy'), RecitationStyle.unknown);
+    });
+
+    test('cache lama tanpa field baru tetap terbaca', () {
+      final reciter = Reciter.fromJson({
+        'identifier': 'ar.husary',
+        'name': 'الحصري',
+        'englishName': 'Husary Muallim',
+        'bitrate': 128,
+      });
+      expect(reciter.identifier, 'ar.husary');
+      expect(reciter.bitrate, 128);
+      expect(reciter.style, RecitationStyle.muallim);
+      expect(reciter.narration, Narration.hafs);
+      expect(reciter.provider, AudioProvider.alQuranCloud);
+      expect(reciter.hasWordTiming, isFalse);
     });
   });
 }

@@ -13,6 +13,7 @@ import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
+import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/prayer_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
@@ -25,10 +26,17 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 /// handoff: ukuran, jarak, dan warnanya diambil dari sana, bukan dikira-kira.
 /// Mockup menentukan bentuk; seluruh angka yang tampil tetap dari perangkat.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onOpenQuran});
+  const HomeScreen({
+    super.key,
+    required this.onOpenQuran,
+    required this.onOpenLearn,
+  });
 
   /// Pindah ke tab Qur'an.
   final VoidCallback onOpenQuran;
+
+  /// Pindah ke tab Belajar.
+  final VoidCallback onOpenLearn;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -121,6 +129,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     final verse = SharedPreferencesService.getLastReadVerse(surah.number);
     final progress = ReadingProgressService.read();
+    // Dihitung ulang tiap build: kembali dari layar latihan memanggil
+    // setState, jadi angkanya tidak pernah basi.
+    final dueToday = SharedPreferencesService.dueTodayCount();
 
     return FutureBuilder<_HomeData>(
       future: _data,
@@ -168,9 +179,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               _TargetAndStreak(progress: progress),
+              // Urutan §E: setelah target datang murajaah hari ini. Kartunya
+              // hanya muncul kalau memang ada yang jatuh tempo, supaya
+              // beranda tidak penuh baris kosong.
+              if (dueToday > 0) ...[
+                const SizedBox(height: 12),
+                _MurajaahRow(
+                  count: dueToday,
+                  onTap: () => _push(const MemorizationScreen()),
+                ),
+              ],
               const SizedBox(height: 12),
               _Shortcuts(
                 onQuran: widget.onOpenQuran,
+                onLearn: widget.onOpenLearn,
                 onBookmark: () => _push(const BookmarkScreen()),
                 onKhatam: () => _push(const KhatamPlanScreen()),
               ),
@@ -1063,11 +1085,13 @@ class _DashedRing extends CustomPainter {
 class _Shortcuts extends StatelessWidget {
   const _Shortcuts({
     required this.onQuran,
+    required this.onLearn,
     required this.onBookmark,
     required this.onKhatam,
   });
 
   final VoidCallback onQuran;
+  final VoidCallback onLearn;
   final VoidCallback onBookmark;
   final VoidCallback onKhatam;
 
@@ -1081,6 +1105,14 @@ class _Shortcuts extends StatelessWidget {
             paths: SacredIcons.book,
             label: 'Surah',
             onTap: onQuran,
+          ),
+          const SizedBox(width: 8),
+          // Belajar adalah tujuan utama revisi v2, jadi ia punya pintasan
+          // sendiri dan tidak lagi hanya tersembunyi di dalam tab Progres.
+          _ShortcutChip(
+            paths: SacredIcons.palette,
+            label: 'Belajar',
+            onTap: onLearn,
           ),
           const SizedBox(width: 8),
           _ShortcutChip(
@@ -1379,6 +1411,72 @@ class _VerseCard extends StatelessWidget {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Baris "murajaah hari ini". Hanya tampil bila ada yang jatuh tempo.
+class _MurajaahRow extends StatelessWidget {
+  const _MurajaahRow({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Semantics(
+        button: true,
+        container: true,
+        excludeSemantics: true,
+        label: 'Murajaah hari ini, $count ayat',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: tokens.surf,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: tokens.sep),
+            ),
+            child: Row(
+              children: [
+                LineIcon(
+                  SacredIcons.repeat,
+                  color: tokens.primaryText,
+                  size: 20,
+                  strokeWidth: SacredIcons.strokeAction,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Murajaah hari ini',
+                        style: SacredText.listName.copyWith(color: tokens.ink),
+                      ),
+                      Text(
+                        '$count ayat menunggu diulang.',
+                        style: SacredText.cardNote.copyWith(color: tokens.sec),
+                      ),
+                    ],
+                  ),
+                ),
+                LineIcon(
+                  SacredIcons.chevronRight,
+                  color: tokens.sec,
+                  size: 18,
+                  strokeWidth: 2.2,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

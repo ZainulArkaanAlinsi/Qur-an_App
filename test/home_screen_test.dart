@@ -20,7 +20,9 @@ Future<void> _pumpHome(WidgetTester tester, {VoidCallback? onOpenQuran}) async {
   await tester.pumpWidget(
     MaterialApp(
       theme: SacredTheme.themeFor(AppPalette.sacred, Brightness.light),
-      home: Scaffold(body: HomeScreen(onOpenQuran: onOpenQuran ?? () {})),
+      home: Scaffold(
+        body: HomeScreen(onOpenQuran: onOpenQuran ?? () {}, onOpenLearn: () {}),
+      ),
     ),
   );
   await tester.pump();

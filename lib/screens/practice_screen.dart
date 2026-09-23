@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
+import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
@@ -50,12 +51,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
   Future<void> _play() async {
     final audio = QuranAudioService.instance;
     try {
+      // Jumlah putarannya diserahkan ke pemutar. Dulu di sini dipanggil
+      // setRepeat setelah playRange, dan itulah sebab 3×/5×/10× tidak pernah
+      // berhenti sementara 1× justru berlanjut sampai akhir surah.
       await audio.playRange(
         surah: widget.surah.number,
         fromAyah: _from,
         toAyah: _to,
+        repeatCount: _repeat,
       );
-      await audio.setRepeat(_repeat == 1 ? AudioRepeat.off : AudioRepeat.range);
     } on Object {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,6 +68,51 @@ class _PracticeScreenState extends State<PracticeScreen> {
         ),
       );
     }
+  }
+
+  /// Menandai hasil murajaah untuk seluruh ayat dalam rentang terpilih.
+  ///
+  /// Yang menilai orangnya, bukan aplikasi: tidak ada pendengaran atau skor
+  /// otomatis (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`).
+  Future<void> _markReviewed(ReviewOutcome outcome) async {
+    final today = DateTime.now();
+    final existing = {
+      for (final item in SharedPreferencesService.getAyahMemorization(
+        widget.surah.number,
+      ))
+        item.ayah: item,
+    };
+    for (var ayah = _from; ayah <= _to; ayah++) {
+      final before =
+          existing[ayah] ??
+          AyahMemorization.fresh(
+            surah: widget.surah.number,
+            ayah: ayah,
+            today: today,
+          );
+      await SharedPreferencesService.setAyahMemorization(
+        widget.surah.number,
+        ayah,
+        before.reviewed(outcome, today),
+      );
+    }
+    // Surah yang baru pertama kali dimurajaah belum tentu sudah ditandai.
+    if (_status == MemorizationStatus.notStarted) {
+      await _setStatus(MemorizationStatus.learning);
+    }
+    if (!mounted) return;
+    final next = MurajaahSchedule.nextInterval(
+      existing[_from]?.interval ?? MurajaahSchedule.firstInterval,
+      outcome,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Ayat $_from–$_to ditandai "${outcome.label}". '
+          '${MurajaahSchedule.explain(next)}',
+        ),
+      ),
+    );
   }
 
   Future<void> _setStatus(MemorizationStatus status) async {
@@ -121,6 +170,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                   _to = to;
                 }),
                 onPlay: _play,
+                onReview: _markReviewed,
               ),
               const SizedBox(height: 16),
               for (var ayah = _from; ayah <= _to; ayah++)
@@ -175,6 +225,7 @@ class _Controls extends StatelessWidget {
     required this.onHideText,
     required this.onRange,
     required this.onPlay,
+    required this.onReview,
   });
 
   final List<int?> repeatChoices;
@@ -187,6 +238,9 @@ class _Controls extends StatelessWidget {
   final ValueChanged<bool> onHideText;
   final void Function(int from, int to) onRange;
   final VoidCallback onPlay;
+
+  /// Menandai hasil murajaah untuk rentang yang sedang dipilih.
+  final ValueChanged<ReviewOutcome> onReview;
 
   @override
   Widget build(BuildContext context) {
@@ -239,6 +293,37 @@ class _Controls extends StatelessWidget {
                 icon: const Icon(Icons.play_arrow_rounded),
                 label: Text('Putar ayat $from–$to'),
               ),
+            ),
+            const Divider(height: 28),
+            Text(
+              'Sudah murajaah ayat $from–$to?',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              // Yang menilai orangnya; aplikasi tidak mendengarkan bacaan.
+              'Nilai sendiri hasilnya. Jadwal ulangnya menyesuaikan.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                for (final outcome in ReviewOutcome.values) ...[
+                  Expanded(
+                    child: Tooltip(
+                      message: outcome.effect,
+                      child: OutlinedButton(
+                        onPressed: () => onReview(outcome),
+                        child: Text(outcome.label),
+                      ),
+                    ),
+                  ),
+                  if (outcome != ReviewOutcome.values.last)
+                    const SizedBox(width: 8),
+                ],
+              ],
             ),
           ],
         ),

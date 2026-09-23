@@ -384,16 +384,14 @@ class _Transport extends StatelessWidget {
           size: 44,
           background: tokens.goldSoft,
           // Labelnya menyebut apa yang akan terjadi, bukan keadaan sekarang.
-          semanticsLabel: switch (repeat) {
-            AudioRepeat.off => 'Ulangi ayat ini',
-            AudioRepeat.verse => 'Ulangi rentang ayat',
-            AudioRepeat.range => 'Putar berurutan',
-          },
-          onTap: () => audio.setRepeat(switch (repeat) {
-            AudioRepeat.off => AudioRepeat.verse,
-            AudioRepeat.verse => AudioRepeat.range,
-            AudioRepeat.range => AudioRepeat.off,
-          }),
+          // Hanya dua keadaan yang bisa dipindah dari sini: mengulang rentang
+          // butuh ayat awal dan akhir, jadi itu dipilih dari layar latihan.
+          semanticsLabel: repeat == AudioRepeat.verse
+              ? 'Putar berurutan'
+              : 'Ulangi ayat ini',
+          onTap: () => audio.setRepeat(
+            repeat == AudioRepeat.verse ? AudioRepeat.off : AudioRepeat.verse,
+          ),
           child: LineIcon(
             SacredIcons.repeat,
             color: repeat == AudioRepeat.off ? tokens.sec : tokens.goldText,

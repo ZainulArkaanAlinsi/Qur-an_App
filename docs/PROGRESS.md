@@ -98,6 +98,158 @@ Rilis terakhir v1.2.1.
 ### Yang tidak ada di desain
 
 Desain memakai **4 tab** (Beranda, Qur'an, Progres, Pengaturan) + tombol Cari
-bulat. Aplikasi sekarang memakai **5 tab** (Beranda, Baca, Belajar, Hafalan,
-Profil) dengan tab Belajar (hub Juz Amma) dan Hafalan yang dirilis di 1.2.0–1.2.1.
-Keduanya tidak boleh hilang, jadi tempat barunya menunggu keputusan pemilik.
+bulat. Saat brief ini ditulis aplikasi memakai **5 tab** (Beranda, Baca, Belajar,
+Hafalan, Profil) dengan tab Belajar (hub Juz Amma) dan Hafalan yang dirilis di
+1.2.0–1.2.1. Keduanya tidak boleh hilang, jadi tempat barunya menunggu keputusan
+pemilik.
+
+> **Catatan 23 September 2026:** redesign berjalan terus dan tab bar sekarang
+> **sudah 4 tab** (`lib/app/app_shell.dart:19-40`), sementara keputusan pemilik
+> di atas belum pernah diambil. Belajar dan Hafalan kini hanya bisa dicapai dari
+> tab Progres. Lihat `docs/revisi-v2/TAHAP_0_AUDIT.md` §3.3.
+
+## Redesign "Sacred Serenity · edisi iOS" — selesai (23 September 2026)
+
+Semua layar brief dibangun ulang dari nilai di mockup, dirilis sebagai **v1.4.0**
+(tag `v1.4.0`, PR #16, squash `cebc758`). Beranda, Qur'an, Pembaca, Fokus,
+Progres, Pengaturan, Salat, Cari dirombak; layar **Murottal penuh** dibuat baru
+(sebelumnya hanya mini-player). Transisi halaman memakai
+`CupertinoPageTransitionsBuilder` di semua platform.
+
+Yang sengaja **tidak** dikarang: bentuk gelombang Murottal diganti posisi
+pemutaran sungguhan (tidak ada data gelombang), tombol unduh di Murottal
+dinonaktifkan beserta alasannya, dan waktu mendengar tetap tertulis "belum
+dicatat" di Progres karena memang belum pernah dihitung.
+
+Belum diuji di perangkat nyata: seluruh layar hasil rombakan v1.4.0.
+
+## Revisi v2 — Tahap 0 (23 September 2026)
+
+Branch `revisi-v2` dari `main` (`cebc758`), versi `1.4.0+9`. Brief pemilik ada di
+`docs/revisi-v2/` (spesifikasi, riset sumber, foto referensi).
+
+Baseline sebelum menyentuh apa pun: `flutter pub get` sukses,
+`dart analyze lib test` **tanpa isu**, `flutter test` **252 lulus**.
+
+Hasil audit lengkap beserta bukti baris-per-baris:
+**`docs/revisi-v2/TAHAP_0_AUDIT.md`**. Ringkasnya: dari 23 klaim di brief,
+**19 benar, 3 sebagian, 1 salah** (daftar Juz 'Amma tidak diduplikasi; yang
+dipakai bersama hanya widget `MemorizationTile`).
+
+Temuan tambahan yang tidak ada di brief:
+
+- Halaman 273 pada foto (An-Nahl 55–64) **cocok persis** dengan batas halaman
+  Tanzil di `assets/quran/raw/quran-data.xml`, jadi target tata letaknya
+  terkonfirmasi Mushaf Madinah 604 halaman. Data **baris** (15 baris, rentang
+  kata) belum ada dan masih diambil dari jaringan.
+- Foto sampul referensi adalah mushaf **blok warna** (latar diwarnai), sedangkan
+  spesifikasi §C mewajibkan standar LPMQ yang mewarnai **huruf + harakat**.
+  Bertentangan; menunggu keputusan pemilik.
+- Tidak ada font mushaf yang dibundel; font QCF diunduh runtime, dan
+  membundelnya terikat syarat akun Quran Foundation Developer Console.
+
+### Keputusan pemilik (23 September 2026)
+
+| Pertanyaan | Keputusan |
+|---|---|
+| Struktur navigasi | **5 tab**: Beranda, Qur'an, **Belajar**, Progres, Pengaturan + tombol Cari. Hafalan berada **di dalam** Belajar |
+| Gaya warna tajwid | **Huruf berwarna, standar LPMQ Kemenag** (bukan blok warna seperti foto sampul) |
+| Kode mati | **Boleh dihapus**: `islamic_news_screen.dart` dan `search_screen.dart` |
+| Akun Quran Foundation | **Belum ada.** Pakai jalur QUL + font KFGQPC Unicode + data tajwid `cpfair/quran-tajweed` (CC BY 4.0), lisensinya diperiksa satu per satu |
+
+## Revisi v2 — Tahap 0.5: perbaikan yang tidak butuh keputusan (23 September 2026)
+
+Disisipkan sebelum Tahap 1 karena Tahap 1 bergantung pada lisensi data yang
+belum dipastikan, sedangkan semua di bawah ini murni bug dan kerapian.
+
+**Bug pengulangan hafalan (spesifikasi §D).** `playRange` selalu memetakan ke
+`LoopMode.all`, jadi 3×, 5×, 10×, dan "tanpa batas" berperilaku sama: tidak
+pernah berhenti. Opsi 1× justru keluar dari mode rentang, yang memuat ulang
+antrean sampai akhir surah — padahal tombolnya tertulis "Putar ayat 3–7".
+Aturannya sekarang ada di `RangePlan`, nilai murni yang bisa diuji tanpa pemutar
+sungguhan: satu putaran = daftar terbatas tanpa pengulangan; banyak putaran =
+menghitung kembalinya indeks ke ayat pertama lalu mematikan pengulangan di ayat
+terakhir putaran pamungkas, supaya daftar berakhir sendiri alih-alih terpotong
+di tengah ayat pertama. Rentang satu ayat tidak pernah berpindah indeks, jadi
+daftarnya digandakan; rentang panjang tidak pernah digandakan, sehingga
+mengulang Al-Baqarah 10× tetap memuat 286 berkas, bukan 2.860.
+
+**Bug dari 1.4.0 yang ikut ketahuan.** Tombol ulangi di layar Murottal berputar
+lewat `AudioRepeat.range`, yang ditolak `setRepeat`, jadi sepertiga ketukan diam
+saja. Sekarang hanya berpindah antara berurutan dan ulangi-ayat, karena memilih
+rentang butuh ayat awal dan akhir yang hanya ditanyakan layar latihan.
+
+**Navigasi 5 tab.** Belajar naik jadi tab dan memuat: jalur belajar membaca
+(dinonaktifkan beserta alasannya karena materinya belum ditinjau), Akademi
+Tajwid, Hafalan, dan daftar Juz Amma. Beranda dapat pintasan Belajar. Belajar
+dan Hafalan tidak lagi menumpang di tab Progres.
+
+**Judul "Pengaturan" dobel** diperbaiki: `app_shell` membungkus `SettingsScreen`
+dengan kolom yang menambah `LargeTitle` kedua.
+
+**`SacredTheme.light`/`dark` tidak membawa `SacredTokens`**, sehingga layar mana
+pun yang memakai token mati di tes dengan "Null check operator used on a null
+value". Keduanya kini lewat `themeFor`, jalur yang sama dengan aplikasi.
+
+**Kode mati dihapus** atas izin pemilik: `islamic_news_screen.dart`,
+`search_screen.dart`.
+
+Pengujian: `dart analyze lib test` bersih, `flutter test` **258 lulus**
+(6 tes baru untuk jumlah pengulangan). **Belum diuji di perangkat nyata**, dan
+belum ada tangkapan layar terang/gelap karena tidak ada perangkat/emulator
+tersambung; mode gelap, teks 200 %, dan layar sempit hanya tercakup oleh
+`test/qa_states_test.dart`.
+
+## Revisi v2 — Tahap 1: lisensi (23 September 2026)
+
+Hasil lengkap: **`docs/revisi-v2/TAHAP_1_LISENSI.md`**.
+
+**Mode Mushaf persis cetakan tidak bisa masuk rilis sekarang.** Data tata letak
+baris dari QUL — satu-satunya bahan yang wajib ada — **tidak punya keterangan
+lisensi sama sekali** di halaman resource mana pun; FAQ-nya menyuruh memeriksa
+lisensi "yang disediakan pembuat resource", padahal keterangan itu tidak ada.
+Tanpa izin tertulis, datanya tidak diunduh, tidak dibundel, dan tidak dirilis.
+
+Tiga bahan lain justru bersih: font KFGQPC Uthmanic Hafs boleh didistribusikan
+gratis (tapi **dilarang di-subset atau dikonversi**), data tajwid
+`cpfair/quran-tajweed` CC BY 4.0 (**kodenya tanpa lisensi — jangan disalin**),
+dan QuranEnc boleh dibundel dengan tujuh syarat, dua di antaranya mengubah
+desain: nomor versi wajib tampil dan aplikasi wajib punya jalur pembaruan.
+
+Catatan teknis penting untuk Tahap 2: offset anotasi cpfair menunjuk ke salinan
+Tanzil April 2017, sedangkan yang dibundel di sini v1.0.2 yang lebih baru. Jadi
+anotasinya **tidak boleh langsung ditempel** ke teks kita — persis pola yang
+sudah dilarang ADR-2. Harus dicocokkan ayat per ayat lebih dulu, dengan tes.
+
+## Revisi v2 — Tahap 3 & 5 & sebagian 6 (23 September 2026)
+
+**Qari (§E).** Daftar qari sebelumnya adalah apa pun yang dikembalikan endpoint
+Al Quran Cloud, tanpa penyaringan sama sekali — termasuk **audio terjemahan**
+(`en.walk`, `ur.khan`, `fr.leclerc`) yang bukan bacaan, dan edisi **riwayat
+Warsh** yang tidak cocok dengan teks Hafs di layar. Model `Reciter` kini membawa
+gaya, riwayat, penyedia, atribusi, dan penanda data waktu per kata. Gaya dibaca
+dari nama edisi penyedia; kalau tidak disebut, ditulis belum dipastikan, bukan
+ditebak murattal. Cache lama tanpa field baru tetap terbaca.
+
+**Hafalan (§D).** Status hafalan dulu hanya satu per surah tanpa jadwal apa pun,
+sehingga tidak ada yang memberi tahu apa yang harus diulang hari ini. Sekarang
+tiap ayat punya jarak ulang dan tanggal jatuh tempo sendiri, dengan tangga yang
+bisa dibaca langsung di layar: 1 → 3 → 7 → 14 → 30 hari, naik saat lancar, tetap
+saat ragu, kembali ke 1 hari saat salah. Layar latihan dapat tiga tombol penanda;
+yang menilai tetap orangnya. Layar Hafalan menjelaskan ziyadah/murajaah/tasmi'.
+Beranda menampilkan baris murajaah hanya bila memang ada yang jatuh tempo.
+
+**Sinkronisasi cloud untuk data hafalan belum dikerjakan** — itu perlu mengubah
+dan men-deploy aturan Firestore, dan itu tidak dilakukan tanpa pengawasan.
+
+**Sebagian §E.** Lima warna lencana ikon dulu konstanta `const` yang ditulis dua
+kali di dua layar, sehingga tetap pekat di mode gelap; sekarang satu tempat dan
+ikut kecerahan tema. Baris sumber murottal dulu selalu menyebut "Alafasy, 128
+kbps" apa pun qari yang dipilih karena grupnya `const`; sekarang menyebut qari
+dan bitrate yang benar-benar dipakai.
+
+### Belum dikerjakan dari daftar Tahap 0.5
+
+Warna chip hardcode di Pengaturan dan Belajar, 23 warna hardcode di Beranda,
+serta kartu lembut yang punya tiga implementasi — semuanya dipindahkan ke
+Tahap 6 sesuai urutan di prompt, karena menyentuh token tema secara luas.

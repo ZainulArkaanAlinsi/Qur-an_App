@@ -34,7 +34,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     final screens = <String, Widget>{
-      'Beranda': HomeScreen(onOpenQuran: () {}),
+      'Beranda': HomeScreen(onOpenQuran: () {}, onOpenLearn: () {}),
       'Qur’an': const QuranLibraryScreen(),
       'Progres': const ProgressScreen(),
       'Pengaturan': const SettingsScreen(),

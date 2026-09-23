@@ -22,8 +22,12 @@ abstract final class SacredTheme {
   static const ivory = Color(0xFFFCF9F8);
   static const ink = Color(0xFF1B1C1C);
 
-  static ThemeData get light => _theme(Brightness.light);
-  static ThemeData get dark => _theme(Brightness.dark);
+  /// Tema palet bawaan. Dulu keduanya memanggil `_theme` langsung sehingga
+  /// tidak membawa `SacredTokens`, dan layar mana pun yang memakai token akan
+  /// mati dengan "Null check operator used on a null value" begitu dipakai di
+  /// tes. Sekarang keduanya lewat [themeFor] supaya tidak bisa menjebak lagi.
+  static ThemeData get light => themeFor(AppPalette.sacred, Brightness.light);
+  static ThemeData get dark => themeFor(AppPalette.sacred, Brightness.dark);
 
   /// Token desain untuk palet dan kecerahan tertentu.
   static SacredTokens tokensFor(AppPalette palette, Brightness brightness) {
