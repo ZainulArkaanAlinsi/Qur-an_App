@@ -11,6 +11,7 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
+import 'package:quran_app_2025/widgets/surah_download_button.dart';
 
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({super.key, required this.surah, this.initialVerse = 1});
@@ -244,6 +245,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
               ),
             ),
           ),
+        SurahDownloadButton(surah: widget.surah.number),
         IconButton(
           onPressed: _jumpToVerse,
           icon: const Icon(Icons.format_list_numbered),

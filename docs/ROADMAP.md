@@ -49,8 +49,8 @@ di APK, keputusan edisi tercatat, reviewer tajwid sudah memberi catatan.
       (1.2.0).
 - [x] Banyak qari: daftar dinamis dari Al Quran Cloud, bitrate diperiksa per
       qari, pilihan tersimpan dan dipakai mini-player.
-- [ ] Unduh audio per surah untuk dipakai offline (pause/resume/hapus,
-      ukuran ditampilkan).
+- [x] Unduh murottal per surah untuk dipakai offline: tombol di Reader,
+      kemajuan, batal, hapus; pemutar memakai berkas lokal bila ada.
 - [ ] Tiga mode baca di build rilis — menunggu kredensial Quran Foundation dan
       BFF yang sudah di-deploy; prototipenya kini hanya di build debug.
 

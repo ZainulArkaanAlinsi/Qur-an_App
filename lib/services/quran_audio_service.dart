@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -6,6 +7,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 enum AudioRepeat { off, verse, range }
@@ -130,6 +132,20 @@ class QuranAudioService {
       '/quran/audio/$bitrate/${selected.identifier}/'
           '${globalAyahNumber(surah, ayah)}.mp3',
     );
+  }
+
+  /// Berkas lokal bila tersedia, kalau tidak URL CDN.
+  static Uri sourceFor(
+    int surah,
+    int ayah, {
+    required Reciter reciter,
+    required String? folder,
+  }) {
+    if (folder != null) {
+      final file = File('$folder/${globalAyahNumber(surah, ayah)}.mp3');
+      if (file.existsSync() && file.lengthSync() > 0) return file.uri;
+    }
+    return urlFor(surah, ayah, reciter: reciter);
   }
 
   int? get _currentAyah {
@@ -274,10 +290,21 @@ class QuranAudioService {
         AudioRepeat.verse => LoopMode.one,
         AudioRepeat.range => LoopMode.all,
       });
+      // Berkas yang sudah diunduh dipakai lebih dulu agar bisa diputar tanpa
+      // internet; sisanya tetap di-stream.
+      final reciter = SharedPreferencesService.getReciter();
+      String? folder;
+      try {
+        folder = await AudioDownloadService().folderPath(reciter);
+      } on Object catch (error) {
+        debugPrint('Folder murottal tidak terbaca: $error');
+      }
       await _player
           .setAudioSources([
             for (var ayah = next.firstAyah; ayah <= next.lastAyah; ayah++)
-              AudioSource.uri(urlFor(next.surah, ayah)),
+              AudioSource.uri(
+                sourceFor(next.surah, ayah, reciter: reciter, folder: folder),
+              ),
           ], initialPosition: position)
           .timeout(_loadTimeout);
       if (generation != _generation) return;
