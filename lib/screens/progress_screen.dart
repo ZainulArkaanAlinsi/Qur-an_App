@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_heatmap.dart';
+import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/khatam/domain/juz_coverage.dart';
 import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
+import 'package:quran_app_2025/screens/learn_screen.dart';
+import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
@@ -199,6 +203,30 @@ class _ProgressScreenState extends State<ProgressScreen>
                 _KhatamCard(
                   juz: _juz,
                   onRetry: () => setState(() => _juz = JuzRepository.load()),
+                ),
+                const SizedBox(height: 12),
+                // Beranda hanya memuat tiga pintasan seperti acuan desain,
+                // jadi Belajar dan Hafalan dibuka dari sini.
+                _MenuRow(
+                  paths: SacredIcons.book,
+                  title: 'Belajar tajwid',
+                  subtitle: 'Hukum bacaan beserta contoh ayatnya.',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LearnScreen(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _MenuRow(
+                  paths: SacredIcons.checkCircle,
+                  title: 'Hafalan',
+                  subtitle: 'Tandai surah yang sedang dihafal.',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const MemorizationScreen(),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -414,6 +442,68 @@ class _JuzTile extends StatelessWidget {
             color: complete ? tokens.ctaInk : tokens.ink,
             fontWeight: FontWeight.w800,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Baris menu ke layar lain, dengan target sentuh penuh selebar kartunya.
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({
+    required this.paths,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final List<String> paths;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 64),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: tokens.surf,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: tokens.sep),
+        ),
+        child: Row(
+          children: [
+            LineIcon(
+              paths,
+              color: tokens.primaryText,
+              size: 20,
+              strokeWidth: SacredIcons.strokeAction,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: SacredText.headline.copyWith(color: tokens.ink),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: SacredText.cardNote.copyWith(color: tokens.sec),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(CupertinoIcons.chevron_right, size: 18, color: tokens.sec),
+          ],
         ),
       ),
     );
