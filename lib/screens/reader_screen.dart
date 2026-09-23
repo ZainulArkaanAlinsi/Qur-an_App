@@ -4,8 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
+import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
@@ -18,6 +21,11 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
+
+/// Banyaknya ayat per blok pada mode fokus. Mockup menyambung seluruh ayat
+/// jadi satu paragraf; blok kecil membuat tampilannya tetap mengalir tetapi
+/// posisi baca masih tercatat saat digulir.
+const _focusChunk = 5;
 
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({super.key, required this.surah, this.initialVerse = 1});
@@ -92,13 +100,23 @@ class _ReaderScreenState extends State<ReaderScreen> {
             )
             .toList()
           ..sort((a, b) => a.index.compareTo(b.index));
-    if (visible.isEmpty || visible.first.index == _currentVerse) return;
-    _currentVerse = visible.first.index;
-    _verse.value = _currentVerse;
-    _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
+    if (visible.isEmpty) return;
+    final verse = _verseForIndex(visible.first.index);
+    if (verse == _currentVerse) return;
+    _currentVerse = verse;
+    _verse.value = verse;
+    _tracker.verseKey = '${widget.surah.number}:$verse';
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 350), _savePosition);
   }
+
+  /// Indeks daftar → nomor ayat. Mode fokus memuat beberapa ayat per blok,
+  /// jadi pemetaannya berbeda.
+  int _verseForIndex(int index) =>
+      _focusMode ? (index - 1) * _focusChunk + 1 : index;
+
+  int _indexForVerse(int verse) =>
+      _focusMode ? (verse - 1) ~/ _focusChunk + 1 : verse;
 
   void _savePosition() {
     if (_ready) {
@@ -153,10 +171,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ],
       ),
     );
-    // The dialog may still animate while its controller is attached.
     if (!mounted) return;
     _tracker.setPaused(false);
-    if (result != null && _scroll.isAttached) _scroll.jumpTo(index: result);
+    if (result != null && _scroll.isAttached) {
+      _scroll.jumpTo(index: _indexForVerse(result));
+    }
   }
 
   /// Lembar "Tampilan": ukuran dan jarak baris teks Arab, hasilnya langsung
@@ -186,7 +205,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'Ukuran teks Arab',
-                  style: SacredText.footnote.copyWith(color: tokens.sec),
+                  style: SacredText.cardLabel.copyWith(color: tokens.sec),
                 ),
                 Slider(
                   value: _arabicSize,
@@ -204,7 +223,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 ),
                 Text(
                   'Jarak antarbaris',
-                  style: SacredText.footnote.copyWith(color: tokens.sec),
+                  style: SacredText.cardLabel.copyWith(color: tokens.sec),
                 ),
                 Slider(
                   value: _lineHeight,
@@ -244,55 +263,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     verse: _currentVerse,
   );
 
-  @override
-  void initState() {
-    super.initState();
-    _currentVerse = widget.initialVerse
-        .clamp(1, widget.surah.ayahCount)
-        .toInt();
-    _verse.value = _currentVerse;
-    _tracker = ReadingSessionTracker(
-      onChanged: () {
-        if (mounted) {
-          _timerText.value = _tracker.needsConfirmation
-              ? 'Masih membaca?'
-              : _timerLabel();
-        }
-      },
-    );
-    _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
-    _timerText.value = _timerLabel();
-    _content = _load();
-    _positions.itemPositions.addListener(_positionChanged);
-    QuranAudioService.instance.playingVerse.addListener(_followAudio);
-    QuranAudioService.instance.error.addListener(_showAudioError);
-  }
-
-  /// Keeps the verse the player is actually on in view.
-  void _followAudio() {
-    final key = QuranAudioService.instance.playingVerse.value;
-    final prefix = '${widget.surah.number}:';
-    if (key == null || !key.startsWith(prefix) || !_scroll.isAttached) return;
-    final index = int.parse(key.substring(prefix.length));
-    final visible = _positions.itemPositions.value.any(
-      (item) =>
-          item.index == index &&
-          item.itemLeadingEdge >= 0 &&
-          item.itemTrailingEdge <= .85,
-    );
-    if (visible) return;
-    unawaited(
-      _scroll.scrollTo(
-        index: index,
-        alignment: .08,
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeOutCubic,
-      ),
-    );
-  }
-
-  /// Kegagalan murottal ditahan di layar sebagai keadaan, bukan snackbar yang
-  /// lewat begitu saja, supaya pembaca tahu kenapa suaranya tidak muncul.
+  /// Kegagalan murottal ditahan di layar sebagai keadaan, bukan pesan sekilas.
   void _showAudioError() {
     final message = QuranAudioService.instance.error.value;
     if (message == null || !mounted) return;
@@ -317,6 +288,53 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _currentVerse = widget.initialVerse
+        .clamp(1, widget.surah.ayahCount)
+        .toInt();
+    _verse.value = _currentVerse;
+    _tracker = ReadingSessionTracker(
+      onChanged: () {
+        if (mounted) {
+          _timerText.value = _tracker.needsConfirmation
+              ? 'Masih membaca?'
+              : _timerLabel();
+        }
+      },
+    );
+    _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
+    _timerText.value = _timerLabel();
+    _content = _load();
+    _positions.itemPositions.addListener(_positionChanged);
+    QuranAudioService.instance.playingVerse.addListener(_followAudio);
+    QuranAudioService.instance.error.addListener(_showAudioError);
+  }
+
+  /// Menjaga ayat yang sedang diputar tetap terlihat.
+  void _followAudio() {
+    final key = QuranAudioService.instance.playingVerse.value;
+    final prefix = '${widget.surah.number}:';
+    if (key == null || !key.startsWith(prefix) || !_scroll.isAttached) return;
+    final index = _indexForVerse(int.parse(key.substring(prefix.length)));
+    final visible = _positions.itemPositions.value.any(
+      (item) =>
+          item.index == index &&
+          item.itemLeadingEdge >= 0 &&
+          item.itemTrailingEdge <= .85,
+    );
+    if (visible) return;
+    unawaited(
+      _scroll.scrollTo(
+        index: index,
+        alignment: .08,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
+  @override
   void dispose() {
     _saveTimer?.cancel();
     _savePosition();
@@ -325,7 +343,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
     QuranAudioService.instance.error.removeListener(_showAudioError);
     _timerText.dispose();
     _verse.dispose();
-    // Upload the session just closed once the tracker has saved it.
     unawaited(
       _tracker.dispose().then((_) => AccountService.instance.syncNow()),
     );
@@ -334,6 +351,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Mode fokus memakai palet sepia seperti di mockup, apa pun tema aplikasi.
+    final theme = _focusMode
+        ? SacredTheme.themeFor(AppPalette.sepia, Brightness.light)
+        : Theme.of(context);
+    return Theme(data: theme, child: Builder(builder: _buildBody));
+  }
+
+  Widget _buildBody(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     return Scaffold(
       backgroundColor: tokens.bg,
@@ -350,96 +375,124 @@ class _ReaderScreenState extends State<ReaderScreen> {
             );
           }
           final content = snapshot.data!;
-          return Column(
+          final verses = content.arabic;
+          final itemCount = _focusMode
+              ? (verses.length / _focusChunk).ceil() + 1
+              : verses.length + 1;
+
+          return Stack(
             children: [
-              _ReaderNav(
-                surah: widget.surah,
-                verse: _verse,
-                content: content,
-                focusMode: _focusMode,
-                onJump: _jumpToVerse,
-                onDisplay: _openDisplaySheet,
-                onToggleFocus: () => setState(() => _focusMode = !_focusMode),
-              ),
-              Expanded(
-                child: Listener(
-                  onPointerDown: (_) => _tracker.interact(),
-                  child: ScrollablePositionedList.separated(
-                    itemScrollController: _scroll,
-                    itemPositionsListener: _positions,
-                    // Dibuka dari awal surah: tampilkan bingkai judulnya dulu.
-                    initialScrollIndex: _currentVerse == 1 ? 0 : _currentVerse,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
-                    itemCount: content.arabic.length + 1,
-                    separatorBuilder: (_, __) =>
-                        SizedBox(height: _focusMode ? 6 : 12),
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return _SurahHeader(
-                          surah: widget.surah,
-                          arabicName: content.arabicName,
-                          timerText: _timerText,
-                          tracker: _tracker,
-                          compact: _focusMode,
-                        );
-                      }
-                      final number = index;
-                      final translation = content.translation;
-                      return _focusMode
-                          ? _FocusVerse(
-                              arabic: content.arabic[number - 1],
-                              number: number,
-                              size: _arabicSize,
-                              lineHeight: _lineHeight,
-                            )
-                          : _VerseCard(
-                              key: ValueKey('${widget.surah.number}:$number'),
-                              verseNumber: number,
-                              arabic: content.arabic[number - 1],
-                              translation:
-                                  _showTranslation && translation != null
-                                  ? translation[number - 1]
-                                  : null,
-                              surahNumber: widget.surah.number,
-                              arabicSize: _arabicSize,
-                              lineHeight: _lineHeight,
-                              onPlay: _playVerse,
-                            );
-                    },
+              if (_focusMode)
+                Positioned.fill(
+                  child: GeometricPattern(
+                    tile: 56,
+                    opacity: .05,
+                    color: tokens.gold,
                   ),
                 ),
-              ),
-              if (_focusMode)
-                _FocusBar(
-                  tracker: _tracker,
-                  timerText: _timerText,
-                  onMurottal: () => unawaited(_openMurottal(content)),
-                  // Terjemahan tidak ditampilkan di mode fokus, jadi tombolnya
-                  // mengembalikan pembaca ke tampilan biasa.
-                  onTranslation: () => setState(() {
-                    _focusMode = false;
-                    _showTranslation = true;
-                  }),
-                ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                  child: _audioError == null
-                      ? AudioMiniPlayer(
-                          onOpen: (_, __) => unawaited(_openMurottal(content)),
-                        )
-                      : _AudioUnavailable(
-                          message: _audioError!,
-                          onRetry: () {
-                            final ayah = _audioErrorVerse;
-                            setState(() => _audioError = null);
-                            if (ayah != null) unawaited(_playVerse(ayah));
-                          },
-                          onDismiss: () => setState(() => _audioError = null),
+              Column(
+                children: [
+                  if (_focusMode)
+                    _FocusHeader(
+                      onClose: () => setState(() => _focusMode = false),
+                      onDisplay: _openDisplaySheet,
+                    )
+                  else
+                    _ReaderNav(
+                      surah: widget.surah,
+                      verse: _verse,
+                      content: content,
+                      onBack: () => Navigator.of(context).maybePop(),
+                      onJump: _jumpToVerse,
+                      onDisplay: _openDisplaySheet,
+                      onFocus: () => setState(() => _focusMode = true),
+                    ),
+                  Expanded(
+                    child: Listener(
+                      onPointerDown: (_) => _tracker.interact(),
+                      child: ScrollablePositionedList.builder(
+                        itemScrollController: _scroll,
+                        itemPositionsListener: _positions,
+                        initialScrollIndex: _currentVerse == 1
+                            ? 0
+                            : _indexForVerse(_currentVerse),
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(
+                          _focusMode ? 22 : 10,
+                          8,
+                          _focusMode ? 22 : 10,
+                          _focusMode ? 20 : 28,
                         ),
-                ),
+                        itemCount: itemCount,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return _SurahPlate(
+                              surah: widget.surah,
+                              arabicName: content.arabicName,
+                              timerText: _timerText,
+                              tracker: _tracker,
+                              compact: _focusMode,
+                            );
+                          }
+                          if (_focusMode) {
+                            return _FocusBlock(
+                              verses: verses,
+                              first: (index - 1) * _focusChunk,
+                              count: _focusChunk,
+                              size: _arabicSize,
+                              lineHeight: _lineHeight,
+                            );
+                          }
+                          final number = index;
+                          final translation = content.translation;
+                          return _VerseCard(
+                            key: ValueKey('${widget.surah.number}:$number'),
+                            verseNumber: number,
+                            arabic: verses[number - 1],
+                            translation:
+                                _showTranslation && translation != null
+                                ? translation[number - 1]
+                                : null,
+                            surahNumber: widget.surah.number,
+                            arabicSize: _arabicSize,
+                            lineHeight: _lineHeight,
+                            onPlay: _playVerse,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  if (_focusMode)
+                    _FocusBar(
+                      tracker: _tracker,
+                      onMurottal: () => unawaited(_openMurottal(content)),
+                      onTranslation: () => setState(() {
+                        _focusMode = false;
+                        _showTranslation = true;
+                      }),
+                    ),
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                      child: _audioError == null
+                          ? AudioMiniPlayer(
+                              onOpen: (_, __) =>
+                                  unawaited(_openMurottal(content)),
+                            )
+                          : _AudioUnavailable(
+                              message: _audioError!,
+                              onRetry: () {
+                                final ayah = _audioErrorVerse;
+                                setState(() => _audioError = null);
+                                if (ayah != null) unawaited(_playVerse(ayah));
+                              },
+                              onDismiss: () =>
+                                  setState(() => _audioError = null),
+                            ),
+                    ),
+                  ),
+                ],
               ),
             ],
           );
@@ -454,95 +507,177 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 }
 
-/// Navigasi kaca pembaca: kembali, judul surah dengan posisi Juz/halaman, lalu
-/// tombol Tampilan dan Mode fokus.
+/// Navigasi kaca pembaca (Pembaca.html): kembali ke daftar surah, judul surah
+/// dengan posisi Juz/halaman, lalu tombol Tampilan dan Mode fokus.
 class _ReaderNav extends StatelessWidget {
   const _ReaderNav({
     required this.surah,
     required this.verse,
     required this.content,
-    required this.focusMode,
+    required this.onBack,
     required this.onJump,
     required this.onDisplay,
-    required this.onToggleFocus,
+    required this.onFocus,
   });
 
   final SurahMeta surah;
   final ValueNotifier<int> verse;
   final _ReaderContent content;
-  final bool focusMode;
+  final VoidCallback onBack;
   final VoidCallback onJump;
   final VoidCallback onDisplay;
-  final VoidCallback onToggleFocus;
+  final VoidCallback onFocus;
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-        child: GlassSurface(
-          borderRadius: BorderRadius.circular(24),
-          tint: tokens.glass,
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: 'Kembali ke daftar surah',
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: Icon(CupertinoIcons.chevron_left, color: tokens.ink),
+    return GlassSurface(
+      borderRadius: BorderRadius.zero,
+      tint: tokens.glass,
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(4, 4, 8, 8),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: tokens.sep, width: .5)),
+          ),
+          child: Row(
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: onBack,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      LineIcon(
+                        SacredIcons.chevronLeft,
+                        color: tokens.primaryText,
+                        size: 24,
+                        strokeWidth: 2.2,
+                      ),
+                      Text(
+                        'Surah',
+                        style: SacredText.backLabel.copyWith(
+                          color: tokens.primaryText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Expanded(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: onJump,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Column(
-                        children: [
-                          Text(
-                            surah.displayName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: SacredText.headline.copyWith(
-                              color: tokens.ink,
-                            ),
-                          ),
-                          ValueListenableBuilder<int>(
-                            valueListenable: verse,
-                            builder: (context, value, _) => Text(
-                              content.locationLabel(surah.number, value),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: SacredText.footnote.copyWith(
-                                color: tokens.sec,
-                                fontSize: 11,
+              ),
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: onJump,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                surah.displayName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: SacredText.navTitle.copyWith(
+                                  color: tokens.ink,
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 3),
+                            LineIcon(
+                              SacredIcons.chevronDown,
+                              color: tokens.sec,
+                              size: 15,
+                              strokeWidth: 2.4,
+                            ),
+                          ],
+                        ),
+                        ValueListenableBuilder<int>(
+                          valueListenable: verse,
+                          builder: (context, value, _) => Text(
+                            content.locationLabel(surah.number, value),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: SacredText.navSubtitle.copyWith(
+                              color: tokens.sec,
+                            ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Tampilan teks',
-                  onPressed: onDisplay,
-                  icon: Icon(CupertinoIcons.textformat_size, color: tokens.ink),
-                ),
-                IconButton(
-                  tooltip: focusMode ? 'Keluar dari mode fokus' : 'Mode fokus',
-                  onPressed: onToggleFocus,
-                  icon: Icon(
-                    focusMode
-                        ? CupertinoIcons.fullscreen_exit
-                        : CupertinoIcons.fullscreen,
-                    color: focusMode ? tokens.primaryText : tokens.ink,
-                  ),
-                ),
-              ],
+              ),
+              _FillButton(
+                tooltip: 'Tampilan bacaan',
+                onTap: onDisplay,
+                paths: SacredIcons.textSize,
+              ),
+              _FillButton(
+                tooltip: 'Mode fokus',
+                onTap: onFocus,
+                paths: SacredIcons.moon,
+                iconSize: 19,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tombol bulat berlatar isian lembut, seperti tombol kanan pada nav pembaca.
+class _FillButton extends StatelessWidget {
+  const _FillButton({
+    required this.tooltip,
+    required this.onTap,
+    required this.paths,
+    this.strokeWidth = SacredIcons.strokeNav,
+    this.size = 40,
+    this.iconSize = 20,
+  });
+
+  final String tooltip;
+  final VoidCallback onTap;
+  final List<String> paths;
+  final double strokeWidth;
+  final double size;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Tooltip(
+      message: tooltip,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 26,
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: Container(
+              width: size,
+              height: size,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tokens.fill,
+                shape: BoxShape.circle,
+              ),
+              child: LineIcon(
+                paths,
+                color: tokens.ink,
+                size: iconSize,
+                strokeWidth: strokeWidth,
+              ),
             ),
           ),
         ),
@@ -551,9 +686,66 @@ class _ReaderNav extends StatelessWidget {
   }
 }
 
-/// Bingkai mihrab berisi nama surah, keterangan singkat, dan penanda sesi.
-class _SurahHeader extends StatelessWidget {
-  const _SurahHeader({
+/// Kepala mode fokus: tutup, penanda mode, dan tombol tampilan.
+class _FocusHeader extends StatelessWidget {
+  const _FocusHeader({required this.onClose, required this.onDisplay});
+
+  final VoidCallback onClose;
+  final VoidCallback onDisplay;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+        child: Row(
+          children: [
+            _FillButton(
+              tooltip: 'Keluar dari mode fokus',
+              onTap: onClose,
+              paths: SacredIcons.close,
+              strokeWidth: SacredIcons.strokeAction,
+              size: 44,
+            ),
+            Expanded(
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tokens.fill,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Text(
+                    'Mode fokus · Sepia',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: SacredText.linkLabel.copyWith(color: tokens.sec),
+                  ),
+                ),
+              ),
+            ),
+            _FillButton(
+              tooltip: 'Tampilan bacaan',
+              onTap: onDisplay,
+              paths: SacredIcons.textSize,
+              size: 44,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Plakat nama surah. Di mode biasa memakai bidang emas lembut seperti mockup;
+/// di mode fokus berupa kotak bergaris dengan rosette di dua sisi.
+class _SurahPlate extends StatelessWidget {
+  const _SurahPlate({
     required this.surah,
     required this.arabicName,
     required this.timerText,
@@ -570,60 +762,99 @@ class _SurahHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 18),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 62),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: tokens.gold),
+          ),
+          child: Row(
+            children: [
+              RosetteBadge(
+                label: '',
+                size: 22,
+                outlined: true,
+                color: tokens.gold,
+              ),
+              Expanded(
+                child: Text(
+                  arabicName ?? surah.displayName,
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontFamily: SacredText.quran,
+                    fontSize: 28,
+                    height: 50 / 28,
+                    color: tokens.ink,
+                  ),
+                ),
+              ),
+              RosetteBadge(
+                label: '',
+                size: 22,
+                outlined: true,
+                color: tokens.gold,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
-      padding: EdgeInsets.only(bottom: compact ? 8 : 4),
+      padding: const EdgeInsets.fromLTRB(0, 14, 0, 12),
       child: Column(
         children: [
           ConstrainedBox(
-            // Tinggi minimum menjaga proporsi bingkai, tetapi dibiarkan
-            // tumbuh: nama surah tidak boleh terpotong pada teks besar.
-            constraints: BoxConstraints(
-              minWidth: 210,
-              maxWidth: 210,
-              minHeight: compact ? 132 : 168,
+            constraints: const BoxConstraints(
+              minWidth: 250,
+              maxWidth: 250,
+              minHeight: 128,
             ),
-            child: MihrabFrame(
-              child: Stack(
-                children: [
-                  const Positioned.fill(child: GeometricPattern(opacity: .09)),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 34, 18, 14),
+            child: CustomPaint(
+              foregroundPainter: _PlateOutline(color: tokens.gold),
+              child: ClipPath(
+                clipper: const MihrabClipper(radius: 18),
+                child: ColoredBox(
+                  color: tokens.goldSoft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 30, 20, 14),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (arabicName != null)
-                          Text(
-                            arabicName!,
-                            textDirection: TextDirection.rtl,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: SacredText.quran,
-                              fontSize: 24,
-                              height: 2,
-                              color: tokens.artInk,
-                            ),
-                          ),
-                        const SizedBox(height: 4),
                         Text(
-                          surah.displayName,
+                          arabicName ?? surah.displayName,
+                          textDirection: TextDirection.rtl,
                           textAlign: TextAlign.center,
-                          style: SacredText.footnote.copyWith(
-                            color: Colors.white.withValues(alpha: .88),
+                          style: TextStyle(
+                            fontFamily: SacredText.quran,
+                            fontSize: 30,
+                            height: 50 / 30,
+                            color: tokens.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${surah.revelation == 'Makkah' ? 'Makkiyah' : 'Madaniyah'}'
+                          ' · ${surah.ayahCount} ayat',
+                          textAlign: TextAlign.center,
+                          style: SacredText.plateMeta.copyWith(
+                            color: tokens.goldText,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            '${surah.revelation} · ${surah.ayahCount} ayat',
-            style: SacredText.footnote.copyWith(color: tokens.sec),
-          ),
-          const SizedBox(height: 8),
           ValueListenableBuilder<String>(
             valueListenable: timerText,
             builder: (context, value, _) => InkWell(
@@ -644,7 +875,7 @@ class _SurahHeader extends StatelessWidget {
                   tracker.paused
                       ? (value == 'Masih membaca?' ? value : 'Lanjutkan')
                       : 'Sesi $value',
-                  style: SacredText.footnote.copyWith(
+                  style: SacredText.cardNote.copyWith(
                     color: tokens.primaryText,
                     fontWeight: FontWeight.w800,
                   ),
@@ -652,72 +883,78 @@ class _SurahHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (!compact) ...[const SizedBox(height: 12), const _SourceNotice()],
         ],
       ),
     );
   }
 }
 
-class _SourceNotice extends StatelessWidget {
-  const _SourceNotice();
+class _PlateOutline extends CustomPainter {
+  const _PlateOutline({required this.color});
+
+  final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: tokens.goldSoft,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(CupertinoIcons.cloud_download, size: 18, color: tokens.goldText),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Teks Arab dan terjemahan Indonesia tersedia luring. Murottal '
-              'dialirkan saat ada internet; tekan tombol putar pada satu ayat '
-              'untuk memutar berurutan dari sana.',
-              style: SacredText.footnote.copyWith(color: tokens.ink),
-            ),
-          ),
-        ],
-      ),
+  void paint(Canvas canvas, Size size) {
+    canvas.drawPath(
+      MihrabClipper.pathFor(size, radius: 18),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..color = color,
+    );
+    const inset = 7.0;
+    if (size.width <= inset * 2 || size.height <= inset * 2) return;
+    canvas.drawPath(
+      MihrabClipper.pathFor(
+        Size(size.width - inset * 2, size.height - inset * 2),
+        radius: 14,
+      ).shift(const Offset(inset, inset)),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .6
+        ..color = color.withValues(alpha: .7),
     );
   }
+
+  @override
+  bool shouldRepaint(_PlateOutline old) => old.color != color;
 }
 
-/// Mode fokus: hanya teks Arab, rata tengah, dengan penanda akhir ayat.
-class _FocusVerse extends StatelessWidget {
-  const _FocusVerse({
-    required this.arabic,
-    required this.number,
+/// Beberapa ayat yang mengalir jadi satu paragraf, rata tengah.
+class _FocusBlock extends StatelessWidget {
+  const _FocusBlock({
+    required this.verses,
+    required this.first,
+    required this.count,
     required this.size,
     required this.lineHeight,
   });
 
-  final String arabic;
-  final int number;
+  final List<String> verses;
+  final int first;
+  final int count;
   final double size;
   final double lineHeight;
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final last = (first + count).clamp(0, verses.length);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Text.rich(
         TextSpan(
           children: [
-            TextSpan(text: arabic),
-            const WidgetSpan(child: SizedBox(width: 6)),
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: RosetteBadge.ayah(number, size: size * .95),
-            ),
+            for (var i = first; i < last; i++) ...[
+              TextSpan(text: verses[i]),
+              const WidgetSpan(child: SizedBox(width: 4)),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: RosetteBadge.ayah(i + 1, size: size),
+              ),
+              const WidgetSpan(child: SizedBox(width: 4)),
+            ],
           ],
         ),
         textAlign: TextAlign.center,
@@ -732,95 +969,80 @@ class _FocusVerse extends StatelessWidget {
   }
 }
 
-/// Baris bawah mode fokus: lama sesi, target hari ini, dan dua tombol.
+/// Baris bawah mode fokus: lama sesi, target, dan dua tombol.
 class _FocusBar extends StatelessWidget {
   const _FocusBar({
     required this.tracker,
-    required this.timerText,
     required this.onMurottal,
     required this.onTranslation,
   });
 
   final ReadingSessionTracker tracker;
-  final ValueNotifier<String> timerText;
   final VoidCallback onMurottal;
   final VoidCallback onTranslation;
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: tokens.surf,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: tokens.sep),
-      ),
-      child: ValueListenableBuilder<String>(
-        valueListenable: timerText,
-        builder: (context, value, _) {
-          final progress = ReadingProgressService.read();
-          final fraction = progress.targetSeconds <= 0
-              ? 1.0
-              : (progress.todaySeconds / progress.targetSeconds).clamp(
-                  0.0,
-                  1.0,
-                );
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    final progress = ReadingProgressService.read();
+    final fraction = progress.targetSeconds <= 0
+        ? 1.0
+        : (progress.todaySeconds / progress.targetSeconds).clamp(0.0, 1.0);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      // Perkiraan: waktu hanya dihitung selama layar aktif.
-                      'Sesi ${_mmss(tracker.elapsed)} · perkiraan',
-                      style: SacredText.footnote.copyWith(color: tokens.sec),
-                    ),
-                  ),
-                  Text(
-                    '$value hari ini',
-                    style: SacredText.footnote.copyWith(
-                      color: tokens.primaryText,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(99),
-                child: LinearProgressIndicator(
-                  value: fraction,
-                  minHeight: 5,
-                  backgroundColor: tokens.surf2,
-                  valueColor: AlwaysStoppedAnimation(tokens.primary),
+              Expanded(
+                child: Text(
+                  // Perkiraan: waktu hanya dihitung selama layar aktif.
+                  'Sesi ini ${_mmss(tracker.elapsed)} · perkiraan',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: onMurottal,
-                      icon: const Icon(CupertinoIcons.headphones, size: 18),
-                      label: const Text('Murottal'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: onTranslation,
-                      icon: const Icon(CupertinoIcons.textformat_alt, size: 18),
-                      label: const Text('Terjemahan'),
-                    ),
-                  ),
-                ],
+              const SizedBox(width: 8),
+              Text(
+                'Target ${(progress.targetSeconds / 60).round()} mnt',
+                style: SacredText.cardNote.copyWith(color: tokens.sec),
               ),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: fraction,
+              minHeight: 4,
+              backgroundColor: tokens.surf2,
+              valueColor: AlwaysStoppedAnimation(tokens.gold),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _FocusAction(
+                  label: 'Murottal',
+                  paths: SacredIcons.headphones,
+                  onTap: onMurottal,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _FocusAction(
+                  label: 'Terjemahan',
+                  paths: SacredIcons.translate,
+                  onTap: onTranslation,
+                  primary: true,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -828,6 +1050,62 @@ class _FocusBar extends StatelessWidget {
   static String _mmss(Duration value) =>
       '${value.inMinutes.toString().padLeft(2, '0')}:'
       '${(value.inSeconds % 60).toString().padLeft(2, '0')}';
+}
+
+class _FocusAction extends StatelessWidget {
+  const _FocusAction({
+    required this.label,
+    required this.paths,
+    required this.onTap,
+    this.primary = false,
+  });
+
+  final String label;
+  final List<String> paths;
+  final VoidCallback onTap;
+  final bool primary;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final foreground = primary ? tokens.ctaInk : tokens.ink;
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: primary ? tokens.cta : tokens.fill,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            LineIcon(
+              paths,
+              color: foreground,
+              size: 18,
+              strokeWidth: SacredIcons.strokeNav,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: SacredText.chipLabel.copyWith(
+                  color: foreground,
+                  fontWeight: primary ? FontWeight.w800 : FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ReaderError extends StatelessWidget {
@@ -909,14 +1187,12 @@ class _VerseCardState extends State<_VerseCard> {
           final active = playing == verseKey;
           return AnimatedContainer(
             duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.fromLTRB(16, 12, 10, 18),
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 18),
             decoration: BoxDecoration(
-              color: active ? tokens.primarySoft : tokens.surf,
+              // Mockup tidak memberi garis pada kartu; hanya ayat yang sedang
+              // diputar yang diberi latar.
+              color: active ? tokens.primarySoft : Colors.transparent,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: active ? tokens.primary : tokens.sep,
-                width: active ? 1.2 : 1,
-              ),
             ),
             child: child,
           );
@@ -924,47 +1200,27 @@ class _VerseCardState extends State<_VerseCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Text(
-                  verseKey,
-                  style: SacredText.footnote.copyWith(
-                    color: tokens.sec,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () async {
-                    if (bookmarked) {
-                      await SharedPreferencesService.removeBookmark(
-                        widget.surahNumber,
-                        widget.verseNumber,
-                      );
-                    } else {
-                      await SharedPreferencesService.saveBookmark(
-                        widget.surahNumber,
-                        widget.verseNumber,
-                      );
-                      if (mounted) await _chooseBookmarkCollection();
-                    }
-                    if (mounted) setState(() => bookmarked = !bookmarked);
-                  },
-                  icon: Icon(
-                    bookmarked
-                        ? CupertinoIcons.bookmark_fill
-                        : CupertinoIcons.bookmark,
-                    size: 20,
-                  ),
-                  color: bookmarked ? tokens.primaryText : tokens.sec,
-                  tooltip: bookmarked ? 'Hapus bookmark' : 'Simpan bookmark',
-                ),
-                _VersePlayButton(
-                  surah: widget.surahNumber,
-                  ayah: widget.verseNumber,
-                  onPlay: widget.onPlay,
-                ),
-              ],
+            _VerseHeader(
+              verseKey: verseKey,
+              ayah: widget.verseNumber,
+              bookmarked: bookmarked,
+              onBookmark: () async {
+                if (bookmarked) {
+                  await SharedPreferencesService.removeBookmark(
+                    widget.surahNumber,
+                    widget.verseNumber,
+                  );
+                } else {
+                  await SharedPreferencesService.saveBookmark(
+                    widget.surahNumber,
+                    widget.verseNumber,
+                  );
+                  if (mounted) await _chooseBookmarkCollection();
+                }
+                if (mounted) setState(() => bookmarked = !bookmarked);
+              },
+              onPlay: () => widget.onPlay(widget.verseNumber),
+              onMore: _showMore,
             ),
             const SizedBox(height: 10),
             Directionality(
@@ -973,12 +1229,12 @@ class _VerseCardState extends State<_VerseCard> {
                 TextSpan(
                   children: [
                     TextSpan(text: widget.arabic),
-                    const WidgetSpan(child: SizedBox(width: 6)),
+                    const WidgetSpan(child: SizedBox(width: 4)),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
                       child: RosetteBadge.ayah(
                         widget.verseNumber,
-                        size: widget.arabicSize * .95,
+                        size: widget.arabicSize,
                       ),
                     ),
                   ],
@@ -993,16 +1249,39 @@ class _VerseCardState extends State<_VerseCard> {
               ),
             ),
             if (widget.translation != null) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Text(
                 widget.translation!,
                 style: SacredText.body.copyWith(
-                  color: tokens.ink,
+                  color: tokens.ink.withValues(alpha: .82),
                   fontSize: translationSize,
-                  height: 1.55,
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showMore() async {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: tokens.surf,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(CupertinoIcons.folder),
+              title: const Text('Pindahkan ke koleksi'),
+              onTap: () {
+                Navigator.pop(context);
+                unawaited(_chooseBookmarkCollection());
+              },
+            ),
           ],
         ),
       ),
@@ -1035,6 +1314,128 @@ class _VerseCardState extends State<_VerseCard> {
   }
 }
 
+class _VerseHeader extends StatelessWidget {
+  const _VerseHeader({
+    required this.verseKey,
+    required this.ayah,
+    required this.bookmarked,
+    required this.onBookmark,
+    required this.onPlay,
+    required this.onMore,
+  });
+
+  final String verseKey;
+  final int ayah;
+  final bool bookmarked;
+  final VoidCallback onBookmark;
+  final VoidCallback onPlay;
+  final VoidCallback onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final audio = QuranAudioService.instance;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        audio.playingVerse,
+        audio.isPlaying,
+        audio.buffering,
+      ]),
+      builder: (context, _) {
+        final current = audio.playingVerse.value == verseKey;
+        final playing = current && audio.isPlaying.value;
+        final accent = current ? tokens.primaryText : tokens.sec;
+        return Row(
+          children: [
+            Text(verseKey, style: SacredText.verseLabel.copyWith(color: accent)),
+            const Spacer(),
+            _RoundIcon(
+              tooltip: playing ? 'Jeda ayat $ayah' : 'Putar ayat $ayah',
+              onTap: onPlay,
+              background: current ? tokens.surf : Colors.transparent,
+              child: current && audio.buffering.value
+                  ? SizedBox.square(
+                      dimension: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(accent),
+                      ),
+                    )
+                  : LineIcon(
+                      playing ? SacredIcons.pause : SacredIcons.play,
+                      color: accent,
+                      size: 14,
+                      filled: true,
+                    ),
+            ),
+            _RoundIcon(
+              tooltip: bookmarked
+                  ? 'Hapus bookmark ayat $ayah'
+                  : 'Bookmark ayat $ayah',
+              onTap: onBookmark,
+              child: LineIcon(
+                bookmarked ? SacredIcons.bookmarkFilled : SacredIcons.bookmark,
+                color: bookmarked ? tokens.primaryText : accent,
+                size: 18,
+                strokeWidth: SacredIcons.strokeNav,
+                filled: bookmarked,
+              ),
+            ),
+            _RoundIcon(
+              tooltip: 'Lainnya untuk ayat $ayah',
+              onTap: onMore,
+              child: LineIcon(
+                SacredIcons.more,
+                color: accent,
+                size: 18,
+                filled: true,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _RoundIcon extends StatelessWidget {
+  const _RoundIcon({
+    required this.tooltip,
+    required this.onTap,
+    required this.child,
+    this.background,
+  });
+
+  final String tooltip;
+  final VoidCallback onTap;
+  final Widget child;
+  final Color? background;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: InkResponse(
+      onTap: onTap,
+      radius: 24,
+      child: SizedBox.square(
+        dimension: 44,
+        child: Center(
+          child: Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: background ?? Colors.transparent,
+              shape: BoxShape.circle,
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _ReaderContent {
   const _ReaderContent(
     this.arabic,
@@ -1050,7 +1451,7 @@ class _ReaderContent {
   final List<JuzBoundary> juz;
   final List<PageBoundary> pages;
 
-  /// "Juz 23 · Hal. 442 · Ayat 41" dari metadata Tanzil. Bagian yang tidak
+  /// "Juz 1 · Hal. 1 · Ayat 1" dari metadata Tanzil. Bagian yang tidak
   /// diketahui dihilangkan, bukan ditebak.
   String locationLabel(int surah, int verse) {
     int? juzNumber;
@@ -1072,50 +1473,6 @@ class _ReaderContent {
       if (pageNumber != null) 'Hal. $pageNumber',
       'Ayat $verse',
     ].join(' · ');
-  }
-}
-
-class _VersePlayButton extends StatelessWidget {
-  const _VersePlayButton({
-    required this.surah,
-    required this.ayah,
-    required this.onPlay,
-  });
-  final int surah;
-  final int ayah;
-
-  /// Pemutaran ditangani layar supaya kegagalannya bisa ditampilkan menetap.
-  final Future<void> Function(int ayah) onPlay;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final audio = QuranAudioService.instance;
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        audio.playingVerse,
-        audio.isPlaying,
-        audio.buffering,
-      ]),
-      builder: (context, _) {
-        final current = audio.playingVerse.value == '$surah:$ayah';
-        final playing = current && audio.isPlaying.value;
-        return IconButton(
-          onPressed: () => onPlay(ayah),
-          icon: current && audio.buffering.value
-              ? const SizedBox.square(
-                  dimension: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2.4),
-                )
-              : Icon(
-                  playing ? CupertinoIcons.pause_fill : CupertinoIcons.play,
-                  size: 20,
-                ),
-          color: current ? tokens.primaryText : tokens.sec,
-          tooltip: playing ? 'Jeda murottal' : 'Putar mulai ayat ini',
-        );
-      },
-    );
   }
 }
 
@@ -1152,17 +1509,14 @@ class _AudioUnavailable extends StatelessWidget {
               children: [
                 Text(
                   'Murottal belum tersedia',
-                  style: SacredText.footnote.copyWith(
+                  style: SacredText.cardNote.copyWith(
                     color: tokens.ink,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 Text(
                   message,
-                  style: SacredText.footnote.copyWith(
-                    color: tokens.sec,
-                    fontSize: 12,
-                  ),
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
                 ),
               ],
             ),
