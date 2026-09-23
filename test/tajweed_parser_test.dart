@@ -6,9 +6,13 @@ import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart'
 import 'package:quran_app_2025/features/tajweed/domain/tajweed_rule.dart';
 
 Map<String, String> _loadFixture() {
-  final json = jsonDecode(
-    File('test/fixtures/qf_uthmani_tajweed_sample.json').readAsStringSync(),
-  ) as Map<String, dynamic>;
+  final json =
+      jsonDecode(
+            File(
+              'test/fixtures/qf_uthmani_tajweed_sample.json',
+            ).readAsStringSync(),
+          )
+          as Map<String, dynamic>;
   return {
     for (final verse in json['verses'] as List)
       verse['verse_key'] as String: verse['text_uthmani_tajweed'] as String,
@@ -61,27 +65,29 @@ void main() {
     expect(verse.endMarker, '١');
   });
 
-  test('tag bersarang: hukum terdalam menang saat dirender, keduanya dihitung',
-      () {
-    final verse = parser.parse('2:190', fixture['2:190']!);
-    final outer = verse.segments.firstWhere(
-      (s) => s.rule == TajweedRule.madWajib,
-    );
-    final inner = verse.segments.firstWhere(
-      (s) => s.rule == TajweedRule.silent && s.start >= outer.start,
-    );
-    expect(inner.depth, outer.depth + 1);
-    expect(inner.end, lessThanOrEqualTo(outer.end));
+  test(
+    'tag bersarang: hukum terdalam menang saat dirender, keduanya dihitung',
+    () {
+      final verse = parser.parse('2:190', fixture['2:190']!);
+      final outer = verse.segments.firstWhere(
+        (s) => s.rule == TajweedRule.madWajib,
+      );
+      final inner = verse.segments.firstWhere(
+        (s) => s.rule == TajweedRule.silent && s.start >= outer.start,
+      );
+      expect(inner.depth, outer.depth + 1);
+      expect(inner.end, lessThanOrEqualTo(outer.end));
 
-    final runAtInner = verse.runs.firstWhere(
-      (r) => r.start <= inner.start && r.end > inner.start,
-    );
-    expect(runAtInner.rule, TajweedRule.silent);
-    final runAtOuterStart = verse.runs.firstWhere(
-      (r) => r.start <= outer.start && r.end > outer.start,
-    );
-    expect(runAtOuterStart.rule, TajweedRule.madWajib);
-  });
+      final runAtInner = verse.runs.firstWhere(
+        (r) => r.start <= inner.start && r.end > inner.start,
+      );
+      expect(runAtInner.rule, TajweedRule.silent);
+      final runAtOuterStart = verse.runs.firstWhere(
+        (r) => r.start <= outer.start && r.end > outer.start,
+      );
+      expect(runAtOuterStart.rule, TajweedRule.madWajib);
+    },
+  );
 
   test('class di luar whitelist ditolak tanpa mengubah teks', () {
     final verse = parser.parse(
@@ -100,9 +106,13 @@ void main() {
   });
 
   test('cacat nyata provider (32:3, tag pembuka hilang) ditolak', () {
-    final json = jsonDecode(
-      File('test/fixtures/qf_uthmani_tajweed_sample.json').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(
+              File(
+                'test/fixtures/qf_uthmani_tajweed_sample.json',
+              ).readAsStringSync(),
+            )
+            as Map<String, dynamic>;
     final verse = (json['malformed_verses'] as List).single as Map;
     expect(
       () => parser.parse(
@@ -120,8 +130,10 @@ void main() {
       ('tag asing', 'a<b>c</b>'),
       ('teks setelah akhir ayat', 'a<span class=end>1</span>b'),
       ('span selain end', 'a<span class=x>1</span>'),
-      ('tajwid di dalam penanda ayat',
-          'a<span class=end><tajweed class=ikhafa>1</tajweed></span>'),
+      (
+        'tajwid di dalam penanda ayat',
+        'a<span class=end><tajweed class=ikhafa>1</tajweed></span>',
+      ),
     ]) {
       test(label, () {
         expect(() => parser.parse('x:1', markup), throwsFormatException);

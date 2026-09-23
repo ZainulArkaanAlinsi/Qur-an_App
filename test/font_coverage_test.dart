@@ -79,7 +79,9 @@ void main() {
   }
 
   test('font UI yang dibundel memuat huruf Latin dan tanda baca Indonesia', () {
-    final covered = _codepointsOf('assets/fonts/PlusJakartaSans-wght-Latin.ttf');
+    final covered = _codepointsOf(
+      'assets/fonts/PlusJakartaSans-wght-Latin.ttf',
+    );
     for (final char in 'AaZz0123456789.,:;·—’“”'.runes) {
       expect(
         covered,

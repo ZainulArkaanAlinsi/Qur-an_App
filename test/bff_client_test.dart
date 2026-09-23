@@ -11,24 +11,24 @@ import 'package:quran_app_2025/features/mushaf/domain/mushaf_layout.dart';
 const _base = 'https://bff.example.test';
 
 http.Response _json(Object body, [int status = 200]) => http.Response.bytes(
-      utf8.encode(jsonEncode(body)),
-      status,
-      headers: {'content-type': 'application/json'},
-    );
+  utf8.encode(jsonEncode(body)),
+  status,
+  headers: {'content-type': 'application/json'},
+);
 
 /// Satu halaman 15 baris dengan satu kata per baris.
 List<Map<String, Object>> _pageWords(int page) => [
-      for (var line = 1; line <= 15; line++)
-        {
-          'id': page * 100 + line,
-          'page': page,
-          'line': line,
-          'verseKey': '2:$line',
-          'position': line,
-          'type': 'word',
-          'glyph': 'g$line',
-        },
-    ];
+  for (var line = 1; line <= 15; line++)
+    {
+      'id': page * 100 + line,
+      'page': page,
+      'line': line,
+      'verseKey': '2:$line',
+      'position': line,
+      'type': 'word',
+      'glyph': 'g$line',
+    },
+];
 
 /// Pengganti ringan untuk kegagalan jaringan.
 class _NetworkFailure implements Exception {
@@ -44,11 +44,13 @@ void main() {
       );
       await expectLater(
         client.getJson('v1/health'),
-        throwsA(isA<BffException>().having(
-          (error) => error.message,
-          'message',
-          contains('BFF_BASE_URL'),
-        )),
+        throwsA(
+          isA<BffException>().having(
+            (error) => error.message,
+            'message',
+            contains('BFF_BASE_URL'),
+          ),
+        ),
       );
     });
 
@@ -78,9 +80,15 @@ void main() {
         );
         await expectLater(
           client.getJson('v1/health'),
-          throwsA(isA<BffException>()
-              .having((error) => error.statusCode, 'statusCode', status)
-              .having((error) => error.message, 'message', contains(fragment))),
+          throwsA(
+            isA<BffException>()
+                .having((error) => error.statusCode, 'statusCode', status)
+                .having(
+                  (error) => error.message,
+                  'message',
+                  contains(fragment),
+                ),
+          ),
         );
       }
     });
@@ -99,16 +107,22 @@ void main() {
 
   group('BffMushafSource', () {
     BffMushafSource source(MockClient client) => BffMushafSource(
-          client: BffClient(baseUrl: _base, client: client),
-          fontClient: client,
-          registerFont: (_, _) async {},
-        );
+      client: BffClient(baseUrl: _base, client: client),
+      fontClient: client,
+      registerFont: (_, _) async {},
+    );
 
     test('halaman dipetakan ke model dan disusun per baris', () async {
-      final instance = source(MockClient((request) async {
-        expect(request.url.path, '/v1/mushaf/v2/pages/3');
-        return _json({'page': 3, 'edition': 'qcf-v2', 'words': _pageWords(3)});
-      }));
+      final instance = source(
+        MockClient((request) async {
+          expect(request.url.path, '/v1/mushaf/v2/pages/3');
+          return _json({
+            'page': 3,
+            'edition': 'qcf-v2',
+            'words': _pageWords(3),
+          });
+        }),
+      );
       addTearDown(instance.dispose);
 
       final page = await instance.page(3);
@@ -118,26 +132,33 @@ void main() {
       expect(page.verseKeys.first, '2:1');
     });
 
-    test('halaman dengan baris hilang tetap ditolak di sisi aplikasi',
-        () async {
-      final instance = source(MockClient((_) async {
-        final words = _pageWords(3)..removeWhere((word) => word['line'] == 7);
-        return _json({'page': 3, 'words': words});
-      }));
-      addTearDown(instance.dispose);
+    test(
+      'halaman dengan baris hilang tetap ditolak di sisi aplikasi',
+      () async {
+        final instance = source(
+          MockClient((_) async {
+            final words = _pageWords(3)
+              ..removeWhere((word) => word['line'] == 7);
+            return _json({'page': 3, 'words': words});
+          }),
+        );
+        addTearDown(instance.dispose);
 
-      await expectLater(
-        instance.page(3),
-        throwsA(isA<MushafLayoutException>()),
-      );
-    });
+        await expectLater(
+          instance.page(3),
+          throwsA(isA<MushafLayoutException>()),
+        );
+      },
+    );
 
     test('halaman yang sama hanya diminta sekali', () async {
       var calls = 0;
-      final instance = source(MockClient((_) async {
-        calls++;
-        return _json({'page': 3, 'words': _pageWords(3)});
-      }));
+      final instance = source(
+        MockClient((_) async {
+          calls++;
+          return _json({'page': 3, 'words': _pageWords(3)});
+        }),
+      );
       addTearDown(instance.dispose);
 
       await instance.page(3);
@@ -147,12 +168,14 @@ void main() {
 
     test('kegagalan tidak disimpan di cache', () async {
       var calls = 0;
-      final instance = source(MockClient((_) async {
-        calls++;
-        return calls == 1
-            ? _json({'error': 'x'}, 500)
-            : _json({'page': 3, 'words': _pageWords(3)});
-      }));
+      final instance = source(
+        MockClient((_) async {
+          calls++;
+          return calls == 1
+              ? _json({'error': 'x'}, 500)
+              : _json({'page': 3, 'words': _pageWords(3)});
+        }),
+      );
       addTearDown(instance.dispose);
 
       await expectLater(instance.page(3), throwsA(isA<BffException>()));
@@ -161,21 +184,23 @@ void main() {
     });
 
     test('nama surah dan markup tajwid dipetakan per verseKey', () async {
-      final instance = source(MockClient((request) async {
-        if (request.url.path == '/v1/chapters') {
+      final instance = source(
+        MockClient((request) async {
+          if (request.url.path == '/v1/chapters') {
+            return _json({
+              'chapters': [
+                {'id': 1, 'nameArabic': 'الفاتحة'},
+              ],
+            });
+          }
           return _json({
-            'chapters': [
-              {'id': 1, 'nameArabic': 'الفاتحة'},
+            'chapter': 1,
+            'verses': [
+              {'verseKey': '1:1', 'markup': '<span class=end>١</span>'},
             ],
           });
-        }
-        return _json({
-          'chapter': 1,
-          'verses': [
-            {'verseKey': '1:1', 'markup': '<span class=end>١</span>'},
-          ],
-        });
-      }));
+        }),
+      );
       addTearDown(instance.dispose);
 
       expect(await instance.surahNames(), {1: 'الفاتحة'});
@@ -186,10 +211,12 @@ void main() {
 
     test('font halaman diambil dari CDN Quran Foundation', () async {
       Uri? fontUri;
-      final instance = source(MockClient((request) async {
-        fontUri = request.url;
-        return http.Response.bytes([1, 2, 3], 200);
-      }));
+      final instance = source(
+        MockClient((request) async {
+          fontUri = request.url;
+          return http.Response.bytes([1, 2, 3], 200);
+        }),
+      );
       addTearDown(instance.dispose);
 
       final family = await instance.ensureFont(MushafEdition.tajweed, 50);

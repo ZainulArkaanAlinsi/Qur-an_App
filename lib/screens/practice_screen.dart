@@ -25,8 +25,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
   static const _repeatChoices = <int?>[1, 3, 5, 10, null];
 
   late Future<_PracticeContent> _content = _load();
-  late MemorizationStatus _status = SharedPreferencesService
-      .getMemorizationStatus(widget.surah.number);
+  late MemorizationStatus _status =
+      SharedPreferencesService.getMemorizationStatus(widget.surah.number);
   int? _repeat = 3;
   bool _hideText = false;
   int _from = 1;

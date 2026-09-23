@@ -100,9 +100,7 @@ class ReciterRepository {
   /// tidak menyimpan pilihan yang pasti gagal.
   Future<Reciter?> resolveBitrate(Reciter reciter, {bool? lowData}) async {
     final saveData = lowData ?? SharedPreferencesService.getLowDataAudio();
-    final candidates = saveData
-        ? lowDataBitrateCandidates
-        : bitrateCandidates;
+    final candidates = saveData ? lowDataBitrateCandidates : bitrateCandidates;
     return _withClient((client) async {
       for (final bitrate in candidates) {
         final uri = Uri.https(

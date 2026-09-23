@@ -16,8 +16,10 @@ Future<void> _scrollTo(WidgetTester tester, Finder finder) async {
   }
 }
 
-Widget _host(Widget child) =>
-    MaterialApp(theme: SacredTheme.light, home: Scaffold(body: child));
+Widget _host(Widget child) => MaterialApp(
+  theme: SacredTheme.light,
+  home: Scaffold(body: child),
+);
 
 void main() {
   setUp(() async {

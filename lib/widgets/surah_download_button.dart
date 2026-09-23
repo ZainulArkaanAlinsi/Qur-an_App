@@ -123,8 +123,7 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
     final progress = _progress;
     if (progress != null) {
       return IconButton(
-        tooltip:
-            'Batalkan unduhan (${(progress.fraction * 100).round()}%)',
+        tooltip: 'Batalkan unduhan (${(progress.fraction * 100).round()}%)',
         onPressed: () => _service.cancel(_reciter, widget.surah),
         icon: Stack(
           alignment: Alignment.center,

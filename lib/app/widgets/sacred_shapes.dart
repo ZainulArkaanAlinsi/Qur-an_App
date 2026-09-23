@@ -349,7 +349,8 @@ class _Stars extends CustomPainter {
       Offset(.76, .28),
       Offset(.89, .62),
     ];
-    final paint = Paint()..color = const Color(0xFFFFFFFF).withValues(alpha: .7);
+    final paint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: .7);
     for (final point in points) {
       canvas.drawCircle(
         Offset(point.dx * size.width, point.dy * size.height),

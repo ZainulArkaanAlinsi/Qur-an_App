@@ -15,7 +15,10 @@ Future<void> _pump(WidgetTester tester) async {
   await tester.binding.setSurfaceSize(const Size(420, 2200));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
-    MaterialApp(theme: SacredTheme.light, home: PracticeScreen(surah: _surah)),
+    MaterialApp(
+      theme: SacredTheme.light,
+      home: PracticeScreen(surah: _surah),
+    ),
   );
   // Teks dan terjemahan dimuat dari aset dengan I/O nyata.
   for (var i = 0; i < 60; i++) {

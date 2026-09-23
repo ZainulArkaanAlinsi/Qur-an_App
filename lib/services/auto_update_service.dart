@@ -74,8 +74,9 @@ class AutoUpdateService {
   /// Membuka layar izin lalu, bila izin diberikan, langsung memasang berkas
   /// yang sudah diunduh. Tanpa ini pengguna memberi izin tetapi pembaruannya
   /// baru ditawarkan lagi besok.
-  Future<AutoUpdateOutcome> installAfterPermission(AvailableUpdate update)
-  async {
+  Future<AutoUpdateOutcome> installAfterPermission(
+    AvailableUpdate update,
+  ) async {
     await _installer.openPermissionSettings();
     if (!await _installer.canInstall()) {
       return AutoUpdateOutcome.needsInstallPermission;
@@ -129,9 +130,9 @@ class AutoUpdateService {
 
     final client = _client ?? http.Client();
     try {
-      final response = await client.get(apk).timeout(
-        const Duration(minutes: 10),
-      );
+      final response = await client
+          .get(apk)
+          .timeout(const Duration(minutes: 10));
       if (response.statusCode != 200) return null;
       final bytes = response.bodyBytes;
       if (expected != null && bytes.length != expected) return null;
