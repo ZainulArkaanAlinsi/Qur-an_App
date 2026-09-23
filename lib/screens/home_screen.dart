@@ -11,7 +11,10 @@ import 'package:quran_app_2025/data/sura_names_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
+import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
+import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
+import 'package:quran_app_2025/screens/lesson_screen.dart';
 import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
 import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/prayer_screen.dart';
@@ -45,6 +48,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<_HomeData> _data = _load();
   late Future<PrayerDay?> _prayer = _loadPrayer();
+  final Future<Curriculum> _curriculum = CurriculumRepository.load();
 
   /// Data dari perangkat sendiri. Sengaja tidak menunggu jaringan supaya isi
   /// beranda tetap muncul saat luring.
@@ -182,6 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
               // Urutan §E: setelah target datang murajaah hari ini. Kartunya
               // hanya muncul kalau memang ada yang jatuh tempo, supaya
               // beranda tidak penuh baris kosong.
+              const SizedBox(height: 12),
+              _ContinueLearning(
+                future: _curriculum,
+                onOpen: widget.onOpenLearn,
+              ),
               if (dueToday > 0) ...[
                 const SizedBox(height: 12),
                 _MurajaahRow(
@@ -1479,6 +1488,105 @@ class _MurajaahRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Baris "lanjutkan belajar". Menghilang kalau tidak ada materi yang boleh
+/// tampil, supaya beranda tidak memuat baris yang tidak bisa dibuka.
+class _ContinueLearning extends StatelessWidget {
+  const _ContinueLearning({required this.future, required this.onOpen});
+
+  final Future<Curriculum> future;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return FutureBuilder<Curriculum>(
+      future: future,
+      builder: (context, snapshot) {
+        final curriculum = snapshot.data;
+        if (curriculum == null) return const SizedBox.shrink();
+        final visible = curriculum.visible(includeDrafts: showDraftLessons);
+        if (visible.isEmpty) return const SizedBox.shrink();
+
+        final done = SharedPreferencesService.getCompletedLessons();
+        final next = curriculum.nextAfter(
+          done,
+          includeDrafts: showDraftLessons,
+        );
+        final completed = curriculum.completedCount(
+          done,
+          includeDrafts: showDraftLessons,
+        );
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Semantics(
+            button: true,
+            container: true,
+            excludeSemantics: true,
+            label: next == null
+                ? 'Belajar, semua tahap selesai'
+                : 'Lanjutkan belajar, tahap ${next.level} ${next.title}',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: onOpen,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: tokens.surf,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: tokens.sep),
+                ),
+                child: Row(
+                  children: [
+                    LineIcon(
+                      SacredIcons.book,
+                      color: tokens.primaryText,
+                      size: 20,
+                      strokeWidth: SacredIcons.strokeAction,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lanjutkan belajar',
+                            style: SacredText.listName.copyWith(
+                              color: tokens.ink,
+                            ),
+                          ),
+                          Text(
+                            next == null
+                                ? 'Semua $completed tahap sudah selesai.'
+                                : 'Tahap ${next.level}: ${next.title}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: SacredText.cardNote.copyWith(
+                              color: tokens.sec,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '$completed/${visible.length}',
+                      style: SacredText.chip.copyWith(
+                        color: tokens.primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

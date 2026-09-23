@@ -83,6 +83,7 @@ flutter:
     # Materi tajwid ditulis manusia dan diisi di luar kode; lihat
     # docs/TAJWEED_CONTENT.md.
     - assets/learn/tajweed_lessons.json
+    - assets/learn/curriculum.json
 
   fonts:
     # Teks Al-Qur'an. Amiri Quran dan Amiri sama-sama mencakup seluruh 68

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
+import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 
@@ -303,6 +304,24 @@ class SharedPreferencesService {
       await _prefs?.setString('hafalan_status_$surah', status.name);
     }
     memorizationRevision.value++;
+  }
+
+  /// Pelajaran jalur belajar yang sudah ditandai selesai.
+  ///
+  /// Disimpan sebagai id, bukan nomor urut, supaya susunan kurikulum bisa
+  /// berubah tanpa membuat kemajuan lama menunjuk pelajaran yang keliru.
+  static Set<String> getCompletedLessons() =>
+      (_prefs?.getStringList('belajar_selesai') ?? const <String>[]).toSet();
+
+  static Future<void> setLessonCompleted(String id, bool done) async {
+    final current = getCompletedLessons();
+    if (done ? !current.add(id) : !current.remove(id)) return;
+    if (current.isEmpty) {
+      await _prefs?.remove('belajar_selesai');
+    } else {
+      await _prefs?.setStringList('belajar_selesai', current.toList()..sort());
+    }
+    learnRevision.value++;
   }
 
   /// Catatan hafalan per ayat untuk satu surah.
