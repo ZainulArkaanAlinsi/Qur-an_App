@@ -4,6 +4,7 @@ import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
+import 'package:quran_app_2025/screens/learn_screen.dart';
 import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/quran_library_screen.dart';
 import 'package:quran_app_2025/screens/quran_search_screen.dart';
@@ -26,6 +27,11 @@ const _tabs = [
     icon: Icons.menu_book_outlined,
     activeIcon: Icons.menu_book_rounded,
     label: 'Qur’an',
+  ),
+  SacredTab(
+    icon: Icons.school_outlined,
+    activeIcon: Icons.school_rounded,
+    label: 'Belajar',
   ),
   SacredTab(
     icon: Icons.insights_outlined,
@@ -110,10 +116,16 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final pages = [
-      HomeScreen(onOpenQuran: () => setState(() => _index = 1)),
+      HomeScreen(
+        onOpenQuran: () => setState(() => _index = 1),
+        onOpenLearn: () => setState(() => _index = 2),
+      ),
       const QuranLibraryScreen(),
+      const LearnScreen(),
       const ProgressScreen(),
-      const _SettingsTab(),
+      // SettingsScreen memasang judul besarnya sendiri; dulu di sini ada
+      // pembungkus yang memasang judul kedua, jadi "Pengaturan" tampil dobel.
+      const SettingsScreen(),
     ];
     return Scaffold(
       backgroundColor: tokens.bg,
@@ -160,23 +172,6 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Tab Pengaturan. [SettingsScreen] adalah daftar tanpa Scaffold sendiri, jadi
-/// judul besarnya dipasang di sini.
-class _SettingsTab extends StatelessWidget {
-  const _SettingsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        LargeTitle('Pengaturan'),
-        Expanded(child: SettingsScreen()),
-      ],
     );
   }
 }

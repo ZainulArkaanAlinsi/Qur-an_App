@@ -25,10 +25,17 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 /// handoff: ukuran, jarak, dan warnanya diambil dari sana, bukan dikira-kira.
 /// Mockup menentukan bentuk; seluruh angka yang tampil tetap dari perangkat.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onOpenQuran});
+  const HomeScreen({
+    super.key,
+    required this.onOpenQuran,
+    required this.onOpenLearn,
+  });
 
   /// Pindah ke tab Qur'an.
   final VoidCallback onOpenQuran;
+
+  /// Pindah ke tab Belajar.
+  final VoidCallback onOpenLearn;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -171,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               _Shortcuts(
                 onQuran: widget.onOpenQuran,
+                onLearn: widget.onOpenLearn,
                 onBookmark: () => _push(const BookmarkScreen()),
                 onKhatam: () => _push(const KhatamPlanScreen()),
               ),
@@ -1063,11 +1071,13 @@ class _DashedRing extends CustomPainter {
 class _Shortcuts extends StatelessWidget {
   const _Shortcuts({
     required this.onQuran,
+    required this.onLearn,
     required this.onBookmark,
     required this.onKhatam,
   });
 
   final VoidCallback onQuran;
+  final VoidCallback onLearn;
   final VoidCallback onBookmark;
   final VoidCallback onKhatam;
 
@@ -1081,6 +1091,14 @@ class _Shortcuts extends StatelessWidget {
             paths: SacredIcons.book,
             label: 'Surah',
             onTap: onQuran,
+          ),
+          const SizedBox(width: 8),
+          // Belajar adalah tujuan utama revisi v2, jadi ia punya pintasan
+          // sendiri dan tidak lagi hanya tersembunyi di dalam tab Progres.
+          _ShortcutChip(
+            paths: SacredIcons.palette,
+            label: 'Belajar',
+            onTap: onLearn,
           ),
           const SizedBox(width: 8),
           _ShortcutChip(

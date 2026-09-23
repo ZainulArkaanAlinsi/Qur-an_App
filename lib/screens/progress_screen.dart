@@ -9,8 +9,6 @@ import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/khatam/domain/juz_coverage.dart';
 import 'package:quran_app_2025/screens/khatam_plan_screen.dart';
-import 'package:quran_app_2025/screens/learn_screen.dart';
-import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
@@ -147,30 +145,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                         if (mounted) setState(() {});
                       }),
                 ),
-                const SizedBox(height: 12),
-                // Beranda hanya memuat tiga pintasan seperti acuan desain,
-                // jadi Belajar dan Hafalan dibuka dari sini.
-                _MenuRow(
-                  paths: SacredIcons.book,
-                  title: 'Belajar tajwid',
-                  subtitle: 'Hukum bacaan beserta contoh ayatnya.',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const LearnScreen(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _MenuRow(
-                  paths: SacredIcons.checkCircle,
-                  title: 'Hafalan',
-                  subtitle: 'Tandai surah yang sedang dihafal.',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const MemorizationScreen(),
-                    ),
-                  ),
-                ),
+                // Belajar dan Hafalan sekarang punya tabnya sendiri, jadi
+                // pintasannya tidak lagi menumpang di layar ini.
                 const SizedBox(height: 12),
                 Text(
                   'Waktu ini adalah perkiraan saat pembaca aktif di depan layar, '
@@ -578,73 +554,6 @@ class _JuzTile extends StatelessWidget {
                 ? tokens.goldText
                 : tokens.sec,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Baris menu ke layar lain, dengan target sentuh penuh selebar kartunya.
-class _MenuRow extends StatelessWidget {
-  const _MenuRow({
-    required this.paths,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final List<String> paths;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 64),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: tokens.surf,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: tokens.sep),
-        ),
-        child: Row(
-          children: [
-            LineIcon(
-              paths,
-              color: tokens.primaryText,
-              size: 20,
-              strokeWidth: SacredIcons.strokeAction,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: SacredText.listName.copyWith(color: tokens.ink),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: SacredText.cardNote.copyWith(color: tokens.sec),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            LineIcon(
-              SacredIcons.chevronRight,
-              color: tokens.sec,
-              size: 18,
-              strokeWidth: 2.2,
-            ),
-          ],
         ),
       ),
     );
