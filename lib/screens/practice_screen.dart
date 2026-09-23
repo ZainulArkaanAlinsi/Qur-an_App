@@ -50,12 +50,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
   Future<void> _play() async {
     final audio = QuranAudioService.instance;
     try {
+      // Jumlah putarannya diserahkan ke pemutar. Dulu di sini dipanggil
+      // setRepeat setelah playRange, dan itulah sebab 3×/5×/10× tidak pernah
+      // berhenti sementara 1× justru berlanjut sampai akhir surah.
       await audio.playRange(
         surah: widget.surah.number,
         fromAyah: _from,
         toAyah: _to,
+        repeatCount: _repeat,
       );
-      await audio.setRepeat(_repeat == 1 ? AudioRepeat.off : AudioRepeat.range);
     } on Object {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
