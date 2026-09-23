@@ -54,9 +54,18 @@ bandingkan checksum/diff, lalu minta review konten manusia yang kompeten.
 - **Ketentuan Al Quran Cloud (Section IV):** penerbit ulang terjemahan diminta
   menyebut nama penerjemah. Atribusi tampil di Pengaturan > Konten & sumber.
 
-### Murottal (`ar.alafasy`)
+### Murottal (banyak qari)
 
-- **URL:** `https://cdn.islamic.network/quran/audio/128/ar.alafasy/{nomorGlobal}.mp3`.
+- **Daftar qari:** diambil dinamis dari
+  `https://api.alquran.cloud/v1/edition?format=audio&type=versebyverse`
+  (24 qari per ayat pada 23 September 2026), di-cache 7 hari agar pilihan
+  tetap bisa dibuka saat offline. Bawaan tetap Alafasy.
+- **URL:** `https://cdn.islamic.network/quran/audio/{bitrate}/{edisi}/{nomorGlobal}.mp3`.
+- **Bitrate berbeda per qari** (diuji 23 September 2026): Minshawi dan
+  Muhammad Ayyoub hanya 128 kbps; Abdul Samad hanya 64; Sudais dan Abdullah
+  Basfar 64 dan 192; Alafasy, Husary, dan Shaatree 64 dan 128. Karena itu
+  aplikasi memeriksa ketersediaan berkas sebelum menyimpan pilihan qari,
+  bukan menebak 128 kbps.
 - **Ketentuan Al Quran Cloud (Section IV):** "Recitations are licensed to us by
   the reciters or their estates for free, non-commercial redistribution at the
   bitrates we publish. You may stream, embed and download them for personal

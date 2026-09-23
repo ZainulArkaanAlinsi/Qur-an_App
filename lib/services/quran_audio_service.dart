@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 enum AudioRepeat { off, verse, range }
 
@@ -63,6 +65,7 @@ class QuranAudioService {
     );
   }
   static final instance = QuranAudioService._();
+  /// Qari bawaan bila pengguna belum memilih; lihat [SharedPreferencesService.getReciter].
   static const reciterEdition = 'ar.alafasy';
   static const reciterName = 'Mishary Alafasy';
   static const _loadTimeout = Duration(seconds: 20);
@@ -117,10 +120,17 @@ class QuranAudioService {
     ),
   );
 
-  static Uri urlFor(int surah, int ayah) => Uri.https(
-    'cdn.islamic.network',
-    '/quran/audio/128/$reciterEdition/${globalAyahNumber(surah, ayah)}.mp3',
-  );
+  /// URL ayat pada qari pilihan. Bitrate berbeda antar qari, jadi memakai
+  /// nilai yang sudah diperiksa saat qari dipilih.
+  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) {
+    final selected = reciter ?? SharedPreferencesService.getReciter();
+    final bitrate = selected.bitrate ?? 128;
+    return Uri.https(
+      'cdn.islamic.network',
+      '/quran/audio/$bitrate/${selected.identifier}/'
+          '${globalAyahNumber(surah, ayah)}.mp3',
+    );
+  }
 
   int? get _currentAyah {
     final q = queue.value;

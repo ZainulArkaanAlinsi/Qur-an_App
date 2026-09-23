@@ -40,11 +40,19 @@ lulus fase aktif terpenuhi. Definition of Done umum ada di
 Kriteria lulus: tiga prototipe jalan di emulator & perangkat nyata, tanpa secret
 di APK, keputusan edisi tercatat, reviewer tajwid sudah memberi catatan.
 
-## Fase 1 — MVP pembaca
+## Fase 1 — MVP pembaca (BERJALAN)
 
-Daftar surah/juz, tiga mode baca, terjemahan di card, banyak qari dinamis +
-mini-player, bookmark/terakhir dibaca per mode, pencarian, setting font &
-tema (terang/gelap/sepia/high contrast), download teks dan audio dasar.
+- [x] Daftar surah/juz, terjemahan di card, bookmark, terakhir dibaca,
+      pencarian (sudah ada sejak 1.1.x).
+- [x] Navigasi lima tab, hub Juz Amma, tab Hafalan, tab Profil (1.2.0).
+- [x] Tema terang/gelap/sepia/kontras tinggi, ukuran & jarak baris teks Arab
+      (1.2.0).
+- [x] Banyak qari: daftar dinamis dari Al Quran Cloud, bitrate diperiksa per
+      qari, pilihan tersimpan dan dipakai mini-player.
+- [ ] Unduh audio per surah untuk dipakai offline (pause/resume/hapus,
+      ukuran ditampilkan).
+- [ ] Tiga mode baca di build rilis — menunggu kredensial Quran Foundation dan
+      BFF yang sudah di-deploy; prototipenya kini hanya di build debug.
 
 ## Fase 2 — belajar
 

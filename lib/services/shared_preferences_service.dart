@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
+import 'package:quran_app_2025/models/reciter.dart';
 
 class SharedPreferencesService {
   static SharedPreferences? _prefs;
@@ -213,6 +216,21 @@ class SharedPreferencesService {
   static Future<void> setLastReadVerse(int surah, int verse) async {
     await _prefs?.setInt('last_read_verse_$surah', verse);
     await setLastReadSurah(surah);
+  }
+
+  /// Qari murottal pilihan, lengkap dengan bitrate yang sudah terbukti ada.
+  static Reciter getReciter() {
+    final raw = _prefs?.getString('reciter');
+    if (raw == null) return defaultReciter;
+    try {
+      return Reciter.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } on Object {
+      return defaultReciter;
+    }
+  }
+
+  static Future<void> setReciter(Reciter reciter) async {
+    await _prefs?.setString('reciter', jsonEncode(reciter.toJson()));
   }
 
   /// Palet warna aplikasi (hijau bawaan, sepia, kontras tinggi).

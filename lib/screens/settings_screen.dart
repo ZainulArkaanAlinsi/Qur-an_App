@@ -4,6 +4,9 @@ import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/core/app_version.dart';
+import 'package:quran_app_2025/data/reciter_repository.dart';
+import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
 import 'package:quran_app_2025/services/auto_update_service.dart';
@@ -307,6 +310,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           url: 'https://alquran.cloud/terms-and-conditions',
         ),
         const SizedBox(height: 26),
+        const _SectionTitle('Murottal'),
+        const SizedBox(height: 10),
+        const _ReciterCard(),
+        const SizedBox(height: 26),
         const _SectionTitle('Pembaruan aplikasi'),
         const SizedBox(height: 10),
         const _AutoUpdateCard(),
@@ -349,6 +356,103 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Pemilih qari. Daftarnya diambil dinamis dari provider, bukan ditulis tetap
+/// di kode, dan bitrate tiap qari diperiksa sebelum pilihan disimpan.
+class _ReciterCard extends StatefulWidget {
+  const _ReciterCard();
+
+  @override
+  State<_ReciterCard> createState() => _ReciterCardState();
+}
+
+class _ReciterCardState extends State<_ReciterCard> {
+  final _repository = ReciterRepository();
+  late Reciter _selected = SharedPreferencesService.getReciter();
+  bool _busy = false;
+
+  Future<void> _choose() async {
+    setState(() => _busy = true);
+    final reciters = await _repository.load();
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    final picked = await showModalBottomSheet<Reciter>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * .7,
+          child: ListView.builder(
+            itemCount: reciters.length,
+            itemBuilder: (context, index) {
+              final reciter = reciters[index];
+              final isSelected = reciter.identifier == _selected.identifier;
+              return ListTile(
+                leading: Icon(
+                  isSelected
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.radio_button_unchecked_rounded,
+                ),
+                title: Text(reciter.displayName),
+                subtitle: Text(reciter.name),
+                selected: isSelected,
+                onTap: () => Navigator.pop(context, reciter),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _busy = true);
+    final resolved = await _repository.resolveBitrate(picked);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (resolved == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Murottal ${picked.displayName} belum tersedia di server. '
+            'Qari sebelumnya tetap dipakai.',
+          ),
+        ),
+      );
+      return;
+    }
+    await SharedPreferencesService.setReciter(resolved);
+    // Antrean yang sedang berjalan memakai qari lama; hentikan agar tidak
+    // tercampur di tengah surah.
+    await QuranAudioService.instance.stop();
+    if (mounted) setState(() => _selected = resolved);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.record_voice_over_outlined),
+        title: Text(_selected.displayName),
+        subtitle: Text(
+          _selected.name.isEmpty
+              ? 'Ketuk untuk memilih qari lain'
+              : '${_selected.name} · ${_selected.bitrate ?? 128} kbps',
+          style: theme.textTheme.bodySmall,
+        ),
+        trailing: _busy
+            ? const SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.chevron_right_rounded),
+        onTap: _busy ? null : _choose,
+      ),
     );
   }
 }
