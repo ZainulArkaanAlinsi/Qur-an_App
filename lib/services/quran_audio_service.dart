@@ -69,7 +69,10 @@ class QuranAudioService {
   static final instance = QuranAudioService._();
   /// Qari bawaan bila pengguna belum memilih; lihat [SharedPreferencesService.getReciter].
   static const reciterEdition = 'ar.alafasy';
-  static const reciterName = 'Mishary Alafasy';
+  /// Nama qari yang sedang dipakai, untuk mini-player dan notifikasi media.
+  /// Sebelumnya tetap "Mishary Alafasy" walau qari lain dipilih.
+  static String get reciterName =>
+      SharedPreferencesService.getReciter().displayName;
   static const _loadTimeout = Duration(seconds: 20);
 
   final _player = AudioPlayer();
@@ -293,12 +296,7 @@ class QuranAudioService {
       // Berkas yang sudah diunduh dipakai lebih dulu agar bisa diputar tanpa
       // internet; sisanya tetap di-stream.
       final reciter = SharedPreferencesService.getReciter();
-      String? folder;
-      try {
-        folder = await AudioDownloadService().folderPath(reciter);
-      } on Object catch (error) {
-        debugPrint('Folder murottal tidak terbaca: $error');
-      }
+      final folder = await AudioDownloadService().folderPath(reciter);
       await _player
           .setAudioSources([
             for (var ayah = next.firstAyah; ayah <= next.lastAyah; ayah++)

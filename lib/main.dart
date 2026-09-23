@@ -43,7 +43,12 @@ class QuranApp extends StatelessWidget {
       theme: SacredTheme.themeFor(controller.palette, Brightness.light),
       darkTheme: SacredTheme.themeFor(controller.palette, Brightness.dark),
       themeMode: controller.themeMode,
-      home: AppScope(controller: controller, child: const AppShell()),
+      // AppScope harus berada di atas Navigator, bukan di dalam `home`:
+      // halaman yang dibuka lewat Navigator.push adalah route lain dan tidak
+      // akan menemukannya bila dipasang di dalam home.
+      builder: (context, child) =>
+          AppScope(controller: controller, child: child ?? const SizedBox()),
+      home: const AppShell(),
     ),
   );
 }

@@ -67,12 +67,34 @@ class AutoUpdateService {
   final Future<AvailableUpdate?> Function() _checkForUpdate;
   final bool _isSupported;
 
+  /// Pembaruan terakhir yang ditemukan `run`, agar pemanggil dapat mencoba
+  /// memasang lagi setelah pengguna memberi izin.
+  AvailableUpdate? lastUpdate;
+
+  /// Membuka layar izin lalu, bila izin diberikan, langsung memasang berkas
+  /// yang sudah diunduh. Tanpa ini pengguna memberi izin tetapi pembaruannya
+  /// baru ditawarkan lagi besok.
+  Future<AutoUpdateOutcome> installAfterPermission(AvailableUpdate update)
+  async {
+    await _installer.openPermissionSettings();
+    if (!await _installer.canInstall()) {
+      return AutoUpdateOutcome.needsInstallPermission;
+    }
+    final apk = update.apkUrl;
+    if (apk == null) return AutoUpdateOutcome.nothingToDo;
+    final file = await _download(update, apk);
+    if (file == null) return AutoUpdateOutcome.failed;
+    await _installer.install(file.path);
+    return AutoUpdateOutcome.installerOpened;
+  }
+
   /// Dipanggil saat aplikasi dibuka. Tidak pernah melempar: kegagalan
   /// pembaruan tidak boleh mengganggu membaca.
   Future<AutoUpdateOutcome> run({required bool enabled}) async {
     if (!enabled || !_isSupported) return AutoUpdateOutcome.nothingToDo;
     try {
       final update = await _checkForUpdate();
+      lastUpdate = update;
       final apk = update?.apkUrl;
       if (update == null || apk == null) return AutoUpdateOutcome.nothingToDo;
 
@@ -99,7 +121,9 @@ class AutoUpdateService {
 
     if (file.existsSync()) {
       final length = file.lengthSync();
-      if (expected == null || length == expected) return file;
+      // Tanpa ukuran dari metadata rilis, berkas lama tidak dapat dipastikan
+      // utuh; unduh ulang daripada memasang berkas yang mungkin terpotong.
+      if (expected != null && length == expected) return file;
       file.deleteSync();
     }
 

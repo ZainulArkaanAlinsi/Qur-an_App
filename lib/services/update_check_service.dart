@@ -93,8 +93,29 @@ class UpdateCheckService {
     final last = prefs.getInt(_checkedKey);
     final now = DateTime.now().millisecondsSinceEpoch;
     if (last != null && now - last < _interval.inMilliseconds) return null;
-    await prefs.setInt(_checkedKey, now);
-    return check();
+    final update = await check();
+    // Jatah harian baru dipakai bila pemeriksaan benar-benar berhasil;
+    // membuka aplikasi saat offline tidak boleh membungkam sehari penuh.
+    if (update != null || await _reachable()) {
+      await prefs.setInt(_checkedKey, now);
+    }
+    return update;
+  }
+
+  /// `check` mengembalikan null baik saat versi sudah terbaru maupun saat
+  /// gagal terhubung; ini memisahkan keduanya.
+  static Future<bool> _reachable({http.Client? client}) async {
+    final c = client ?? http.Client();
+    try {
+      final response = await c
+          .head(latestRelease)
+          .timeout(const Duration(seconds: 8));
+      return response.statusCode == 200;
+    } on Object {
+      return false;
+    } finally {
+      if (client == null) c.close();
+    }
   }
 }
 

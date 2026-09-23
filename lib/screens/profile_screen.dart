@@ -35,7 +35,12 @@ class ProfileScreen extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) => const SettingsScreen(),
+                        // Pengaturan adalah ListView tanpa Scaffold sendiri,
+                        // jadi route-nya yang menyediakan Material dan AppBar.
+                        builder: (_) => Scaffold(
+                          appBar: AppBar(title: const Text('Pengaturan')),
+                          body: const SafeArea(child: SettingsScreen()),
+                        ),
                       ),
                     ),
                     icon: const Icon(Icons.tune_rounded),

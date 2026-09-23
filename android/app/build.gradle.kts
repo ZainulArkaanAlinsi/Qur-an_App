@@ -30,6 +30,13 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Satu APK dibagikan lewat GitHub Releases, jadi isinya memuat kode
+        // mesin tiap arsitektur. x86_64 praktis hanya dipakai emulator dan
+        // sebagian Chromebook; membuangnya memangkas ukuran unduhan pengguna.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     // Release key lives outside the repo; android/key.properties (git-ignored)

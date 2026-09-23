@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
@@ -24,11 +25,23 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
   late Reciter _reciter = SharedPreferencesService.getReciter();
   DownloadProgress? _progress;
   bool _downloaded = false;
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
     _refresh();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Qari dapat diganti di Pengaturan selagi Reader masih terbuka; baca
+    // ulang agar tombol tidak mengunduh untuk qari yang sudah tidak dipakai.
+    if (SharedPreferencesService.getReciter().identifier !=
+        _reciter.identifier) {
+      _refresh();
+    }
   }
 
   Future<void> _refresh() async {
@@ -41,9 +54,47 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
     });
   }
 
+  /// Meminta persetujuan dengan perkiraan ukuran lebih dulu: satu surah
+  /// panjang bisa puluhan megabyte, dan sebagian pengguna memakai kuota.
+  Future<bool> _confirm() async {
+    setState(() => _busy = true);
+    final bytes = await _service.estimateSize(_reciter, widget.surah);
+    if (!mounted) return false;
+    setState(() => _busy = false);
+
+    final meta = surahCatalog[widget.surah - 1];
+    final size = bytes == null
+        ? 'Ukuran tidak diketahui'
+        : '± ${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Unduh murottal ${meta.displayName}?'),
+        content: Text(
+          '$size · ${meta.ayahCount} ayat · ${_reciter.displayName}.\n\n'
+          'Berkas disimpan di perangkat agar bisa diputar tanpa internet, '
+          'dan dapat dihapus kapan saja.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Unduh'),
+          ),
+        ],
+      ),
+    );
+    return approved ?? false;
+  }
+
   Future<void> _download() async {
+    if (!await _confirm()) return;
+    if (!mounted) return;
     setState(() => _progress = const DownloadProgress(done: 0, total: 1));
-    final ok = await _service.download(
+    final outcome = await _service.download(
       _reciter,
       widget.surah,
       onProgress: (value) {
@@ -53,7 +104,8 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
     if (!mounted) return;
     setState(() => _progress = null);
     await _refresh();
-    if (!mounted || ok) return;
+    // Dibatalkan pengguna bukan kegagalan, jadi tidak perlu pesan error.
+    if (!mounted || outcome != DownloadOutcome.failed) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Unduhan murottal belum lengkap. Coba lagi nanti.'),
@@ -86,6 +138,15 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
             ),
             const Icon(Icons.close_rounded, size: 12),
           ],
+        ),
+      );
+    }
+    if (_busy) {
+      return const Padding(
+        padding: EdgeInsets.all(14),
+        child: SizedBox.square(
+          dimension: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
         ),
       );
     }

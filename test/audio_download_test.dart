@@ -29,8 +29,17 @@ void main() {
   AudioDownloadService service(MockClient client) =>
       AudioDownloadService(client: client, directory: () async => directory);
 
-  MockClient okClient({List<int>? bytes, int status = 200}) =>
-      MockClient((_) async => http.Response.bytes(bytes ?? [1, 2, 3], status));
+  /// `content-length` disertakan agar perkiraan ukuran (HEAD) ikut teruji.
+  MockClient okClient({List<int>? bytes, int status = 200}) {
+    final body = bytes ?? [1, 2, 3];
+    return MockClient(
+      (_) async => http.Response.bytes(
+        body,
+        status,
+        headers: {'content-length': '${body.length}'},
+      ),
+    );
+  }
 
   test('mengunduh setiap ayat lalu surah ditandai lengkap', () async {
     final requested = <String>[];
@@ -48,7 +57,7 @@ void main() {
       onProgress: (value) => progress.add(value.done),
     );
 
-    expect(ok, isTrue);
+    expect(ok, DownloadOutcome.completed);
     expect(progress, [1, 2, 3, 4]);
     expect(requested, hasLength(surahCatalog[_surah - 1].ayahCount));
     expect(requested.first, contains('/128/ar.alafasy/'));
@@ -67,7 +76,10 @@ void main() {
         }),
       );
 
-      expect(await downloader.download(_reciter, _surah), isFalse);
+      expect(
+        await downloader.download(_reciter, _surah),
+        DownloadOutcome.failed,
+      );
       expect(await downloader.isComplete(_reciter, _surah), isFalse);
       // Berhenti pada kegagalan, bukan melanjutkan sisa ayat.
       expect(calls, 3);
@@ -85,13 +97,13 @@ void main() {
         return http.Response.bytes([9], 200);
       }),
     );
-    expect(await second.download(_reciter, _surah), isTrue);
+    expect(await second.download(_reciter, _surah), DownloadOutcome.completed);
     expect(calls, 0);
   });
 
   test('berkas kosong dianggap belum ada', () async {
     final downloader = service(okClient(bytes: []));
-    expect(await downloader.download(_reciter, _surah), isFalse);
+    expect(await downloader.download(_reciter, _surah), DownloadOutcome.failed);
     expect(await downloader.isComplete(_reciter, _surah), isFalse);
   });
 
@@ -115,6 +127,7 @@ void main() {
       final downloader = service(okClient());
       await downloader.download(_reciter, _surah);
       final folder = await downloader.folderPath(_reciter);
+      expect(folder, isNotNull);
 
       final local = QuranAudioService.sourceFor(
         _surah,
@@ -146,6 +159,59 @@ void main() {
     },
   );
 
+  test('pembatalan dibedakan dari kegagalan', () async {
+    late AudioDownloadService downloader;
+    downloader = service(
+      MockClient((_) async {
+        // Dibatalkan saat ayat pertama sedang diambil.
+        downloader.cancel(_reciter, _surah);
+        return http.Response.bytes([1], 200);
+      }),
+    );
+
+    expect(
+      await downloader.download(_reciter, _surah),
+      DownloadOutcome.cancelled,
+    );
+  });
+
+  test('penyimpanan tidak tersedia dilaporkan gagal, bukan melempar', () async {
+    final broken = AudioDownloadService(
+      client: okClient(),
+      directory: () async => throw const FileSystemException('penuh'),
+    );
+
+    expect(await broken.download(_reciter, _surah), DownloadOutcome.failed);
+    expect(await broken.isComplete(_reciter, _surah), isFalse);
+    expect(await broken.storageUsed(_reciter), 0);
+    expect(await broken.folderPath(_reciter), isNull);
+  });
+
+  testWidgets('dialog dapat dibatalkan tanpa mengunduh apa pun', (
+    tester,
+  ) async {
+    final downloader = service(okClient());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SurahDownloadButton(surah: _surah, service: downloader),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(IconButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+
+    expect(await downloader.storageUsed(_reciter), 0);
+    expect(
+      find.byTooltip('Unduh murottal surah ini (Mishary Rashid Alafasy)'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('tombol unduh berubah menjadi hapus setelah lengkap', (
     tester,
   ) async {
@@ -164,6 +230,12 @@ void main() {
     );
 
     await tester.tap(find.byType(IconButton));
+    await tester.pumpAndSettle();
+
+    // Ukuran perkiraan ditampilkan sebelum mengunduh.
+    expect(find.text('Unduh murottal Al-Ikhlas?'), findsOneWidget);
+    expect(find.textContaining('4 ayat'), findsOneWidget);
+    await tester.tap(find.text('Unduh'));
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Hapus murottal offline surah ini'), findsOneWidget);

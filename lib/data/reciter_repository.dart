@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Daftar qari murottal per ayat dari Al Quran Cloud (tanpa API key).
@@ -21,6 +22,9 @@ class ReciterRepository {
 
   /// Urutan preferensi kualitas; CDN hanya menyediakan sebagian per qari.
   static const bitrateCandidates = [128, 64, 192];
+
+  /// Urutan saat mode hemat kuota aktif: berkas terkecil lebih dulu.
+  static const lowDataBitrateCandidates = [64, 128, 192];
 
   final http.Client? _client;
 
@@ -94,10 +98,13 @@ class ReciterRepository {
   /// Mencari bitrate yang benar-benar tersedia untuk [reciter]. Mengembalikan
   /// `null` bila tidak ada satu pun yang dapat diputar, sehingga pemanggil
   /// tidak menyimpan pilihan yang pasti gagal.
-  Future<Reciter?> resolveBitrate(Reciter reciter) async {
-    if (reciter.bitrate != null) return reciter;
+  Future<Reciter?> resolveBitrate(Reciter reciter, {bool? lowData}) async {
+    final saveData = lowData ?? SharedPreferencesService.getLowDataAudio();
+    final candidates = saveData
+        ? lowDataBitrateCandidates
+        : bitrateCandidates;
     return _withClient((client) async {
-      for (final bitrate in bitrateCandidates) {
+      for (final bitrate in candidates) {
         final uri = Uri.https(
           'cdn.islamic.network',
           '/quran/audio/$bitrate/${reciter.identifier}/1.mp3',

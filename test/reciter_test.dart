@@ -114,11 +114,21 @@ void main() {
       expect(resolved, isNull);
     });
 
-    test('bitrate yang sudah diketahui tidak diperiksa ulang', () async {
+    test('mode hemat kuota memilih berkas terkecil lebih dulu', () async {
+      final tried = <String>[];
       final repository = ReciterRepository(
-        client: MockClient((_) async => fail('tidak boleh ada permintaan')),
+        client: MockClient((request) async {
+          tried.add(request.url.pathSegments[2]);
+          return http.Response('', 200);
+        }),
       );
-      expect(await repository.resolveBitrate(defaultReciter), defaultReciter);
+
+      final resolved = await repository.resolveBitrate(
+        const Reciter(identifier: 'ar.x', name: '', englishName: 'X'),
+        lowData: true,
+      );
+      expect(resolved!.bitrate, 64);
+      expect(tried, ['64']);
     });
   });
 

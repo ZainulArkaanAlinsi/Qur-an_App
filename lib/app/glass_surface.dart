@@ -20,12 +20,10 @@ class GlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final color =
-        tint ??
-        (dark
-            ? const Color(0xFF173126).withValues(alpha: .72)
-            : Colors.white.withValues(alpha: .62));
+    final scheme = Theme.of(context).colorScheme;
+    // Ikut palet aktif: warna tetap membuat panel ini hilang di palet sepia
+    // dan kontras tinggi.
+    final color = tint ?? scheme.surfaceContainerLowest.withValues(alpha: .86);
     return ClipRRect(
       borderRadius: borderRadius,
       child: BackdropFilter(
@@ -34,14 +32,14 @@ class GlassSurface extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             borderRadius: borderRadius,
-            border: Border.all(
-              color: dark
-                  ? Colors.white.withValues(alpha: .10)
-                  : Colors.white.withValues(alpha: .72),
-            ),
+            border: Border.all(color: scheme.outlineVariant),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: dark ? .16 : .06),
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.dark
+                      ? .16
+                      : .06,
+                ),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),

@@ -6,6 +6,7 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
@@ -371,8 +372,22 @@ class _ReciterCard extends StatefulWidget {
 
 class _ReciterCardState extends State<_ReciterCard> {
   final _repository = ReciterRepository();
+  final _downloads = AudioDownloadService();
   late Reciter _selected = SharedPreferencesService.getReciter();
+  late bool _lowData = SharedPreferencesService.getLowDataAudio();
   bool _busy = false;
+  int? _storageBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshStorage();
+  }
+
+  Future<void> _refreshStorage() async {
+    final used = await _downloads.storageUsed(_selected);
+    if (mounted) setState(() => _storageBytes = used);
+  }
 
   Future<void> _choose() async {
     setState(() => _busy = true);
@@ -432,26 +447,93 @@ class _ReciterCardState extends State<_ReciterCard> {
     if (mounted) setState(() => _selected = resolved);
   }
 
+  Future<void> _toggleLowData(bool value) async {
+    setState(() {
+      _lowData = value;
+      _busy = true;
+    });
+    await SharedPreferencesService.setLowDataAudio(value);
+    // Kualitas berkas berikutnya ikut berubah, jadi bitrate qari saat ini
+    // diperiksa ulang.
+    final resolved = await _repository.resolveBitrate(
+      Reciter(
+        identifier: _selected.identifier,
+        name: _selected.name,
+        englishName: _selected.englishName,
+      ),
+      lowData: value,
+    );
+    if (resolved != null) {
+      await SharedPreferencesService.setReciter(resolved);
+      await QuranAudioService.instance.stop();
+    }
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      if (resolved != null) _selected = resolved;
+    });
+  }
+
+  Future<void> _deleteDownloads() async {
+    setState(() => _busy = true);
+    await _downloads.deleteAll(_selected);
+    final used = await _downloads.storageUsed(_selected);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _storageBytes = used;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final megabytes = (_storageBytes ?? 0) / (1024 * 1024);
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.record_voice_over_outlined),
-        title: Text(_selected.displayName),
-        subtitle: Text(
-          _selected.name.isEmpty
-              ? 'Ketuk untuk memilih qari lain'
-              : '${_selected.name} · ${_selected.bitrate ?? 128} kbps',
-          style: theme.textTheme.bodySmall,
-        ),
-        trailing: _busy
-            ? const SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.chevron_right_rounded),
-        onTap: _busy ? null : _choose,
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.record_voice_over_outlined),
+            title: Text(_selected.displayName),
+            subtitle: Text(
+              _selected.name.isEmpty
+                  ? 'Ketuk untuk memilih qari lain'
+                  : '${_selected.name} · ${_selected.bitrate ?? 128} kbps',
+              style: theme.textTheme.bodySmall,
+            ),
+            trailing: _busy
+                ? const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.chevron_right_rounded),
+            onTap: _busy ? null : _choose,
+          ),
+          SwitchListTile(
+            value: _lowData,
+            title: const Text('Hemat kuota'),
+            subtitle: const Text(
+              'Pakai berkas 64 kbps bila tersedia. Ukurannya sekitar separuh, '
+              'suaranya sedikit lebih rendah.',
+            ),
+            onChanged: _busy ? null : _toggleLowData,
+          ),
+          if ((_storageBytes ?? 0) > 0)
+            ListTile(
+              leading: const Icon(Icons.sd_storage_outlined),
+              title: Text(
+                'Murottal offline: ${megabytes.toStringAsFixed(1)} MB',
+              ),
+              subtitle: Text(
+                'Tersimpan untuk ${_selected.displayName}.',
+                style: theme.textTheme.bodySmall,
+              ),
+              trailing: TextButton(
+                onPressed: _busy ? null : _deleteDownloads,
+                child: const Text('Hapus'),
+              ),
+            ),
+        ],
       ),
     );
   }

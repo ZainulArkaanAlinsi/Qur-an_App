@@ -17,3 +17,7 @@ enum MemorizationStatus {
   MemorizationStatus get next =>
       MemorizationStatus.values[(index + 1) % MemorizationStatus.values.length];
 }
+
+/// Naik setiap kali status hafalan berubah, sehingga tab Belajar dan Hafalan
+/// yang sama-sama hidup di IndexedStack tidak menampilkan daftar basi.
+final memorizationRevision = ValueNotifier<int>(0);

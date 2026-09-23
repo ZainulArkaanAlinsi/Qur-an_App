@@ -17,8 +17,24 @@ class MemorizationScreen extends StatefulWidget {
 class _MemorizationScreenState extends State<MemorizationScreen> {
   List<int> _tracked = SharedPreferencesService.memorizationTracked();
 
-  void _refresh() =>
-      setState(() => _tracked = SharedPreferencesService.memorizationTracked());
+  @override
+  void initState() {
+    super.initState();
+    // Status juga dapat diubah dari tab Belajar, yang tetap hidup di
+    // IndexedStack, jadi daftar ini ikut diperbarui.
+    memorizationRevision.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    memorizationRevision.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (!mounted) return;
+    setState(() => _tracked = SharedPreferencesService.memorizationTracked());
+  }
 
   Future<void> _addSurah() async {
     final surah = await showModalBottomSheet<int>(

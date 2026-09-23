@@ -38,9 +38,12 @@ class _AppShellState extends State<AppShell> {
   /// sekali lewat tombol di bawah.
   Future<void> _announceUpdate() async {
     if (!mounted) return;
-    final outcome = await AutoUpdateService(
+    final updater = AutoUpdateService(
       isSupported: !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
-    ).run(enabled: SharedPreferencesService.getAutoUpdate());
+    );
+    final outcome = await updater.run(
+      enabled: SharedPreferencesService.getAutoUpdate(),
+    );
     if (!mounted) return;
     switch (outcome) {
       case AutoUpdateOutcome.nothingToDo:
@@ -53,7 +56,13 @@ class _AppShellState extends State<AppShell> {
             content: const Text('Pembaruan siap dipasang.'),
             action: SnackBarAction(
               label: 'Izinkan',
-              onPressed: () => const ApkInstaller().openPermissionSettings(),
+              // Setelah izin diberikan, langsung pasang berkas yang sudah
+              // diunduh; jangan menunggu pemeriksaan besok.
+              onPressed: () async {
+                final update = updater.lastUpdate;
+                if (update == null) return;
+                await updater.installAfterPermission(update);
+              },
             ),
           ),
         );

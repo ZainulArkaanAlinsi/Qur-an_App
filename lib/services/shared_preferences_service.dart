@@ -233,6 +233,14 @@ class SharedPreferencesService {
     await _prefs?.setString('reciter', jsonEncode(reciter.toJson()));
   }
 
+  /// Hemat kuota: pilih bitrate murottal terkecil yang tersedia. Berkasnya
+  /// kira-kira separuh ukuran 128 kbps.
+  static bool getLowDataAudio() => _prefs?.getBool('audio_low_data') ?? false;
+
+  static Future<void> setLowDataAudio(bool value) async {
+    await _prefs?.setBool('audio_low_data', value);
+  }
+
   /// Palet warna aplikasi (hijau bawaan, sepia, kontras tinggi).
   static AppPalette getPalette() {
     final value = _prefs?.getString('palette');
@@ -271,9 +279,10 @@ class SharedPreferencesService {
   ) async {
     if (status == MemorizationStatus.notStarted) {
       await _prefs?.remove('hafalan_status_$surah');
-      return;
+    } else {
+      await _prefs?.setString('hafalan_status_$surah', status.name);
     }
-    await _prefs?.setString('hafalan_status_$surah', status.name);
+    memorizationRevision.value++;
   }
 
   /// Surah yang sudah ditandai (selain "belum mulai"), urut nomor surah.
