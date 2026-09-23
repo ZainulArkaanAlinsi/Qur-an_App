@@ -10,6 +10,8 @@ class PrayerDay {
     required this.hijriMonth,
     required this.prayers,
     this.timezone,
+    this.sunrise,
+    this.sunset,
   });
 
   final DateTime gregorianDate;
@@ -20,6 +22,12 @@ class PrayerDay {
   final String hijriDate;
   final String hijriMonth;
   final Map<String, String> prayers;
+
+  /// Terbit dan terbenam menurut AlAdhan, dipakai sebagai keterangan di kartu
+  /// salat berikutnya. Keduanya bisa null: kalau responsnya tidak memuatnya,
+  /// keterangan itu disembunyikan, bukan dikarang.
+  final String? sunrise;
+  final String? sunset;
 
   String get nextLabel => nextLabelAt(DateTime.now());
 
@@ -149,8 +157,19 @@ class PrayerService {
     }
     final month = hijri['month'] as Map<String, dynamic>?;
     final meta = data?['meta'] as Map<String, dynamic>?;
+    // Terbit/terbenam hanya pelengkap tampilan, jadi format yang tidak
+    // dikenali diperlakukan sebagai "tidak dilaporkan".
+    String? optionalTime(String key) {
+      final value = (timings[key] as String?)?.split(' ').first;
+      return value != null && RegExp(r'^\d{1,2}:\d{2}$').hasMatch(value)
+          ? value
+          : null;
+    }
+
     return PrayerDay(
       timezone: meta?['timezone'] as String?,
+      sunrise: optionalTime('Sunrise'),
+      sunset: optionalTime('Sunset'),
       gregorianDate: day,
       hijriDate: '${hijri['day']} ${month?['en'] ?? ''} ${hijri['year']}',
       hijriMonth: month?['en'] as String? ?? '',

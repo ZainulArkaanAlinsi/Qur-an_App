@@ -464,8 +464,14 @@ abstract final class SacredText {
   static TextStyle get verseLabel =>
       _font(ui, 12, 16, 800).copyWith(letterSpacing: 12 * .04);
 
+  /// Hitung mundur pada kartu salat berikutnya (Salat.html: 40/42, regular).
+  static TextStyle get countdown => _font(serif, 40, 42, 400);
+
   /// Nama dan jam pada daftar salat.
   static TextStyle get prayerName => _font(ui, 16, 21, 600);
+
+  /// Nama salat yang sedang disorot ditebalkan, bukan sekadar diberi warna.
+  static TextStyle get prayerNameNext => _font(ui, 16, 21, 800);
   static TextStyle get prayerTime => _font(
     ui,
     17,
