@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
@@ -286,7 +287,7 @@ class _Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          _CircleButton(
+          SacredCircleButton(
             tooltip: 'Bookmark',
             onTap: onBookmark,
             background: tokens.surf,
@@ -308,61 +309,6 @@ class _Header extends StatelessWidget {
 
 /// Lingkaran 40 px seperti mockup, tetapi target sentuhnya 44 px agar nyaman
 /// ditekan dan tidak bertabrakan dengan tombol sebelahnya.
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({
-    required this.tooltip,
-    required this.onTap,
-    required this.background,
-    required this.child,
-    this.bordered = false,
-  });
-
-  final String tooltip;
-  final VoidCallback onTap;
-  final Color background;
-  final Widget child;
-  final bool bordered;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Tooltip(
-      message: tooltip,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 26,
-        child: SizedBox.square(
-          dimension: 44,
-          child: Center(
-            child: Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: background,
-                shape: BoxShape.circle,
-                border: bordered ? Border.all(color: tokens.sep) : null,
-                boxShadow: bordered
-                    ? const [
-                        BoxShadow(
-                          color: Color(0x0F00281C),
-                          blurRadius: 2,
-                          offset: Offset(0, 1),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Lingkaran profil: inisial nama bila akun tersambung, kalau belum ikon
-/// pengaturan. Tidak menampilkan inisial karangan.
 class _ProfileButton extends StatelessWidget {
   const _ProfileButton();
 
@@ -373,7 +319,7 @@ class _ProfileButton extends StatelessWidget {
       valueListenable: AccountService.instance.account,
       builder: (context, account, _) {
         final initial = _initialOf(account?.name ?? account?.email);
-        return _CircleButton(
+        return SacredCircleButton(
           tooltip: account == null ? 'Belum masuk akun' : 'Akun tersambung',
           onTap: () => ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -783,33 +729,6 @@ class _TargetAndStreak extends StatelessWidget {
   }
 }
 
-class _SoftCard extends StatelessWidget {
-  const _SoftCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: tokens.surf,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: tokens.sep),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F00281C),
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
 class _TargetCard extends StatelessWidget {
   const _TargetCard({required this.progress});
 
@@ -825,7 +744,10 @@ class _TargetCard extends StatelessWidget {
         ? 1.0
         : (progress.todaySeconds / progress.targetSeconds).clamp(0.0, 1.0);
 
-    return _SoftCard(
+    return SoftCard(
+      shadowed: true,
+      // Beranda memakai padding 14, lebih rapat dari bawaan 16.
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -929,7 +851,10 @@ class _StreakCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final week = _week();
-    return _SoftCard(
+    return SoftCard(
+      shadowed: true,
+      // Beranda memakai padding 14, lebih rapat dari bawaan 16.
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/screens/reciter_picker.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -272,6 +273,74 @@ void main() {
       expect(reciter.narration, Narration.hafs);
       expect(reciter.provider, AudioProvider.alQuranCloud);
       expect(reciter.hasWordTiming, isFalse);
+    });
+  });
+
+  group('pemilih qari', () {
+    const all = [
+      Reciter(
+        identifier: 'ar.alafasy',
+        name: 'مشاري العفاسي',
+        englishName: 'Mishary Rashid Alafasy',
+        style: RecitationStyle.murattal,
+      ),
+      Reciter(
+        identifier: 'ar.husary',
+        name: 'محمود خليل الحصري',
+        englishName: 'Husary Muallim',
+        style: RecitationStyle.muallim,
+      ),
+      Reciter(
+        identifier: 'ar.abdulbasit',
+        name: 'عبد الباسط',
+        englishName: 'Abdul Basit Mujawwad',
+        style: RecitationStyle.mujawwad,
+      ),
+      Reciter(
+        identifier: 'ar.shuraim',
+        name: 'سعود الشريم',
+        englishName: 'Saood Shuraim',
+      ),
+    ];
+
+    test('pencarian mencocokkan nama Latin tanpa peduli huruf besar', () {
+      expect(filterReciters(all, 'HUSARY').map((item) => item.identifier), [
+        'ar.husary',
+      ]);
+      expect(filterReciters(all, 'basit').map((item) => item.identifier), [
+        'ar.abdulbasit',
+      ]);
+    });
+
+    test('pencarian juga mencocokkan nama Arab', () {
+      expect(filterReciters(all, 'الحصري').map((item) => item.identifier), [
+        'ar.husary',
+      ]);
+    });
+
+    test('kata kunci kosong mengembalikan semuanya', () {
+      expect(filterReciters(all, '   '), hasLength(4));
+      expect(filterReciters(all, ''), hasLength(4));
+    });
+
+    test('kata kunci tanpa hasil mengembalikan daftar kosong', () {
+      expect(filterReciters(all, 'zzz'), isEmpty);
+    });
+
+    test('dikelompokkan per gaya, urut sesuai enum', () {
+      final groups = groupReciters(all);
+      expect(groups.keys.toList(), [
+        RecitationStyle.murattal,
+        RecitationStyle.mujawwad,
+        RecitationStyle.muallim,
+        RecitationStyle.unknown,
+      ]);
+      expect(groups[RecitationStyle.muallim]!.single.identifier, 'ar.husary');
+    });
+
+    test('kelompok kosong tidak ikut muncul', () {
+      final groups = groupReciters([all.first]);
+      expect(groups.keys, [RecitationStyle.murattal]);
     });
   });
 }

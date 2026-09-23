@@ -595,3 +595,49 @@ class SettingsRow extends StatelessWidget {
     );
   }
 }
+
+/// Bayangan tipis yang dipakai kartu dan tombol bulat di seluruh aplikasi.
+///
+/// Nilainya dari mockup (`0 1px 2px rgba(0,40,28,0.06)`). Sengaja tidak ikut
+/// tema: bayangan hijau yang sangat samar ini tetap benar di latar terang
+/// maupun gelap, dan menjadikannya token hanya akan menambah satu nilai yang
+/// harus disetel di lima tempat tanpa manfaat.
+abstract final class SacredShadows {
+  static const card = [
+    BoxShadow(color: Color(0x0F00281C), blurRadius: 2, offset: Offset(0, 1)),
+  ];
+}
+
+/// Kartu lembut bersudut 24: permukaan, garis tepi tipis, bayangan opsional.
+///
+/// Sebelumnya widget yang sama ditulis tiga kali — di Beranda, Progres, dan
+/// Pengaturan — dengan hanya padding yang berbeda.
+class SoftCard extends StatelessWidget {
+  const SoftCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+    this.shadowed = false,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  /// Beranda memberi bayangan pada kartunya; layar lain tidak.
+  final bool shadowed;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: tokens.surf,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: tokens.sep),
+        boxShadow: shadowed ? SacredShadows.card : null,
+      ),
+      child: child,
+    );
+  }
+}
