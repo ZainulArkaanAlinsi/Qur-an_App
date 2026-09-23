@@ -508,7 +508,7 @@ class _VerseCardState extends State<_VerseCard> {
                 style: TextStyle(
                   fontFamily: 'Amiri',
                   fontSize: arabicSize,
-                  height: 2.0,
+                  height: SharedPreferencesService.getArabicLineHeight(),
                 ),
               ),
             ),

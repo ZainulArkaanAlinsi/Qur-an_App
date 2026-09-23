@@ -6,6 +6,7 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
+import 'package:quran_app_2025/services/auto_update_service.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
@@ -23,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late double _arabic;
   late double _translation;
   late int _targetSeconds;
+  late double _lineHeight;
 
   @override
   void initState() {
@@ -30,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _arabic = SharedPreferencesService.getArabicFontSize();
     _translation = SharedPreferencesService.getTranslationFontSize();
     _targetSeconds = SharedPreferencesService.getDailyTargetSeconds();
+    _lineHeight = SharedPreferencesService.getArabicLineHeight();
   }
 
   @override
@@ -94,6 +97,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onSelectionChanged: (value) =>
                     controller.setThemeMode(value.first),
               ),
+              const SizedBox(height: 18),
+              const Text(
+                'Warna',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Sepia lebih teduh untuk membaca lama; kontras tinggi '
+                'memperjelas teks.',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final palette in AppPalette.values)
+                    ChoiceChip(
+                      label: Text(palette.label),
+                      selected: controller.palette == palette,
+                      onSelected: (_) => controller.setPalette(palette),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -140,6 +167,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _arabic = value);
                   SharedPreferencesService.setArabicFontSize(value);
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Jarak antar baris Arab',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  Text('${_lineHeight.toStringAsFixed(1)}×'),
+                ],
+              ),
+              Slider(
+                value: _lineHeight,
+                min: 1.6,
+                max: 3.0,
+                divisions: 7,
+                onChanged: (value) {
+                  setState(() => _lineHeight = value);
+                  SharedPreferencesService.setArabicLineHeight(value);
                 },
               ),
               Text(
@@ -258,6 +307,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           url: 'https://alquran.cloud/terms-and-conditions',
         ),
         const SizedBox(height: 26),
+        const _SectionTitle('Pembaruan aplikasi'),
+        const SizedBox(height: 10),
+        const _AutoUpdateCard(),
+        const SizedBox(height: 26),
         const _SectionTitle('Tentang aplikasi'),
         const SizedBox(height: 10),
         const _AboutCard(),
@@ -296,6 +349,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Pembaruan otomatis: unduh sendiri lalu buka pemasang. Android tetap
+/// meminta konfirmasi tiap pemasangan, jadi teksnya tidak menjanjikan
+/// "tanpa dialog".
+class _AutoUpdateCard extends StatefulWidget {
+  const _AutoUpdateCard();
+
+  @override
+  State<_AutoUpdateCard> createState() => _AutoUpdateCardState();
+}
+
+class _AutoUpdateCardState extends State<_AutoUpdateCard> {
+  late bool _enabled = SharedPreferencesService.getAutoUpdate();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          SwitchListTile(
+            value: _enabled,
+            title: const Text('Unduh pembaruan otomatis'),
+            subtitle: const Text(
+              'Versi baru diunduh sendiri saat aplikasi dibuka, lalu pemasang '
+              'Android terbuka. Konfirmasi pemasangan tetap dari Anda.',
+            ),
+            onChanged: (value) async {
+              setState(() => _enabled = value);
+              await SharedPreferencesService.setAutoUpdate(value);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.verified_user_outlined),
+            title: const Text('Izin pasang aplikasi'),
+            subtitle: const Text(
+              'Diperlukan sekali agar pembaruan bisa dipasang langsung dari '
+              'aplikasi.',
+            ),
+            trailing: const Icon(Icons.open_in_new_rounded),
+            onTap: () => const ApkInstaller().openPermissionSettings(),
+          ),
+        ],
+      ),
     );
   }
 }

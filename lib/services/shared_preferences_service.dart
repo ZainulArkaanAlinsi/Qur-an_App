@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/models/memorization_status.dart';
 
 class SharedPreferencesService {
   static SharedPreferences? _prefs;
@@ -175,6 +177,14 @@ class SharedPreferencesService {
         verse <= surahCatalog[surah - 1].ayahCount;
   }
 
+  /// Unduh dan pasang pembaruan otomatis. Aktif secara bawaan karena APK
+  /// diedarkan di luar Play Store; pemasangan tetap dikonfirmasi Android.
+  static bool getAutoUpdate() => _prefs?.getBool('auto_update') ?? true;
+
+  static Future<void> setAutoUpdate(bool value) async {
+    await _prefs?.setBool('auto_update', value);
+  }
+
   static double getArabicFontSize() {
     final value = _prefs?.getDouble('arabic_font_size') ?? 28;
     return value.isFinite ? value.clamp(22, 42).toDouble() : 28;
@@ -203,6 +213,60 @@ class SharedPreferencesService {
   static Future<void> setLastReadVerse(int surah, int verse) async {
     await _prefs?.setInt('last_read_verse_$surah', verse);
     await setLastReadSurah(surah);
+  }
+
+  /// Palet warna aplikasi (hijau bawaan, sepia, kontras tinggi).
+  static AppPalette getPalette() {
+    final value = _prefs?.getString('palette');
+    return AppPalette.values.firstWhere(
+      (palette) => palette.name == value,
+      orElse: () => AppPalette.sacred,
+    );
+  }
+
+  static Future<void> setPalette(AppPalette palette) async {
+    await _prefs?.setString('palette', palette.name);
+  }
+
+  /// Tinggi baris teks Arab di Reader.
+  static double getArabicLineHeight() {
+    final value = _prefs?.getDouble('arabic_line_height') ?? 2.0;
+    return value.isFinite ? value.clamp(1.6, 3.0).toDouble() : 2.0;
+  }
+
+  static Future<void> setArabicLineHeight(double value) async {
+    await _prefs?.setDouble('arabic_line_height', value);
+  }
+
+  /// Status hafalan per surah; dipakai layar Hafalan dan hub Juz Amma.
+  static MemorizationStatus getMemorizationStatus(int surah) {
+    final value = _prefs?.getString('hafalan_status_$surah');
+    return MemorizationStatus.values.firstWhere(
+      (status) => status.name == value,
+      orElse: () => MemorizationStatus.notStarted,
+    );
+  }
+
+  static Future<void> setMemorizationStatus(
+    int surah,
+    MemorizationStatus status,
+  ) async {
+    if (status == MemorizationStatus.notStarted) {
+      await _prefs?.remove('hafalan_status_$surah');
+      return;
+    }
+    await _prefs?.setString('hafalan_status_$surah', status.name);
+  }
+
+  /// Surah yang sudah ditandai (selain "belum mulai"), urut nomor surah.
+  static List<int> memorizationTracked() {
+    final tracked = <int>[];
+    for (var surah = 1; surah <= surahCatalog.length; surah++) {
+      if (getMemorizationStatus(surah) != MemorizationStatus.notStarted) {
+        tracked.add(surah);
+      }
+    }
+    return tracked;
   }
 
   static ThemeMode getThemeMode() {

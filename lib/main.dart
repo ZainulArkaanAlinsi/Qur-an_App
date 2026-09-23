@@ -40,8 +40,8 @@ class QuranApp extends StatelessWidget {
     builder: (context, _) => MaterialApp(
       title: 'Ruang Tilawah',
       debugShowCheckedModeBanner: false,
-      theme: SacredTheme.light,
-      darkTheme: SacredTheme.dark,
+      theme: SacredTheme.themeFor(controller.palette, Brightness.light),
+      darkTheme: SacredTheme.themeFor(controller.palette, Brightness.dark),
       themeMode: controller.themeMode,
       home: AppScope(controller: controller, child: const AppShell()),
     ),

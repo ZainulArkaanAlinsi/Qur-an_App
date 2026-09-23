@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 class AppController extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
+  AppPalette _palette = AppPalette.sacred;
+  AppPalette get palette => _palette;
+
   Future<void> load() async {
     _themeMode = SharedPreferencesService.getThemeMode();
+    _palette = SharedPreferencesService.getPalette();
+  }
+
+  Future<void> setPalette(AppPalette palette) async {
+    _palette = palette;
+    notifyListeners();
+    await SharedPreferencesService.setPalette(palette);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
