@@ -440,6 +440,18 @@ abstract final class SacredText {
   static TextStyle get settingTitle => _font(ui, 16, 21, 600);
   static TextStyle get settingValue => _font(ui, 15, 20, 500);
 
+  /// Legenda heatmap.
+  static TextStyle get legend => _font(ui, 11, 15, 600);
+
+  /// Angka besar pada kartu Istiqamah di layar Progres.
+  static TextStyle get statNumber => _font(ui, 30, 34, 800);
+  static TextStyle get statUnit => _font(ui, 15, 20, 600);
+  static TextStyle get statSide => _font(ui, 15, 20, 800);
+
+  /// Judul kartu khatam dan nomor di dalam gridnya.
+  static TextStyle get khatamTitle => _font(ui, 17, 22, 800);
+  static TextStyle get khatamCell => _font(ui, 11.5, 14, 800);
+
   /// Navigasi pembaca.
   static TextStyle get backLabel => _font(ui, 17, 22, 600);
   static TextStyle get navTitle => _font(ui, 16, 21, 800);

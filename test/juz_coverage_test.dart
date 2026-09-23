@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
+import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/khatam/domain/juz_coverage.dart';
 
@@ -43,6 +44,24 @@ void main() {
     expect(JuzCoverage.nextIncomplete({1, 2}, boundaries), 3);
     final all = {for (var s = 1; s <= 114; s++) s};
     expect(JuzCoverage.nextIncomplete(all, boundaries), isNull);
+  });
+
+  test('rentang halaman tiap juz berurutan dan menutup 604 halaman', () {
+    final pages = PageRepository.parse(
+      File('assets/quran/raw/quran-data.xml').readAsStringSync(),
+    );
+    expect(JuzCoverage.pageRangeFor(1, boundaries, pages), (1, 21));
+    expect(JuzCoverage.pageRangeFor(30, boundaries, pages).$2, 604);
+
+    var previousLast = 0;
+    for (var juz = 1; juz <= 30; juz++) {
+      final (first, last) = JuzCoverage.pageRangeFor(juz, boundaries, pages);
+      expect(first, lessThanOrEqualTo(last), reason: 'juz $juz terbalik');
+      // Juz berikutnya boleh mulai di halaman yang sama karena satu halaman
+      // bisa memuat akhir juz lama dan awal juz baru.
+      expect(first, greaterThanOrEqualTo(previousLast), reason: 'juz $juz');
+      previousLast = last;
+    }
   });
 
   test('batas juz yang tidak lengkap ditolak', () {
