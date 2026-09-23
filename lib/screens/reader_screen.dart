@@ -355,7 +355,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final theme = _focusMode
         ? SacredTheme.themeFor(AppPalette.sepia, Brightness.light)
         : Theme.of(context);
-    return Theme(data: theme, child: Builder(builder: _buildBody));
+    return Theme(
+      data: theme,
+      child: Builder(builder: _buildBody),
+    );
   }
 
   Widget _buildBody(BuildContext context) {
@@ -449,8 +452,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             key: ValueKey('${widget.surah.number}:$number'),
                             verseNumber: number,
                             arabic: verses[number - 1],
-                            translation:
-                                _showTranslation && translation != null
+                            translation: _showTranslation && translation != null
                                 ? translation[number - 1]
                                 : null,
                             surahNumber: widget.surah.number,
@@ -1347,7 +1349,10 @@ class _VerseHeader extends StatelessWidget {
         final accent = current ? tokens.primaryText : tokens.sec;
         return Row(
           children: [
-            Text(verseKey, style: SacredText.verseLabel.copyWith(color: accent)),
+            Text(
+              verseKey,
+              style: SacredText.verseLabel.copyWith(color: accent),
+            ),
             const Spacer(),
             _RoundIcon(
               tooltip: playing ? 'Jeda ayat $ayah' : 'Putar ayat $ayah',

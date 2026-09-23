@@ -155,10 +155,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     SharedPreferencesService.setArabicFontSize(value);
                   },
                 ),
-                preview: _ArabicPreview(
-                  size: _arabic,
-                  lineHeight: _lineHeight,
-                ),
+                preview: _ArabicPreview(size: _arabic, lineHeight: _lineHeight),
               ),
               Divider(height: 1, thickness: 1, color: tokens.sep),
               _SliderRow(

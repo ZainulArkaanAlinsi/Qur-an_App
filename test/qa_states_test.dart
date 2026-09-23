@@ -67,9 +67,9 @@ void main() {
                   builder: (context, child) => AppScope(
                     controller: controller,
                     child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(
-                        textScaler: TextScaler.linear(layout.scale),
-                      ),
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: TextScaler.linear(layout.scale)),
                       child: child ?? const SizedBox(),
                     ),
                   ),

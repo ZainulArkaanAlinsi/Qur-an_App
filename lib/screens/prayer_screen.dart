@@ -194,7 +194,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
                         Text(
                           'Jadwal salat belum bisa dimuat. Periksa koneksi, '
                           'lalu coba lagi.',
-                          style: SacredText.cardNote.copyWith(color: tokens.sec),
+                          style: SacredText.cardNote.copyWith(
+                            color: tokens.sec,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         FilledButton.icon(
@@ -426,8 +428,12 @@ class _PlaceRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          LineIcon(SacredIcons.pin, color: tokens.sec, size: 15,
-              strokeWidth: 2),
+          LineIcon(
+            SacredIcons.pin,
+            color: tokens.sec,
+            size: 15,
+            strokeWidth: 2,
+          ),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
