@@ -77,10 +77,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
   Future<void> _markReviewed(ReviewOutcome outcome) async {
     final today = DateTime.now();
     final existing = {
-      for (final item
-          in SharedPreferencesService.getAyahMemorization(
-            widget.surah.number,
-          ))
+      for (final item in SharedPreferencesService.getAyahMemorization(
+        widget.surah.number,
+      ))
         item.ayah: item,
     };
     for (var ayah = _from; ayah <= _to; ayah++) {

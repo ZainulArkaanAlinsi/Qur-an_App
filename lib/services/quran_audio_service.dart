@@ -77,11 +77,7 @@ class RangePlan {
       // Sekali jalan: daftar dibatasi rentangnya, tanpa pengulangan sama
       // sekali, sehingga berhenti di ayat terakhir rentang — bukan di akhir
       // surah seperti perilaku lama.
-      return const RangePlan(
-        mode: AudioRepeat.off,
-        copies: 1,
-        passTarget: 1,
-      );
+      return const RangePlan(mode: AudioRepeat.off, copies: 1, passTarget: 1);
     }
     if (length == 1) {
       // Rentang satu ayat tidak pernah berpindah indeks, jadi putarannya tidak
@@ -92,11 +88,7 @@ class RangePlan {
         passTarget: passes,
       );
     }
-    return RangePlan(
-      mode: AudioRepeat.range,
-      copies: 1,
-      passTarget: passes,
-    );
+    return RangePlan(mode: AudioRepeat.range, copies: 1, passTarget: passes);
   }
 
   final AudioRepeat mode;

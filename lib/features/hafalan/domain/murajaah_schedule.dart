@@ -177,12 +177,13 @@ class AyahMemorization {
 List<AyahMemorization> dueForReview(
   Iterable<AyahMemorization> all,
   DateTime today,
-) => [
-  for (final item in all)
-    if (item.isDue(today)) item,
-]..sort((a, b) {
-  final byDate = a.dueOn.compareTo(b.dueOn);
-  if (byDate != 0) return byDate;
-  final bySurah = a.surah.compareTo(b.surah);
-  return bySurah != 0 ? bySurah : a.ayah.compareTo(b.ayah);
-});
+) =>
+    [
+      for (final item in all)
+        if (item.isDue(today)) item,
+    ]..sort((a, b) {
+      final byDate = a.dueOn.compareTo(b.dueOn);
+      if (byDate != 0) return byDate;
+      final bySurah = a.surah.compareTo(b.surah);
+      return bySurah != 0 ? bySurah : a.ayah.compareTo(b.ayah);
+    });

@@ -209,7 +209,11 @@ void main() {
         'language': 'ar',
         'englishName': 'Warsh recitation',
       },
-      {'identifier': 'en.walk', 'language': 'en', 'englishName': 'Ibrahim Walk'},
+      {
+        'identifier': 'en.walk',
+        'language': 'en',
+        'englishName': 'Ibrahim Walk',
+      },
       {'identifier': 'ur.khan', 'language': 'ur', 'englishName': 'Shamshad'},
       {'identifier': 'fr.leclerc', 'language': 'fr', 'englishName': 'Leclerc'},
     ];
@@ -249,10 +253,7 @@ void main() {
 
     test('gaya bacaan dibaca dari nama, bukan ditebak', () {
       expect(Reciter.styleOf('Husary Muallim'), RecitationStyle.muallim);
-      expect(
-        Reciter.styleOf('Abdul Basit Mujawwad'),
-        RecitationStyle.mujawwad,
-      );
+      expect(Reciter.styleOf('Abdul Basit Mujawwad'), RecitationStyle.mujawwad);
       expect(Reciter.styleOf('Minshawi Murattal'), RecitationStyle.murattal);
       // Tidak disebut berarti belum dipastikan, bukan otomatis murattal.
       expect(Reciter.styleOf('Alafasy'), RecitationStyle.unknown);
