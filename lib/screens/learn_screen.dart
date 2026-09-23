@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/chip_palette.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/tajweed_lessons_screen.dart';
 import 'package:quran_app_2025/widgets/memorization_tile.dart';
-
-/// Warna lencana ikon; sementara sejajar dengan Pengaturan sampai warnanya
-/// dipindahkan ke token tema (revisi v2 Tahap 6).
-const _chipGold = Color(0xFF9A7415);
-const _chipGreen = Color(0xFF0E6A4C);
-const _chipSlate = Color(0xFF56635C);
 
 /// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
 const _bottomInset = 132.0;
@@ -49,9 +44,9 @@ class LearnScreen extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  const _PendingRow(
+                  _PendingRow(
                     icon: SacredIcons.book,
-                    chipColor: _chipSlate,
+                    chipColor: ChipTone.slate.of(context),
                     title: 'Belajar Membaca Al-Qur’an',
                     subtitle:
                         'Enam belas tahap, dari 28 huruf hijaiyah sampai '
@@ -68,7 +63,7 @@ class LearnScreen extends StatelessWidget {
                   ),
                   SettingsRow(
                     icon: SacredIcons.palette,
-                    chipColor: _chipGold,
+                    chipColor: ChipTone.gold.of(context),
                     title: 'Akademi Tajwid',
                     subtitle:
                         'Hukum bacaan beserta contoh ayatnya, dari materi '
@@ -93,7 +88,7 @@ class LearnScreen extends StatelessWidget {
             children: [
               SettingsRow(
                 icon: SacredIcons.checkCircle,
-                chipColor: _chipGreen,
+                chipColor: ChipTone.green.of(context),
                 title: 'Hafalan saya',
                 subtitle: 'Surah yang sedang dihafal dan perlu diulang.',
                 onTap: () => Navigator.of(context).push(

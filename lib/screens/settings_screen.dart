@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/chip_palette.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
@@ -22,15 +23,15 @@ import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Warna lencana ikon, disalin dari Pengaturan.html.
-const _chipTranslate = Color(0xFF2C6E8F);
-const _chipGold = Color(0xFF9A7415);
-const _chipGreen = Color(0xFF0E6A4C);
-const _chipSlate = Color(0xFF56635C);
-const _chipTerracotta = Color(0xFFB0533A);
-
 /// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
 const _bottomInset = 132.0;
+
+/// Atribusi murottal yang mengikuti qari dan bitrate yang benar-benar dipakai.
+String _murottalAttribution() {
+  final reciter = SharedPreferencesService.getReciter();
+  return '${reciter.displayName}, per ayat ${reciter.bitrate ?? 128} kbps. '
+      '${reciter.attribution}';
+}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -216,14 +217,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
 
-        const _Group(
+        _Group(
           header: 'Sumber & lisensi',
           separatorInset: SettingsRow.separatorInset,
           child: Column(
             children: [
               _SourceRow(
                 icon: SacredIcons.checkCircle,
-                chipColor: _chipGreen,
+                chipColor: ChipTone.green.of(context),
                 title: 'Teks Arab offline',
                 body:
                     'Tanzil Quran Text, Uthmani v1.0.2 (CC BY 3.0). Disimpan '
@@ -232,7 +233,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               _SourceRow(
                 icon: SacredIcons.translate,
-                chipColor: _chipTranslate,
+                chipColor: ChipTone.translate.of(context),
                 title: 'Terjemahan Kemenag RI',
                 body:
                     'Edisi “Bahasa Indonesia” dari Tanzil (pembaruan 4 Juni '
@@ -240,14 +241,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'tanpa perubahan; untuk penggunaan non-komersial.',
                 url: 'https://tanzil.net/trans/',
               ),
+              // Dulu baris ini selalu menyebut "Alafasy, 128 kbps" apa pun
+              // qari yang dipilih, karena seluruh grupnya `const` sehingga
+              // mustahil membaca pilihan pengguna.
               _SourceRow(
                 icon: SacredIcons.headphones,
-                chipColor: _chipGold,
+                chipColor: ChipTone.gold.of(context),
                 title: 'Murottal',
-                body:
-                    'Mishary Rashid Alafasy, per ayat 128 kbps, di-streaming '
-                    'dari CDN Islamic Network (Al Quran Cloud). Hak cipta '
-                    'rekaman milik qari.',
+                body: _murottalAttribution(),
                 url: 'https://alquran.cloud/terms-and-conditions',
               ),
             ],
@@ -272,7 +273,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 SettingsRow(
                   icon: SacredIcons.palette,
-                  chipColor: _chipGold,
+                  chipColor: ChipTone.gold.of(context),
                   title: 'Pratinjau tajwid',
                   subtitle: 'Data langsung dari api.quran.com',
                   onTap: () => Navigator.of(context).push(
@@ -289,7 +290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 SettingsRow(
                   icon: SacredIcons.book,
-                  chipColor: _chipSlate,
+                  chipColor: ChipTone.slate.of(context),
                   title: 'Prototipe tiga layout baca',
                   subtitle: 'Card, mushaf 1 halaman, mushaf 2 halaman',
                   onTap: () => Navigator.of(context).push(
@@ -390,7 +391,7 @@ class _TargetRow extends StatelessWidget {
       children: [
         SettingsRow(
           icon: SacredIcons.timer,
-          chipColor: _chipGreen,
+          chipColor: ChipTone.green.of(context),
           title: 'Target harian',
           value: '${seconds ~/ 60} menit',
         ),
@@ -558,7 +559,7 @@ class _ReciterCardState extends State<_ReciterCard> {
       children: [
         SettingsRow(
           icon: SacredIcons.headphones,
-          chipColor: _chipSlate,
+          chipColor: ChipTone.slate.of(context),
           title: 'Qari',
           value: _selected.displayName,
           subtitle: _selected.name.isEmpty
@@ -580,7 +581,7 @@ class _ReciterCardState extends State<_ReciterCard> {
         ),
         SettingsRow(
           icon: SacredIcons.cloud,
-          chipColor: _chipTerracotta,
+          chipColor: ChipTone.terracotta.of(context),
           title: 'Hemat kuota',
           subtitle:
               'Pakai berkas 64 kbps bila tersedia. Ukurannya sekitar separuh, '
@@ -600,7 +601,7 @@ class _ReciterCardState extends State<_ReciterCard> {
           ),
           SettingsRow(
             icon: SacredIcons.download,
-            chipColor: _chipGold,
+            chipColor: ChipTone.gold.of(context),
             title: 'Murottal offline',
             value: '${megabytes.toStringAsFixed(1)} MB',
             subtitle: 'Tersimpan untuk ${_selected.displayName}.',
@@ -636,7 +637,7 @@ class _AutoUpdateCardState extends State<_AutoUpdateCard> {
       children: [
         SettingsRow(
           icon: SacredIcons.download,
-          chipColor: _chipTranslate,
+          chipColor: ChipTone.translate.of(context),
           title: 'Unduh pembaruan otomatis',
           subtitle:
               'Versi baru diunduh sendiri saat aplikasi dibuka, lalu pemasang '
@@ -658,7 +659,7 @@ class _AutoUpdateCardState extends State<_AutoUpdateCard> {
         ),
         SettingsRow(
           icon: SacredIcons.checkCircle,
-          chipColor: _chipGreen,
+          chipColor: ChipTone.green.of(context),
           title: 'Izin pasang aplikasi',
           subtitle:
               'Diperlukan sekali agar pembaruan bisa dipasang langsung dari '
