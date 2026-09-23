@@ -66,7 +66,8 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(SettingsScreen), findsOneWidget);
-    expect(find.text('Tema aplikasi'), findsOneWidget);
+    // Judul kelompok pada mockup ditulis kapital.
+    expect(find.text('TAMPILAN'), findsOneWidget);
   });
 
   testWidgets('mengganti palet dari route Pengaturan tersimpan', (

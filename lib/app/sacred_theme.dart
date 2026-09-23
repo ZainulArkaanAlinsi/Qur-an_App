@@ -1,3 +1,5 @@
+// CupertinoPageTransitionsBuilder tinggal di pustaka Cupertino, bukan Material.
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 
@@ -116,6 +118,15 @@ abstract final class SacredTheme {
       // font bawaan sistem dan terlihat lepas dari desainnya.
       fontFamily: SacredText.ui,
       scaffoldBackgroundColor: scheme.surface,
+      // Halaman digeser dari kanan dan bisa ditarik kembali dari tepi, seperti
+      // aplikasi iOS. Transisi Material yang naik dari bawah terasa asing di
+      // desain ini.
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: {
+          for (final platform in TargetPlatform.values)
+            platform: const CupertinoPageTransitionsBuilder(),
+        },
+      ),
       // Typography bawaan menuliskan nama font sistem secara eksplisit, yang
       // menimpa `fontFamily` di atas; jadi disetel ulang di sini.
       textTheme: ThemeData(brightness: brightness).textTheme.apply(

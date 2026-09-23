@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/widgets/svg_path.dart';
 
 /// Judul besar gaya iOS beserta subjudul opsional.
 class LargeTitle extends StatelessWidget {
@@ -45,10 +47,23 @@ class LargeTitle extends StatelessWidget {
 
 /// Daftar berkelompok gaya iOS: satu kartu, baris dipisah garis tipis.
 class InsetGroupedList extends StatelessWidget {
-  const InsetGroupedList({super.key, required this.children, this.header});
+  const InsetGroupedList({
+    super.key,
+    required this.children,
+    this.header,
+    this.radius = 20,
+    this.separatorInset = 0,
+  });
 
   final List<Widget> children;
   final String? header;
+
+  /// Pengaturan.html memakai 22; layar lain 20.
+  final double radius;
+
+  /// Jarak garis pemisah dari tepi kiri kartu. Baris berikon memasangnya
+  /// sejajar teks (16 padding + 30 ikon + 14 jarak = 60).
+  final double separatorInset;
 
   @override
   Widget build(BuildContext context) {
@@ -67,14 +82,20 @@ class InsetGroupedList extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: tokens.surf,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(radius),
             border: Border.all(color: tokens.sep),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
               for (var i = 0; i < children.length; i++) ...[
-                if (i > 0) Divider(height: 1, thickness: 1, color: tokens.sep),
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    indent: separatorInset,
+                    color: tokens.sep,
+                  ),
                 children[i],
               ],
             ],
@@ -442,6 +463,135 @@ class SacredCircleButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Baris pengaturan gaya Pengaturan.html: lencana ikon 30 px berwarna, label,
+/// nilai di kanan, lalu chevron. Tinggi minimum 50 supaya tetap nyaman
+/// disentuh meski lencananya hanya 30 px.
+class SettingsRow extends StatelessWidget {
+  const SettingsRow({
+    super.key,
+    required this.icon,
+    required this.chipColor,
+    required this.title,
+    this.value,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+  });
+
+  final List<String> icon;
+  final Color chipColor;
+  final String title;
+  final String? value;
+  final String? subtitle;
+
+  /// Kalau diisi, ini menggantikan chevron (mis. sakelar).
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  /// 16 padding kiri + 30 lencana + 14 jarak: garis pemisah sejajar teks.
+  static const separatorInset = 60.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final row = Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: chipColor,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            // Lencananya selalu berwarna pekat, jadi glifnya putih di tema
+            // apa pun — bukan warna tinta tema yang bisa ikut menggelap.
+            child: LineIcon(icon, color: const Color(0xFFFFFFFF), size: 17),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 9, 16, 9),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: SacredText.settingTitle.copyWith(
+                            color: tokens.ink,
+                          ),
+                        ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: SacredText.cardNote.copyWith(
+                              color: tokens.sec,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (value != null) ...[
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        value!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: SacredText.settingValue.copyWith(
+                          color: tokens.sec,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (trailing != null) ...[
+                    const SizedBox(width: 8),
+                    trailing!,
+                  ] else if (onTap != null) ...[
+                    const SizedBox(width: 8),
+                    LineIcon(
+                      SacredIcons.chevronRight,
+                      color: tokens.sec,
+                      size: 17,
+                      strokeWidth: 2.2,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 50),
+      child: row,
+    );
+    if (onTap == null) {
+      return Semantics(
+        container: true,
+        label: value == null ? title : '$title: $value',
+        excludeSemantics: trailing == null,
+        child: content,
+      );
+    }
+    return Semantics(
+      button: true,
+      container: true,
+      excludeSemantics: true,
+      label: value == null ? title : '$title: $value',
+      child: InkWell(onTap: onTap, child: content),
     );
   }
 }
