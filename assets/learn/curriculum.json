@@ -172,12 +172,68 @@
       "level": 4,
       "order": 1,
       "title": "Tanwin",
-      "summary": "Fathatain, kasratain, dan dhammatain.",
-      "objectives": ["Mengenali tanwin dan membedakannya dari harakat biasa"],
-      "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
-      "blocks": []
+      "summary": "Fathatain, kasratain, dan dhammatain — harakat ganda di akhir kata.",
+      "objectives": [
+        "Mengenali tiga bentuk tanwin",
+        "Membedakan tanwin dari harakat biasa"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas cara membaca tanda, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Tanwin adalah harakat yang ditulis ganda di akhir kata. Bunyinya sama seperti harakat biasa, lalu ditambah bunyi 'n' di belakangnya."
+        },
+        {
+          "type": "text",
+          "text": "Fathatain adalah dua garis miring di atas huruf, berbunyi 'an'. Kasratain adalah dua garis miring di bawah huruf, berbunyi 'in'. Dhammatain adalah tanda dhammah bertumpuk di atas huruf, berbunyi 'un'."
+        },
+        {
+          "type": "tip",
+          "text": "Bunyi 'n' pada tanwin tidak ditulis sebagai huruf nun. Ia hanya terdengar, tidak terlihat."
+        },
+        {
+          "type": "text",
+          "text": "Fathatain biasanya disandarkan pada alif kecil di akhir kata, sehingga sering terlihat seperti dua tanda yang menempel pada alif."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata terakhir ayat ini berakhiran dhammatain — dibaca 'ahadun'."
+        },
+        {
+          "type": "audio",
+          "label": "Bunyi tiga bentuk tanwin",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "question": "Tanwin yang ditulis di bawah huruf berbunyi apa?",
+          "options": ["an", "in", "un", "ai"],
+          "answer": 1,
+          "explanation": "Kasratain ditulis di bawah huruf, seperti kasrah, dan berbunyi 'in'."
+        },
+        {
+          "type": "quiz",
+          "question": "Apa beda tanwin dengan harakat biasa?",
+          "options": [
+            "Tanwin menambah bunyi 'n' di belakangnya",
+            "Tanwin memanjangkan bacaan dua harakat",
+            "Tanwin membuat hurufnya dibaca ganda",
+            "Tanwin membuat hurufnya dibaca mati"
+          ],
+          "answer": 0,
+          "explanation": "Harakat biasa berbunyi a, i, u. Tanwin berbunyi an, in, un — ada tambahan 'n' yang tidak ditulis sebagai huruf."
+        }
+      ]
     },
     {
       "id": "sukun-tasydid",
@@ -185,11 +241,70 @@
       "order": 1,
       "title": "Sukun dan tasydid",
       "summary": "Huruf mati dan huruf yang dibaca ganda.",
-      "objectives": ["Membaca huruf bersukun", "Membaca huruf bertasydid"],
-      "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
-      "blocks": []
+      "objectives": [
+        "Membaca huruf bersukun",
+        "Membaca huruf bertasydid",
+        "Membedakan tanda sukun dari tanda tasydid"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas cara membaca tanda, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Sukun adalah bulatan kecil di atas huruf. Huruf yang memakainya dibaca mati — tanpa bunyi a, i, atau u — dan menempel pada huruf sebelumnya."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata pertama ayat ini memakai sukun pada huruf terakhirnya, dibaca 'qul' — bukan 'qulu'."
+        },
+        {
+          "type": "text",
+          "text": "Tasydid adalah tanda kecil menyerupai kepala huruf sin di atas huruf. Huruf yang memakainya dibaca ganda: yang pertama mati, yang kedua berharakat sesuai tanda yang menyertainya."
+        },
+        {
+          "type": "tip",
+          "text": "Tasydid tidak pernah berdiri sendiri. Selalu ada harakat lain bersamanya — di atasnya untuk fathah dan dhammah, di bawahnya untuk kasrah."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "note": "Kata kedua ayat ini memakai tasydid; huruf shad-nya dibaca ditekan dan ditahan sejenak."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh huruf bersukun dan bertasydid",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "question": "Huruf yang memakai sukun dibaca bagaimana?",
+          "options": [
+            "Mati, tanpa bunyi a, i, atau u",
+            "Ganda, dua kali",
+            "Panjang dua harakat",
+            "Ditambah bunyi 'n'"
+          ],
+          "answer": 0,
+          "explanation": "Sukun menandakan huruf mati. Yang dibaca ganda adalah huruf bertasydid."
+        },
+        {
+          "type": "quiz",
+          "question": "Berapa kali huruf bertasydid dibaca?",
+          "options": ["Sekali", "Dua kali", "Tiga kali", "Tergantung harakatnya"],
+          "answer": 1,
+          "explanation": "Dua kali: huruf pertama mati, huruf kedua mengikuti harakat yang tertulis bersama tasydidnya."
+        }
+      ]
     },
     {
       "id": "mad-asli",
