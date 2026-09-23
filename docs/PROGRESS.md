@@ -148,6 +148,60 @@ Temuan tambahan yang tidak ada di brief:
 - Tidak ada font mushaf yang dibundel; font QCF diunduh runtime, dan
   membundelnya terikat syarat akun Quran Foundation Developer Console.
 
-Menunggu keputusan pemilik: struktur navigasi, gaya warna tajwid, izin menghapus
-`islamic_news_screen.dart` + `search_screen.dart`, dan status akun Quran
-Foundation.
+### Keputusan pemilik (23 September 2026)
+
+| Pertanyaan | Keputusan |
+|---|---|
+| Struktur navigasi | **5 tab**: Beranda, Qur'an, **Belajar**, Progres, Pengaturan + tombol Cari. Hafalan berada **di dalam** Belajar |
+| Gaya warna tajwid | **Huruf berwarna, standar LPMQ Kemenag** (bukan blok warna seperti foto sampul) |
+| Kode mati | **Boleh dihapus**: `islamic_news_screen.dart` dan `search_screen.dart` |
+| Akun Quran Foundation | **Belum ada.** Pakai jalur QUL + font KFGQPC Unicode + data tajwid `cpfair/quran-tajweed` (CC BY 4.0), lisensinya diperiksa satu per satu |
+
+## Revisi v2 — Tahap 0.5: perbaikan yang tidak butuh keputusan (23 September 2026)
+
+Disisipkan sebelum Tahap 1 karena Tahap 1 bergantung pada lisensi data yang
+belum dipastikan, sedangkan semua di bawah ini murni bug dan kerapian.
+
+**Bug pengulangan hafalan (spesifikasi §D).** `playRange` selalu memetakan ke
+`LoopMode.all`, jadi 3×, 5×, 10×, dan "tanpa batas" berperilaku sama: tidak
+pernah berhenti. Opsi 1× justru keluar dari mode rentang, yang memuat ulang
+antrean sampai akhir surah — padahal tombolnya tertulis "Putar ayat 3–7".
+Aturannya sekarang ada di `RangePlan`, nilai murni yang bisa diuji tanpa pemutar
+sungguhan: satu putaran = daftar terbatas tanpa pengulangan; banyak putaran =
+menghitung kembalinya indeks ke ayat pertama lalu mematikan pengulangan di ayat
+terakhir putaran pamungkas, supaya daftar berakhir sendiri alih-alih terpotong
+di tengah ayat pertama. Rentang satu ayat tidak pernah berpindah indeks, jadi
+daftarnya digandakan; rentang panjang tidak pernah digandakan, sehingga
+mengulang Al-Baqarah 10× tetap memuat 286 berkas, bukan 2.860.
+
+**Bug dari 1.4.0 yang ikut ketahuan.** Tombol ulangi di layar Murottal berputar
+lewat `AudioRepeat.range`, yang ditolak `setRepeat`, jadi sepertiga ketukan diam
+saja. Sekarang hanya berpindah antara berurutan dan ulangi-ayat, karena memilih
+rentang butuh ayat awal dan akhir yang hanya ditanyakan layar latihan.
+
+**Navigasi 5 tab.** Belajar naik jadi tab dan memuat: jalur belajar membaca
+(dinonaktifkan beserta alasannya karena materinya belum ditinjau), Akademi
+Tajwid, Hafalan, dan daftar Juz Amma. Beranda dapat pintasan Belajar. Belajar
+dan Hafalan tidak lagi menumpang di tab Progres.
+
+**Judul "Pengaturan" dobel** diperbaiki: `app_shell` membungkus `SettingsScreen`
+dengan kolom yang menambah `LargeTitle` kedua.
+
+**`SacredTheme.light`/`dark` tidak membawa `SacredTokens`**, sehingga layar mana
+pun yang memakai token mati di tes dengan "Null check operator used on a null
+value". Keduanya kini lewat `themeFor`, jalur yang sama dengan aplikasi.
+
+**Kode mati dihapus** atas izin pemilik: `islamic_news_screen.dart`,
+`search_screen.dart`.
+
+Pengujian: `dart analyze lib test` bersih, `flutter test` **258 lulus**
+(6 tes baru untuk jumlah pengulangan). **Belum diuji di perangkat nyata**, dan
+belum ada tangkapan layar terang/gelap karena tidak ada perangkat/emulator
+tersambung; mode gelap, teks 200 %, dan layar sempit hanya tercakup oleh
+`test/qa_states_test.dart`.
+
+### Belum dikerjakan dari daftar Tahap 0.5
+
+Warna chip hardcode di Pengaturan dan Belajar, 23 warna hardcode di Beranda,
+serta kartu lembut yang punya tiga implementasi — semuanya dipindahkan ke
+Tahap 6 sesuai urutan di prompt, karena menyentuh token tema secara luas.
