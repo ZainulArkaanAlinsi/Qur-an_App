@@ -123,9 +123,14 @@ class _MurottalSheetState extends State<_MurottalSheet> {
             ),
             const SizedBox(height: 6),
             Center(
-              child: SizedBox(
-                width: 168,
-                height: 216,
+              child: ConstrainedBox(
+                // Tinggi minimum saja; bingkainya boleh tumbuh supaya nama
+                // surah tidak terpotong pada teks besar.
+                constraints: const BoxConstraints(
+                  minWidth: 168,
+                  maxWidth: 168,
+                  minHeight: 216,
+                ),
                 child: MihrabFrame(
                   child: Stack(
                     children: [

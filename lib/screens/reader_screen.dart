@@ -46,6 +46,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
   int _currentVerse = 1;
   bool _ready = false;
 
+  /// Pesan kegagalan murottal yang sedang ditampilkan, beserta ayat yang
+  /// gagal diputar supaya tombol "Coba lagi" tahu harus mengulang apa.
+  String? _audioError;
+  int? _audioErrorVerse;
+
   Future<_ReaderContent> _load() async {
     final arabic = await QuranTextRepository.instance.versesForSurah(
       widget.surah.number,
@@ -286,12 +291,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
     );
   }
 
+  /// Kegagalan murottal ditahan di layar sebagai keadaan, bukan snackbar yang
+  /// lewat begitu saja, supaya pembaca tahu kenapa suaranya tidak muncul.
   void _showAudioError() {
     final message = QuranAudioService.instance.error.value;
     if (message == null || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    setState(() => _audioError = message);
+  }
+
+  Future<void> _playVerse(int ayah) async {
+    try {
+      await QuranAudioService.instance.toggle(
+        surah: widget.surah.number,
+        ayah: ayah,
+      );
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _audioErrorVerse = ayah;
+        _audioError =
+            'Murottal belum tersedia. Periksa koneksi internet, atau unduh '
+            'surah ini lebih dulu.';
+      });
+    }
   }
 
   @override
@@ -382,6 +404,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               surahNumber: widget.surah.number,
                               arabicSize: _arabicSize,
                               lineHeight: _lineHeight,
+                              onPlay: _playVerse,
                             );
                     },
                   ),
@@ -403,9 +426,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                  child: AudioMiniPlayer(
-                    onOpen: (_, __) => unawaited(_openMurottal(content)),
-                  ),
+                  child: _audioError == null
+                      ? AudioMiniPlayer(
+                          onOpen: (_, __) => unawaited(_openMurottal(content)),
+                        )
+                      : _AudioUnavailable(
+                          message: _audioError!,
+                          onRetry: () {
+                            final ayah = _audioErrorVerse;
+                            setState(() => _audioError = null);
+                            if (ayah != null) unawaited(_playVerse(ayah));
+                          },
+                          onDismiss: () => setState(() => _audioError = null),
+                        ),
                 ),
               ),
             ],
@@ -541,9 +574,14 @@ class _SurahHeader extends StatelessWidget {
       padding: EdgeInsets.only(bottom: compact ? 8 : 4),
       child: Column(
         children: [
-          SizedBox(
-            width: 210,
-            height: compact ? 132 : 168,
+          ConstrainedBox(
+            // Tinggi minimum menjaga proporsi bingkai, tetapi dibiarkan
+            // tumbuh: nama surah tidak boleh terpotong pada teks besar.
+            constraints: BoxConstraints(
+              minWidth: 210,
+              maxWidth: 210,
+              minHeight: compact ? 132 : 168,
+            ),
             child: MihrabFrame(
               child: Stack(
                 children: [
@@ -833,6 +871,7 @@ class _VerseCard extends StatefulWidget {
     required this.surahNumber,
     required this.arabicSize,
     required this.lineHeight,
+    required this.onPlay,
   });
   final int verseNumber;
   final String arabic;
@@ -840,6 +879,7 @@ class _VerseCard extends StatefulWidget {
   final int surahNumber;
   final double arabicSize;
   final double lineHeight;
+  final Future<void> Function(int ayah) onPlay;
 
   @override
   State<_VerseCard> createState() => _VerseCardState();
@@ -922,6 +962,7 @@ class _VerseCardState extends State<_VerseCard> {
                 _VersePlayButton(
                   surah: widget.surahNumber,
                   ayah: widget.verseNumber,
+                  onPlay: widget.onPlay,
                 ),
               ],
             ),
@@ -1035,9 +1076,16 @@ class _ReaderContent {
 }
 
 class _VersePlayButton extends StatelessWidget {
-  const _VersePlayButton({required this.surah, required this.ayah});
+  const _VersePlayButton({
+    required this.surah,
+    required this.ayah,
+    required this.onPlay,
+  });
   final int surah;
   final int ayah;
+
+  /// Pemutaran ditangani layar supaya kegagalannya bisa ditampilkan menetap.
+  final Future<void> Function(int ayah) onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -1053,20 +1101,7 @@ class _VersePlayButton extends StatelessWidget {
         final current = audio.playingVerse.value == '$surah:$ayah';
         final playing = current && audio.isPlaying.value;
         return IconButton(
-          onPressed: () async {
-            try {
-              await audio.toggle(surah: surah, ayah: ayah);
-            } catch (_) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Murottal belum dapat diputar. Periksa koneksi internet.',
-                  ),
-                ),
-              );
-            }
-          },
+          onPressed: () => onPlay(ayah),
           icon: current && audio.buffering.value
               ? const SizedBox.square(
                   dimension: 20,
@@ -1080,6 +1115,66 @@ class _VersePlayButton extends StatelessWidget {
           tooltip: playing ? 'Jeda murottal' : 'Putar mulai ayat ini',
         );
       },
+    );
+  }
+}
+
+/// Pengganti mini player saat murottal gagal dimuat: mengaku apa adanya dan
+/// menawarkan satu tindakan, bukan pesan yang hilang sendiri.
+class _AudioUnavailable extends StatelessWidget {
+  const _AudioUnavailable({
+    required this.message,
+    required this.onRetry,
+    required this.onDismiss,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+      decoration: BoxDecoration(
+        color: tokens.goldSoft,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tokens.sep),
+      ),
+      child: Row(
+        children: [
+          Icon(CupertinoIcons.speaker_slash, size: 20, color: tokens.goldText),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Murottal belum tersedia',
+                  style: SacredText.footnote.copyWith(
+                    color: tokens.ink,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  message,
+                  style: SacredText.footnote.copyWith(
+                    color: tokens.sec,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(onPressed: onRetry, child: const Text('Coba lagi')),
+          IconButton(
+            tooltip: 'Tutup pemberitahuan',
+            onPressed: onDismiss,
+            icon: Icon(CupertinoIcons.xmark, size: 18, color: tokens.sec),
+          ),
+        ],
+      ),
     );
   }
 }

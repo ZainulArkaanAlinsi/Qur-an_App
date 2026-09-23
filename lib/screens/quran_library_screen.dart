@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
@@ -6,6 +7,7 @@ import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
+import 'package:quran_app_2025/screens/quran_search_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
@@ -23,6 +25,7 @@ class QuranLibraryScreen extends StatefulWidget {
 }
 
 class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
+  final _search = TextEditingController();
   String _query = '';
   String _revelation = 'Semua';
   _Browse _browse = _Browse.surah;
@@ -41,6 +44,12 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
           (surah) => _revelation == 'Semua' || surah.revelation == _revelation,
         )
         .toList();
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
   }
 
   void _open(SurahMeta surah, {int? verse}) {
@@ -71,6 +80,7 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
           child: Column(
             children: [
               TextField(
+                controller: _search,
                 onChanged: (value) => setState(() => _query = value.trim()),
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
@@ -89,7 +99,10 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
                   suffixIcon: _query.isEmpty
                       ? null
                       : IconButton(
-                          onPressed: () => setState(() => _query = ''),
+                          onPressed: () => setState(() {
+                            _query = '';
+                            _search.clear();
+                          }),
                           icon: const Icon(Icons.close_rounded),
                           tooltip: 'Hapus pencarian',
                         ),
@@ -125,7 +138,19 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
     final recents = _query.isEmpty && _revelation == 'Semua'
         ? SharedPreferencesService.getRecentSurahs()
         : const <int>[];
-    if (results.isEmpty) return const _EmptySearch();
+    if (results.isEmpty) {
+      return _EmptySearch(
+        query: _query,
+        onSuggestion: (name) => setState(() {
+          _query = name;
+          _search.text = name;
+          _revelation = 'Semua';
+        }),
+        onOpenVerseSearch: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const QuranSearchScreen()),
+        ),
+      );
+    }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(0, 0, 0, _bottomInset),
@@ -272,7 +297,9 @@ class _RecentStrip extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 92,
+          // Daftar mendatar butuh tinggi tetap, jadi tingginya ikut skala
+          // teks; kalau tidak, isi kartunya meluber pada teks besar.
+          height: MediaQuery.textScalerOf(context).scale(92).clamp(92.0, 220.0),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -430,33 +457,87 @@ class _PageTile extends StatelessWidget {
   }
 }
 
+/// Keadaan pencarian kosong: menjelaskan cakupan pencarian, menawarkan
+/// beberapa surah yang sering dibuka, dan menyebut sumber datanya.
 class _EmptySearch extends StatelessWidget {
-  const _EmptySearch();
+  const _EmptySearch({
+    required this.query,
+    required this.onSuggestion,
+    required this.onOpenVerseSearch,
+  });
+
+  final String query;
+  final ValueChanged<String> onSuggestion;
+  final VoidCallback onOpenVerseSearch;
+
+  /// Saran diambil dari katalog, bukan daftar nama yang diketik ulang.
+  static const _suggested = [1, 18, 36, 55, 67];
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(36, 0, 36, _bottomInset),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(28, 24, 28, _bottomInset),
+      children: [
+        Center(
+          child: SizedBox(
+            width: 92,
+            height: 116,
+            child: MihrabFrame(
+              child: Icon(
+                CupertinoIcons.search,
+                size: 30,
+                color: tokens.artInk,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          query.isEmpty
+              ? 'Tidak ada surah yang cocok'
+              : '"$query" tidak ditemukan',
+          textAlign: TextAlign.center,
+          style: SacredText.headline.copyWith(color: tokens.ink),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Kolom ini mencari nama dan nomor surah. Untuk mencari kata di '
+          'dalam ayat, gunakan pencarian ayat.',
+          textAlign: TextAlign.center,
+          style: SacredText.footnote.copyWith(color: tokens.sec),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Icon(Icons.search_off_rounded, size: 44, color: tokens.sec),
-            const SizedBox(height: 12),
-            Text(
-              'Surah tidak ditemukan',
-              style: SacredText.headline.copyWith(color: tokens.ink),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Coba nama atau nomor surah.',
-              textAlign: TextAlign.center,
-              style: SacredText.footnote.copyWith(color: tokens.sec),
-            ),
+            for (final number in _suggested)
+              ActionChip(
+                label: Text(surahCatalog[number - 1].displayName),
+                onPressed: () =>
+                    onSuggestion(surahCatalog[number - 1].displayName),
+              ),
           ],
         ),
-      ),
+        const SizedBox(height: 14),
+        Center(
+          child: OutlinedButton.icon(
+            onPressed: onOpenVerseSearch,
+            icon: const Icon(CupertinoIcons.search, size: 18),
+            label: const Text('Cari kata di dalam ayat'),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Daftar surah dan batas juz berasal dari metadata Tanzil yang '
+          'dibundel di aplikasi ini.',
+          textAlign: TextAlign.center,
+          style: SacredText.footnote.copyWith(color: tokens.sec, fontSize: 11),
+        ),
+      ],
     );
   }
 }
