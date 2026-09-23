@@ -1,0 +1,793 @@
+{
+  "version": 1,
+  "_catatan": "Jalur belajar 16 tahap. Entri berstatus published tampil di rilis; yang masih draft hanya tampil di build debug dengan label DRAF. Yang diterbitkan baru tahap berisi literasi Arab dasar — tahap hukum tajwid tetap draft sampai ada peninjau. Teks Al-Qur'an tidak pernah diketik di berkas ini; contoh ayat hanya berupa rujukan surah+ayah yang diambil dari dataset Tanzil saat ditampilkan.",
+  "lessons": [
+    {
+      "id": "mulai",
+      "level": 0,
+      "order": 1,
+      "title": "Mulai dari mana",
+      "summary": "Kenali jalurnya dulu, lalu tentukan mau mulai dari tahap berapa.",
+      "objectives": [
+        "Tahu urutan 16 tahap dari huruf sampai bacaan gharib",
+        "Bisa memilih tahap yang sesuai kemampuan sekarang"
+      ],
+      "review": "published",
+      "provenance": "Kerangka jalur disusun dari daftar tahap pada docs/revisi-v2/SPESIFIKASI_REVISI_V2.md bagian B milik pemilik aplikasi. Teks pengantarnya draf asisten AI, diterbitkan atas keputusan pemilik pada 24 September 2026.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Jalur ini disusun berurutan. Tahap awal mengenalkan bentuk dan bunyi huruf; tahap akhir membahas cara berhenti dan bacaan yang jarang muncul. Tidak apa-apa mengulang tahap yang sama berkali-kali."
+        },
+        {
+          "type": "text",
+          "text": "Kalau sudah bisa membaca tapi belum yakin tajwidnya, mulailah dari tahap 10. Kalau belum pernah mengenal huruf sama sekali, mulai dari tahap 1."
+        },
+        {
+          "type": "tip",
+          "text": "Belajar membaca Al-Qur'an paling baik didampingi guru yang bisa mendengar bacaan Anda. Aplikasi ini membantu mengingat dan mengulang, bukan menggantikan guru."
+        }
+      ]
+    },
+    {
+      "id": "huruf-hijaiyah",
+      "level": 1,
+      "order": 1,
+      "title": "Huruf hijaiyah",
+      "summary": "Dua puluh delapan huruf, nama, dan bunyinya.",
+      "objectives": [
+        "Menyebut nama 28 huruf hijaiyah",
+        "Membedakan huruf yang bentuknya mirip"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas literasi Arab dasar, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Huruf hijaiyah ada 28. Urutannya: alif, ba, ta, tsa, jim, ha, kha, dal, dzal, ra, zai, sin, syin, shad, dhad, tha, zha, 'ain, ghain, fa, qaf, kaf, lam, mim, nun, wau, ha, ya."
+        },
+        {
+          "type": "text",
+          "text": "Beberapa huruf bentuknya hampir sama dan hanya dibedakan oleh titik. Perhatikan kelompok ini: ba-ta-tsa, jim-ha-kha, dal-dzal, ra-zai, sin-syin, shad-dhad, tha-zha, 'ain-ghain, fa-qaf."
+        },
+        {
+          "type": "tip",
+          "text": "Titik menentukan hurufnya, dan huruf menentukan artinya. Salah titik bukan sekadar salah tulis."
+        },
+        {
+          "type": "audio",
+          "label": "Bunyi 28 huruf",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-1",
+          "question": "Huruf mana yang dibedakan dari 'ba' hanya oleh jumlah dan letak titiknya?",
+          "options": ["ta dan tsa", "mim dan nun", "wau dan ya", "lam dan kaf"],
+          "answer": 0,
+          "explanation": "Ba, ta, dan tsa memakai bentuk dasar yang sama; yang membedakan hanya titiknya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-2",
+          "question": "Ada berapa huruf hijaiyah?",
+          "options": ["26", "28", "30", "32"],
+          "answer": 1,
+          "explanation": "Huruf hijaiyah ada 28, dari alif sampai ya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-3",
+          "question": "Huruf apa yang berada tepat sesudah jim?",
+          "options": ["kha", "ha", "dal", "tsa"],
+          "answer": 1,
+          "explanation": "Urutannya jim, ha, kha — ketiganya berbentuk sama dan dibedakan titiknya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-4",
+          "question": "Pasangan mana yang bentuknya sama dan hanya dibedakan satu titik?",
+          "options": ["dal dan dzal", "alif dan lam", "mim dan wau", "sin dan shad"],
+          "answer": 0,
+          "explanation": "Dzal adalah dal yang diberi satu titik di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-5",
+          "question": "Berapa titik yang membedakan sin dari syin?",
+          "options": ["Satu", "Dua", "Tiga", "Tidak ada titik"],
+          "answer": 2,
+          "explanation": "Syin adalah sin dengan tiga titik di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-6",
+          "question": "Kenapa titik pada huruf penting?",
+          "options": [
+            "Titik menentukan hurufnya, dan huruf menentukan artinya",
+            "Titik hanya hiasan penulisan",
+            "Titik menandakan panjang bacaan",
+            "Titik menandakan tempat berhenti"
+          ],
+          "answer": 0,
+          "explanation": "Salah titik berarti salah huruf, dan salah huruf bisa mengubah arti."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-7",
+          "question": "Huruf apa yang berada di urutan terakhir?",
+          "options": ["wau", "ha", "ya", "nun"],
+          "answer": 2,
+          "explanation": "Urutan penutupnya nun, wau, ha, lalu ya."
+        },
+        {
+          "type": "quiz",
+          "id": "huruf-8",
+          "question": "Pasangan 'ain dan ghain dibedakan oleh apa?",
+          "options": [
+            "Satu titik di atas ghain",
+            "Bentuk ekornya",
+            "Jumlah titik di bawahnya",
+            "Ukuran hurufnya"
+          ],
+          "answer": 0,
+          "explanation": "Ghain adalah 'ain yang diberi satu titik di atasnya."
+        }
+      ]
+    },
+    {
+      "id": "bentuk-sambung",
+      "level": 2,
+      "order": 1,
+      "title": "Bentuk sambung",
+      "summary": "Huruf berubah bentuk sesuai posisinya di dalam kata.",
+      "objectives": [
+        "Mengenali bentuk awal, tengah, dan akhir",
+        "Menyebut enam huruf yang tidak menyambung ke kiri"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas literasi Arab dasar, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Huruf Arab ditulis bersambung. Satu huruf bisa punya bentuk berbeda saat berada di awal, di tengah, atau di akhir kata, padahal hurufnya sama."
+        },
+        {
+          "type": "text",
+          "text": "Enam huruf tidak pernah menyambung ke huruf sesudahnya: alif, dal, dzal, ra, zai, dan wau. Setelah keenam huruf ini, huruf berikutnya selalu memakai bentuk awal."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-1",
+          "question": "Mana yang tidak menyambung ke huruf sesudahnya?",
+          "options": ["ba", "ra", "sin", "mim"],
+          "answer": 1,
+          "explanation": "Ra termasuk enam huruf yang tidak menyambung ke kiri: alif, dal, dzal, ra, zai, wau."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-2",
+          "question": "Ada berapa huruf yang tidak menyambung ke huruf sesudahnya?",
+          "options": ["Empat", "Lima", "Enam", "Tujuh"],
+          "answer": 2,
+          "explanation": "Enam: alif, dal, dzal, ra, zai, dan wau."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-3",
+          "question": "Huruf sesudah 'dal' di tengah kata memakai bentuk apa?",
+          "options": ["Bentuk awal", "Bentuk tengah", "Bentuk akhir", "Bentuk tunggal"],
+          "answer": 0,
+          "explanation": "Karena dal tidak menyambung ke kiri, huruf sesudahnya memulai lagi dengan bentuk awal."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-4",
+          "question": "Satu huruf bisa punya berapa bentuk tergantung posisinya?",
+          "options": [
+            "Selalu satu",
+            "Awal, tengah, dan akhir",
+            "Hanya awal dan akhir",
+            "Berubah setiap kata"
+          ],
+          "answer": 1,
+          "explanation": "Bentuknya menyesuaikan posisi: awal, tengah, atau akhir kata."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-5",
+          "question": "Mana yang termasuk enam huruf itu?",
+          "options": ["wau", "nun", "ya", "lam"],
+          "answer": 0,
+          "explanation": "Wau termasuk; nun, ya, dan lam menyambung ke huruf sesudahnya."
+        },
+        {
+          "type": "quiz",
+          "id": "sambung-6",
+          "question": "Kenapa bentuk huruf berubah-ubah?",
+          "options": [
+            "Karena huruf Arab ditulis bersambung",
+            "Karena hurufnya berbeda-beda",
+            "Karena mengikuti harakatnya",
+            "Karena mengikuti panjang bacaan"
+          ],
+          "answer": 0,
+          "explanation": "Tulisan Arab bersambung, jadi bentuk huruf menyesuaikan sambungannya."
+        }
+      ]
+    },
+    {
+      "id": "harakat",
+      "level": 3,
+      "order": 1,
+      "title": "Harakat",
+      "summary": "Fathah, kasrah, dan dhammah menentukan bunyi vokalnya.",
+      "objectives": [
+        "Membedakan bunyi fathah, kasrah, dan dhammah",
+        "Membaca suku kata sederhana"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas literasi Arab dasar, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Huruf Arab tidak membawa vokal sendiri. Vokalnya ditentukan tanda kecil di atas atau di bawah huruf, yang disebut harakat."
+        },
+        {
+          "type": "text",
+          "text": "Fathah adalah garis miring di atas huruf, berbunyi 'a'. Kasrah adalah garis miring di bawah huruf, berbunyi 'i'. Dhammah adalah tanda kecil menyerupai wau di atas huruf, berbunyi 'u'."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 2,
+          "note": "Perhatikan harakat pada setiap huruf; coba baca pelan satu per satu."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh suku kata berharakat",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-1",
+          "question": "Tanda apa yang diletakkan di bawah huruf?",
+          "options": ["Fathah", "Kasrah", "Dhammah", "Sukun"],
+          "answer": 1,
+          "explanation": "Kasrah ditulis di bawah huruf dan berbunyi 'i'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-2",
+          "question": "Fathah berbunyi apa?",
+          "options": ["a", "i", "u", "n"],
+          "answer": 0,
+          "explanation": "Fathah adalah garis miring di atas huruf, berbunyi 'a'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-3",
+          "question": "Dhammah bentuknya menyerupai huruf apa?",
+          "options": ["Alif kecil", "Wau kecil", "Nun kecil", "Ya kecil"],
+          "answer": 1,
+          "explanation": "Dhammah ditulis di atas huruf, bentuknya menyerupai wau kecil, dan berbunyi 'u'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-4",
+          "question": "Kenapa huruf Arab perlu harakat?",
+          "options": [
+            "Karena hurufnya tidak membawa vokal sendiri",
+            "Karena hurufnya terlalu pendek",
+            "Karena menandakan tempat berhenti",
+            "Karena membedakan huruf mirip"
+          ],
+          "answer": 0,
+          "explanation": "Huruf Arab hanya konsonan; vokalnya ditentukan harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-5",
+          "question": "Huruf berharakat kasrah dibaca bagaimana?",
+          "options": ["Bi", "Ba", "Bu", "Ban"],
+          "answer": 0,
+          "explanation": "Kasrah berbunyi 'i', jadi huruf ba berharakat kasrah dibaca 'bi'."
+        },
+        {
+          "type": "quiz",
+          "id": "harakat-6",
+          "question": "Mana yang bukan harakat?",
+          "options": ["Fathah", "Kasrah", "Dhammah", "Tasydid"],
+          "answer": 3,
+          "explanation": "Tasydid bukan penentu vokal; ia menandakan huruf dibaca ganda."
+        }
+      ]
+    },
+    {
+      "id": "tanwin",
+      "level": 4,
+      "order": 1,
+      "title": "Tanwin",
+      "summary": "Fathatain, kasratain, dan dhammatain — harakat ganda di akhir kata.",
+      "objectives": [
+        "Mengenali tiga bentuk tanwin",
+        "Membedakan tanwin dari harakat biasa"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas cara membaca tanda, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Tanwin adalah harakat yang ditulis ganda di akhir kata. Bunyinya sama seperti harakat biasa, lalu ditambah bunyi 'n' di belakangnya."
+        },
+        {
+          "type": "text",
+          "text": "Fathatain adalah dua garis miring di atas huruf, berbunyi 'an'. Kasratain adalah dua garis miring di bawah huruf, berbunyi 'in'. Dhammatain adalah tanda dhammah bertumpuk di atas huruf, berbunyi 'un'."
+        },
+        {
+          "type": "tip",
+          "text": "Bunyi 'n' pada tanwin tidak ditulis sebagai huruf nun. Ia hanya terdengar, tidak terlihat."
+        },
+        {
+          "type": "text",
+          "text": "Fathatain biasanya disandarkan pada alif kecil di akhir kata, sehingga sering terlihat seperti dua tanda yang menempel pada alif."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata terakhir ayat ini berakhiran dhammatain — dibaca 'ahadun'."
+        },
+        {
+          "type": "audio",
+          "label": "Bunyi tiga bentuk tanwin",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-1",
+          "question": "Tanwin yang ditulis di bawah huruf berbunyi apa?",
+          "options": ["an", "in", "un", "ai"],
+          "answer": 1,
+          "explanation": "Kasratain ditulis di bawah huruf, seperti kasrah, dan berbunyi 'in'."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-2",
+          "question": "Apa beda tanwin dengan harakat biasa?",
+          "options": [
+            "Tanwin menambah bunyi 'n' di belakangnya",
+            "Tanwin memanjangkan bacaan dua harakat",
+            "Tanwin membuat hurufnya dibaca ganda",
+            "Tanwin membuat hurufnya dibaca mati"
+          ],
+          "answer": 0,
+          "explanation": "Harakat biasa berbunyi a, i, u. Tanwin berbunyi an, in, un — ada tambahan 'n' yang tidak ditulis sebagai huruf."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-3",
+          "question": "Fathatain berbunyi apa?",
+          "options": ["an", "in", "un", "aa"],
+          "answer": 0,
+          "explanation": "Fathatain adalah dua garis miring di atas huruf, berbunyi 'an'."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-4",
+          "question": "Bunyi 'n' pada tanwin ditulis sebagai apa?",
+          "options": [
+            "Tidak ditulis sebagai huruf",
+            "Huruf nun kecil",
+            "Huruf mim kecil",
+            "Alif kecil"
+          ],
+          "answer": 0,
+          "explanation": "Bunyi 'n' pada tanwin hanya terdengar; tidak ada huruf nun yang ditulis."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-5",
+          "question": "Tanwin muncul di bagian mana dari kata?",
+          "options": ["Akhir kata", "Awal kata", "Tengah kata", "Di mana saja"],
+          "answer": 0,
+          "explanation": "Tanwin ditulis di akhir kata."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-6",
+          "question": "Dhammatain berbunyi apa?",
+          "options": ["un", "an", "in", "uu"],
+          "answer": 0,
+          "explanation": "Dhammatain berbunyi 'un'."
+        },
+        {
+          "type": "quiz",
+          "id": "tanwin-7",
+          "question": "Fathatain sering terlihat menempel pada huruf apa di akhir kata?",
+          "options": ["Alif", "Wau", "Ya", "Nun"],
+          "answer": 0,
+          "explanation": "Fathatain biasanya disandarkan pada alif di akhir kata."
+        }
+      ]
+    },
+    {
+      "id": "sukun-tasydid",
+      "level": 5,
+      "order": 1,
+      "title": "Sukun dan tasydid",
+      "summary": "Huruf mati dan huruf yang dibaca ganda.",
+      "objectives": [
+        "Membaca huruf bersukun",
+        "Membaca huruf bertasydid",
+        "Membedakan tanda sukun dari tanda tasydid"
+      ],
+      "review": "published",
+      "provenance": "Draf disusun asisten AI, diterbitkan atas keputusan pemilik aplikasi pada 24 September 2026. BELUM ditinjau guru bersanad. Isinya sebatas cara membaca tanda, bukan hukum tajwid.",
+      "sources": [
+        {
+          "title": "Kurikulum orisinal Ruang Tilawah",
+          "author": "Disusun untuk aplikasi ini; bukan kutipan dari kitab tertentu",
+          "url": ""
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Sukun adalah bulatan kecil di atas huruf. Huruf yang memakainya dibaca mati — tanpa bunyi a, i, atau u — dan menempel pada huruf sebelumnya."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata pertama ayat ini memakai sukun pada huruf terakhirnya, dibaca 'qul' — bukan 'qulu'."
+        },
+        {
+          "type": "text",
+          "text": "Tasydid adalah tanda kecil menyerupai kepala huruf sin di atas huruf. Huruf yang memakainya dibaca ganda: yang pertama mati, yang kedua berharakat sesuai tanda yang menyertainya."
+        },
+        {
+          "type": "tip",
+          "text": "Tasydid tidak pernah berdiri sendiri. Selalu ada harakat lain bersamanya — di atasnya untuk fathah dan dhammah, di bawahnya untuk kasrah."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "note": "Kata kedua ayat ini memakai tasydid; huruf shad-nya dibaca ditekan dan ditahan sejenak."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh huruf bersukun dan bertasydid",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-1",
+          "question": "Huruf yang memakai sukun dibaca bagaimana?",
+          "options": [
+            "Mati, tanpa bunyi a, i, atau u",
+            "Ganda, dua kali",
+            "Panjang dua harakat",
+            "Ditambah bunyi 'n'"
+          ],
+          "answer": 0,
+          "explanation": "Sukun menandakan huruf mati. Yang dibaca ganda adalah huruf bertasydid."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-2",
+          "question": "Berapa kali huruf bertasydid dibaca?",
+          "options": ["Sekali", "Dua kali", "Tiga kali", "Tergantung harakatnya"],
+          "answer": 1,
+          "explanation": "Dua kali: huruf pertama mati, huruf kedua mengikuti harakat yang tertulis bersama tasydidnya."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-3",
+          "question": "Tanda sukun bentuknya seperti apa?",
+          "options": [
+            "Bulatan kecil di atas huruf",
+            "Garis miring di atas huruf",
+            "Dua garis di bawah huruf",
+            "Kepala sin kecil di atas huruf"
+          ],
+          "answer": 0,
+          "explanation": "Sukun berupa bulatan kecil; kepala sin kecil itu tasydid."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-4",
+          "question": "Huruf bersukun dibaca menempel pada huruf yang mana?",
+          "options": [
+            "Huruf sebelumnya",
+            "Huruf sesudahnya",
+            "Tidak menempel",
+            "Huruf pertama kata"
+          ],
+          "answer": 0,
+          "explanation": "Huruf mati menempel pada huruf sebelumnya yang berharakat."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-5",
+          "question": "Huruf bertasydid: bagian mana yang mati?",
+          "options": [
+            "Yang pertama",
+            "Yang kedua",
+            "Keduanya",
+            "Tidak ada yang mati"
+          ],
+          "answer": 0,
+          "explanation": "Yang pertama mati, yang kedua berharakat sesuai tanda yang menyertainya."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-6",
+          "question": "Kalau tasydid disertai kasrah, tandanya ditulis di mana?",
+          "options": [
+            "Di bawah huruf",
+            "Di atas huruf",
+            "Di dalam tasydid",
+            "Tidak ditulis"
+          ],
+          "answer": 0,
+          "explanation": "Kasrah tetap ditulis di bawah huruf walau ada tasydid di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "sukun-7",
+          "question": "Mana yang benar tentang tasydid?",
+          "options": [
+            "Selalu disertai harakat lain",
+            "Berdiri sendiri tanpa harakat",
+            "Hanya muncul di akhir kata",
+            "Menandakan huruf tidak dibaca"
+          ],
+          "answer": 0,
+          "explanation": "Tasydid tidak pernah sendirian; selalu ada harakat yang menyertainya."
+        }
+      ]
+    },
+    {
+      "id": "mad-asli",
+      "level": 6,
+      "order": 1,
+      "title": "Mad asli",
+      "summary": "Alif, wau, dan ya sebagai pemanjang dua harakat.",
+      "objectives": ["Mengenali mad asli dan panjang bacaannya"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "rule": "madda_normal",
+      "blocks": []
+    },
+    {
+      "id": "alif-lam",
+      "level": 7,
+      "order": 1,
+      "title": "Alif lam",
+      "summary": "Qamariyah, syamsiyah, dan lafzul jalalah.",
+      "objectives": ["Membedakan alif lam qamariyah dan syamsiyah"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "rule": "laam_shamsiyah",
+      "blocks": []
+    },
+    {
+      "id": "tanda-mushaf",
+      "level": 8,
+      "order": 1,
+      "title": "Tanda di mushaf",
+      "summary": "Hamzah washal, tanda waqaf, sajdah, dan penanda juz.",
+      "objectives": [
+        "Mengenali hamzah washal dan kapan ia dibaca",
+        "Menyebut arti tanda-tanda waqaf yang umum",
+        "Mengenali penanda sajdah, hizb, dan juz"
+      ],
+      "review": "draft",
+      "provenance": "Draf disusun asisten AI, BELUM ditinjau guru bersanad dan BELUM diterbitkan. Bagian tanda waqaf memuat penilaian ulama tentang tempat berhenti, jadi tahap ini menunggu peninjau — tidak seperti tahap 1–5 yang hanya membaca tanda.",
+      "sources": [],
+      "rule": "ham_wasl",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Selain huruf dan harakat, mushaf memuat tanda-tanda kecil lain. Sebagian mengatur cara membaca, sebagian lagi hanya penunjuk tempat."
+        },
+        {
+          "type": "text",
+          "text": "Hamzah washal adalah alif di awal kata yang membawa tanda kecil menyerupai huruf shad di atasnya. Alif ini dibaca kalau kamu memulai bacaan dari kata itu, dan dilewati kalau kata itu disambung dengan kata sebelumnya."
+        },
+        {
+          "type": "text",
+          "text": "Tanda waqaf memberi tahu tempat berhenti. Yang umum: mim berarti sebaiknya berhenti; lam-alif berarti jangan berhenti di situ; jim berarti boleh berhenti boleh lanjut; shad-lam-ya berarti lanjut lebih baik; qaf-lam-ya berarti berhenti lebih baik; dan tiga titik yang muncul dua kali berarti pilih salah satu tempat saja, jangan berhenti di keduanya."
+        },
+        {
+          "type": "tip",
+          "text": "Tanda waqaf bukan tanda baca biasa. Berhenti di tempat yang keliru bisa mengubah makna, karena itu tahap 15 membahasnya lebih dalam bersama cara memulai kembali."
+        },
+        {
+          "type": "text",
+          "text": "Tanda sajdah menandai ayat yang dianjurkan sujud tilawah setelah membacanya. Dalam mushaf ini ada lima belas tempat. Tata cara sujudnya tanyakan kepada guru; aplikasi ini hanya menunjukkan letaknya."
+        },
+        {
+          "type": "example",
+          "surah": 32,
+          "ayah": 15,
+          "note": "Salah satu ayat sajdah; perhatikan tanda di tepi barisnya pada mushaf cetak."
+        },
+        {
+          "type": "text",
+          "text": "Di tepi halaman ada penanda juz, hizb, dan rubu' hizb. Ketiganya hanya membagi mushaf menjadi bagian-bagian yang seimbang untuk memudahkan membaca rutin. Tidak ada aturan bacaan yang melekat padanya."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh hamzah washal saat disambung dan saat memulai",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-1",
+          "question": "Kapan hamzah washal dibaca?",
+          "options": [
+            "Saat memulai bacaan dari kata itu",
+            "Saat kata itu disambung dengan kata sebelumnya",
+            "Selalu dibaca",
+            "Tidak pernah dibaca"
+          ],
+          "answer": 0,
+          "explanation": "Hamzah washal dibaca kalau menjadi awal bacaan, dan dilewati kalau tersambung dengan kata sebelumnya."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-2",
+          "question": "Penanda juz, hizb, dan rubu' di tepi halaman gunanya untuk apa?",
+          "options": [
+            "Membagi mushaf agar mudah dibaca rutin",
+            "Menandai tempat wajib berhenti",
+            "Menandai ayat sajdah",
+            "Menentukan panjang bacaan"
+          ],
+          "answer": 0,
+          "explanation": "Ketiganya penunjuk tempat, bukan aturan bacaan."
+        }
+      ]
+    },
+    {
+      "id": "ayat-pendek",
+      "level": 9,
+      "order": 1,
+      "title": "Membaca ayat pendek",
+      "summary": "Al-Fatihah dan surah-surah Juz 'Amma.",
+      "objectives": ["Membaca ayat pendek dengan tempo tenang"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "blocks": []
+    },
+    {
+      "id": "nun-sukun-tanwin",
+      "level": 10,
+      "order": 1,
+      "title": "Nun sukun dan tanwin",
+      "summary": "Izhhar, idgham, iqlab, dan ikhfa'.",
+      "objectives": ["Menemukan hukum nun sukun di dalam ayat"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "rule": "ikhafa",
+      "blocks": []
+    },
+    {
+      "id": "mim-sukun",
+      "level": 11,
+      "order": 1,
+      "title": "Mim sukun dan ghunnah",
+      "summary": "Ikhfa' syafawi, idgham mimi, izhhar syafawi.",
+      "objectives": ["Membedakan tiga hukum mim sukun"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "rule": "ikhafa_shafawi",
+      "blocks": []
+    },
+    {
+      "id": "mad-fari",
+      "level": 12,
+      "order": 1,
+      "title": "Mad far'i",
+      "summary": "Mad wajib, jaiz, 'aridh, lazim, badal, 'iwadh, lin, dan shilah.",
+      "objectives": ["Mengenali jenis mad far'i dan panjangnya"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "rule": "madda_obligatory",
+      "blocks": []
+    },
+    {
+      "id": "qalqalah-ra-lam",
+      "level": 13,
+      "order": 1,
+      "title": "Qalqalah, ra', dan lam",
+      "summary": "Qalqalah sughra dan kubra, tafkhim dan tarqiq.",
+      "objectives": ["Membaca qalqalah pada tempatnya"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "rule": "qalaqah",
+      "blocks": []
+    },
+    {
+      "id": "makharij-sifat",
+      "level": 14,
+      "order": 1,
+      "title": "Makharij dan sifat",
+      "summary": "Tempat keluar huruf dan sifat-sifatnya.",
+      "objectives": ["Mengenali kelompok makhraj"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "blocks": []
+    },
+    {
+      "id": "waqaf-ibtida",
+      "level": 15,
+      "order": 1,
+      "title": "Waqaf dan ibtida'",
+      "summary": "Cara berhenti dan memulai kembali.",
+      "objectives": ["Berhenti di tempat yang tepat"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "blocks": []
+    },
+    {
+      "id": "gharib-hafs",
+      "level": 16,
+      "order": 1,
+      "title": "Bacaan gharib Hafs",
+      "summary": "Saktah, isymam, imalah, tashil, dan naql.",
+      "objectives": ["Mengenali lima bacaan gharib dan tempatnya"],
+      "review": "draft",
+      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
+      "sources": [],
+      "blocks": []
+    }
+  ]
+}

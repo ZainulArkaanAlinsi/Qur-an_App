@@ -4,6 +4,9 @@ import 'package:quran_app_2025/app/widgets/chip_palette.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
+import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
+import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
+import 'package:quran_app_2025/screens/learn_path.dart';
 import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/tajweed_lessons_screen.dart';
 import 'package:quran_app_2025/widgets/memorization_tile.dart';
@@ -17,12 +20,35 @@ const _bottomInset = 132.0;
 /// menghafal. Materi tajwid dan materi belajar membaca ditulis dan ditinjau
 /// manusia (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`); yang belum ditinjau tidak
 /// ditampilkan sebagai kartu kosong, melainkan disebut apa adanya.
-class LearnScreen extends StatelessWidget {
+class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
 
   /// Juz 30 dimulai dari An-Naba (78) sampai An-Nas (114).
   static const _juzAmmaStart = 78;
   static const _juzAmmaEnd = 114;
+
+  @override
+  State<LearnScreen> createState() => _LearnScreenState();
+}
+
+class _LearnScreenState extends State<LearnScreen> {
+  final Future<Curriculum> _curriculum = CurriculumRepository.load();
+
+  @override
+  void initState() {
+    super.initState();
+    learnRevision.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    learnRevision.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +70,7 @@ class LearnScreen extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  _PendingRow(
-                    icon: SacredIcons.book,
-                    chipColor: ChipTone.slate.of(context),
-                    title: 'Belajar Membaca Al-Qur’an',
-                    subtitle:
-                        'Enam belas tahap, dari 28 huruf hijaiyah sampai '
-                        'bacaan gharib.',
-                    reason:
-                        'Materinya sedang disusun dan wajib ditinjau guru '
-                        'bersanad sebelum ditampilkan.',
-                  ),
+                  LearnPathCard(future: _curriculum),
                   Divider(
                     height: 1,
                     thickness: 1,
@@ -113,11 +129,15 @@ class LearnScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                     child: Text(
                       'Surah pendek yang paling sering dibaca — '
-                      '${_juzAmmaEnd - _juzAmmaStart + 1} surah.',
+                      '${LearnScreen._juzAmmaEnd - LearnScreen._juzAmmaStart + 1} surah.',
                       style: SacredText.cardNote.copyWith(color: tokens.sec),
                     ),
                   ),
-                  for (var surah = _juzAmmaStart; surah <= _juzAmmaEnd; surah++)
+                  for (
+                    var surah = LearnScreen._juzAmmaStart;
+                    surah <= LearnScreen._juzAmmaEnd;
+                    surah++
+                  )
                     MemorizationTile(surah: surah),
                 ],
               ),
@@ -125,106 +145,6 @@ class LearnScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Baris untuk materi yang memang belum ada. Dinonaktifkan beserta alasannya,
-/// bukan tombol yang tidak melakukan apa-apa.
-class _PendingRow extends StatelessWidget {
-  const _PendingRow({
-    required this.icon,
-    required this.chipColor,
-    required this.title,
-    required this.subtitle,
-    required this.reason,
-  });
-
-  final List<String> icon;
-  final Color chipColor;
-  final String title;
-  final String subtitle;
-  final String reason;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Semantics(
-      container: true,
-      excludeSemantics: true,
-      enabled: false,
-      label: '$title. $subtitle $reason',
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Opacity(
-              opacity: .55,
-              child: Container(
-                width: 30,
-                height: 30,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: chipColor,
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: LineIcon(icon, color: const Color(0xFFFFFFFF), size: 17),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 9, 16, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: SacredText.settingTitle.copyWith(
-                              color: tokens.sec,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: tokens.fill,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            'Sedang disusun',
-                            style: SacredText.cardNote.copyWith(
-                              color: tokens.sec,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: SacredText.cardNote.copyWith(color: tokens.sec),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      reason,
-                      style: SacredText.cardNote.copyWith(color: tokens.sec),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

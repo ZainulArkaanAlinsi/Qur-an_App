@@ -106,10 +106,11 @@ void main() {
       await tester.pumpWidget(_host(const LearnScreen()));
       await tester.pumpAndSettle();
 
-      // Jalur belajar berada di atas: materi yang belum ada disebut apa
-      // adanya, bukan tombol kosong.
+      // Jalur belajar berada di atas. Tes berjalan dalam mode debug, jadi
+      // materi draf ikut tampil — berlabel — dan kemajuannya terbaca.
       expect(find.text('Akademi Tajwid'), findsOneWidget);
-      expect(find.text('Sedang disusun'), findsOneWidget);
+      expect(find.text('Belajar Membaca Al-Qur’an'), findsOneWidget);
+      expect(find.text('0/17'), findsOneWidget);
 
       // Daftar Juz Amma ada di bawahnya.
       await _scrollTo(tester, find.text('An-Naba’'));
