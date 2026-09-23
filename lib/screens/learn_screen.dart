@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/screens/tajweed_lessons_screen.dart';
 import 'package:quran_app_2025/widgets/memorization_tile.dart';
 
-/// Tab Belajar. Saat ini berisi hub Juz Amma yang memakai teks Al-Qur'an yang
-/// sudah dibundel. Akademi Tajwid dan Belajar Membaca belum ditampilkan karena
-/// materinya wajib melalui review guru terlebih dahulu
+/// Tab Belajar. Berisi hub Juz Amma yang memakai teks Al-Qur'an yang sudah
+/// dibundel, lalu pintu masuk ke materi tajwid. Materi tajwid sendiri ditulis
+/// dan ditinjau manusia (docs/TAJWEED_CONTENT.md); Belajar Membaca belum ada
+/// karena materinya wajib melalui review guru terlebih dahulu
 /// (docs/RELIGIOUS_CONTENT_GOVERNANCE.md).
 class LearnScreen extends StatelessWidget {
   const LearnScreen({super.key});
@@ -58,13 +60,29 @@ class LearnScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        const _ComingSoonCard(
-          icon: Icons.color_lens_outlined,
-          title: 'Akademi Tajwid',
-          body:
-              'Materi hukum tajwid beserta contoh bacaan sedang disiapkan. '
-              'Belum ditampilkan karena setiap materi harus diperiksa guru '
-              'tajwid sebelum dirilis.',
+        Card(
+          child: ListTile(
+            leading: Icon(
+              Icons.color_lens_outlined,
+              color: theme.colorScheme.primary,
+            ),
+            title: Text(
+              'Akademi Tajwid',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            subtitle: const Text(
+              'Hukum bacaan beserta contoh ayatnya, dari materi yang '
+              'ditinjau manusia.',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const TajweedLessonsScreen(),
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         const _ComingSoonCard(

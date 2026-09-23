@@ -37,13 +37,16 @@ void main() {
     }
 
     // Menit membaca berasal dari detik yang tercatat, bukan angka contoh.
-    expect(find.text('7 mnt'), findsOneWidget);
+    expect(find.text('Baca 7 m'), findsOneWidget);
     expect(find.text('Target hari ini tercapai.'), findsOneWidget);
 
     // Waktu mendengar memang belum pernah dicatat; jangan dikarang.
-    expect(find.text('Belum dicatat'), findsOneWidget);
+    expect(find.text('Dengar belum dicatat'), findsOneWidget);
 
-    expect(find.text('Juz berikutnya: Juz 3.'), findsOneWidget);
+    expect(find.text('Juz 2 dari 30 selesai'), findsOneWidget);
+    expect(find.text('Lanjut di Juz 3'), findsOneWidget);
+    // Rentang halamannya dihitung dari metadata mushaf, bukan ditulis tangan.
+    expect(find.textContaining('Halaman '), findsOneWidget);
     expect(find.bySemanticsLabel('Juz 1: selesai'), findsOneWidget);
     expect(find.bySemanticsLabel('Juz 3: berikutnya'), findsOneWidget);
     expect(find.bySemanticsLabel('Juz 30: belum'), findsOneWidget);

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/widgets/svg_path.dart';
 
 /// Judul besar gaya iOS beserta subjudul opsional.
 class LargeTitle extends StatelessWidget {
@@ -45,10 +47,23 @@ class LargeTitle extends StatelessWidget {
 
 /// Daftar berkelompok gaya iOS: satu kartu, baris dipisah garis tipis.
 class InsetGroupedList extends StatelessWidget {
-  const InsetGroupedList({super.key, required this.children, this.header});
+  const InsetGroupedList({
+    super.key,
+    required this.children,
+    this.header,
+    this.radius = 20,
+    this.separatorInset = 0,
+  });
 
   final List<Widget> children;
   final String? header;
+
+  /// Pengaturan.html memakai 22; layar lain 20.
+  final double radius;
+
+  /// Jarak garis pemisah dari tepi kiri kartu. Baris berikon memasangnya
+  /// sejajar teks (16 padding + 30 ikon + 14 jarak = 60).
+  final double separatorInset;
 
   @override
   Widget build(BuildContext context) {
@@ -67,14 +82,20 @@ class InsetGroupedList extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: tokens.surf,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(radius),
             border: Border.all(color: tokens.sep),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
               for (var i = 0; i < children.length; i++) ...[
-                if (i > 0) Divider(height: 1, thickness: 1, color: tokens.sep),
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    indent: separatorInset,
+                    color: tokens.sep,
+                  ),
                 children[i],
               ],
             ],
@@ -102,11 +123,14 @@ class SegmentedPill<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    // Tinggi 36, radius 12, padding 3; segmen aktif radius 9 berlatar putih
+    // dengan dua bayangan (Quran.html, Progres.html, Cari.html).
     return Container(
+      height: 36,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: tokens.fill,
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -116,20 +140,24 @@ class SegmentedPill<T> extends StatelessWidget {
                 selected: entry.key == value,
                 button: true,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(11),
+                  borderRadius: BorderRadius.circular(9),
                   onTap: () => onChanged(entry.key),
                   child: Container(
-                    constraints: const BoxConstraints(minHeight: 36),
                     alignment: Alignment.center,
                     decoration: entry.key == value
                         ? BoxDecoration(
-                            color: tokens.surf,
-                            borderRadius: BorderRadius.circular(11),
-                            boxShadow: [
+                            color: const Color(0xFFFFFFFF),
+                            borderRadius: BorderRadius.circular(9),
+                            boxShadow: const [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: .06),
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
+                                color: Color(0x1A000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 3),
+                              ),
+                              BoxShadow(
+                                color: Color(0x0F000000),
+                                blurRadius: 1,
+                                offset: Offset(0, 1),
                               ),
                             ],
                           )
@@ -140,12 +168,11 @@ class SegmentedPill<T> extends StatelessWidget {
                         entry.value,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: SacredText.footnote.copyWith(
-                          color: entry.key == value ? tokens.ink : tokens.sec,
-                          fontWeight: entry.key == value
-                              ? FontWeight.w800
-                              : FontWeight.w600,
-                        ),
+                        style:
+                            (entry.key == value
+                                    ? SacredText.segmentActive
+                                    : SacredText.segmentIdle)
+                                .copyWith(color: tokens.ink),
                       ),
                     ),
                   ),
@@ -377,6 +404,194 @@ class _TabButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Tombol lingkaran 40 px seperti di mockup, dengan target sentuh 44 px supaya
+/// nyaman ditekan dan tidak bertabrakan dengan tombol sebelahnya.
+class SacredCircleButton extends StatelessWidget {
+  const SacredCircleButton({
+    super.key,
+    required this.tooltip,
+    required this.onTap,
+    required this.child,
+    this.background,
+    this.bordered = true,
+  });
+
+  final String tooltip;
+  final VoidCallback onTap;
+  final Widget child;
+  final Color? background;
+
+  /// Lingkaran terang memakai garis rambut dan bayangan tipis; lingkaran
+  /// berwarna pekat tidak.
+  final bool bordered;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Tooltip(
+      message: tooltip,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 26,
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: background ?? tokens.surf,
+                shape: BoxShape.circle,
+                border: bordered ? Border.all(color: tokens.sep) : null,
+                boxShadow: bordered
+                    ? const [
+                        BoxShadow(
+                          color: Color(0x0F00281C),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Baris pengaturan gaya Pengaturan.html: lencana ikon 30 px berwarna, label,
+/// nilai di kanan, lalu chevron. Tinggi minimum 50 supaya tetap nyaman
+/// disentuh meski lencananya hanya 30 px.
+class SettingsRow extends StatelessWidget {
+  const SettingsRow({
+    super.key,
+    required this.icon,
+    required this.chipColor,
+    required this.title,
+    this.value,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+  });
+
+  final List<String> icon;
+  final Color chipColor;
+  final String title;
+  final String? value;
+  final String? subtitle;
+
+  /// Kalau diisi, ini menggantikan chevron (mis. sakelar).
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  /// 16 padding kiri + 30 lencana + 14 jarak: garis pemisah sejajar teks.
+  static const separatorInset = 60.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final row = Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: chipColor,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            // Lencananya selalu berwarna pekat, jadi glifnya putih di tema
+            // apa pun — bukan warna tinta tema yang bisa ikut menggelap.
+            child: LineIcon(icon, color: const Color(0xFFFFFFFF), size: 17),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 9, 16, 9),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: SacredText.settingTitle.copyWith(
+                            color: tokens.ink,
+                          ),
+                        ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: SacredText.cardNote.copyWith(
+                              color: tokens.sec,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (value != null) ...[
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        value!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: SacredText.settingValue.copyWith(
+                          color: tokens.sec,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (trailing != null) ...[
+                    const SizedBox(width: 8),
+                    trailing!,
+                  ] else if (onTap != null) ...[
+                    const SizedBox(width: 8),
+                    LineIcon(
+                      SacredIcons.chevronRight,
+                      color: tokens.sec,
+                      size: 17,
+                      strokeWidth: 2.2,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 50),
+      child: row,
+    );
+    if (onTap == null) {
+      return Semantics(
+        container: true,
+        label: value == null ? title : '$title: $value',
+        excludeSemantics: trailing == null,
+        child: content,
+      );
+    }
+    return Semantics(
+      button: true,
+      container: true,
+      excludeSemantics: true,
+      label: value == null ? title : '$title: $value',
+      child: InkWell(onTap: onTap, child: content),
     );
   }
 }

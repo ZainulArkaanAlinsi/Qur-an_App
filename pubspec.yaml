@@ -3,7 +3,7 @@ description: "A beautiful Quran app with complete features"
 
 publish_to: "none"
 
-version: 1.3.0+8
+version: 1.4.0+9
 
 environment:
   sdk: ">=3.9.2 <4.0.0"
@@ -80,6 +80,9 @@ flutter:
     - assets/quran/raw/tanzil_uthmani_v1.0.2.txt
     - assets/quran/raw/quran-data.xml
     - assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt
+    # Materi tajwid ditulis manusia dan diisi di luar kode; lihat
+    # docs/TAJWEED_CONTENT.md.
+    - assets/learn/tajweed_lessons.json
 
   fonts:
     # Teks Al-Qur'an. Amiri Quran dan Amiri sama-sama mencakup seluruh 68

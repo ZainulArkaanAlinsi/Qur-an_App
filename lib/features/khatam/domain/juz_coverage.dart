@@ -1,4 +1,5 @@
 import 'package:quran_app_2025/data/juz_repository.dart';
+import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 
 /// Menghubungkan tanda "surah selesai" dengan juz.
@@ -36,6 +37,42 @@ abstract final class JuzCoverage {
     for (var juz = 1; juz <= 30; juz++)
       if (surahsIn(juz, boundaries).every(completedSurahs.contains)) juz,
   };
+
+  /// Nomor ayat global (1..6236) untuk posisi surah:ayat.
+  static int _ordinal(int surah, int verse) => surahCatalog
+      .take(surah - 1)
+      .fold<int>(verse, (sum, item) => sum + item.ayahCount);
+
+  /// Rentang halaman mushaf yang ditempati [juz], dihitung dari batas Tanzil.
+  ///
+  /// Berguna untuk memberi tahu "juz ini ada di halaman berapa" tanpa
+  /// mengarang perkiraan waktu baca.
+  static (int first, int last) pageRangeFor(
+    int juz,
+    List<JuzBoundary> juzBoundaries,
+    List<PageBoundary> pages,
+  ) {
+    if (juzBoundaries.length != 30) {
+      throw ArgumentError('Batas juz harus lengkap 30.');
+    }
+    if (pages.isEmpty) throw ArgumentError('Batas halaman kosong.');
+    if (juz < 1 || juz > 30) throw RangeError.range(juz, 1, 30);
+
+    final start = juzBoundaries[juz - 1];
+    final startOrdinal = _ordinal(start.surah, start.verse);
+    final endOrdinal = juz == 30
+        ? surahCatalog.fold<int>(0, (sum, item) => sum + item.ayahCount)
+        : _ordinal(juzBoundaries[juz].surah, juzBoundaries[juz].verse) - 1;
+
+    var first = pages.first.number;
+    var last = pages.first.number;
+    for (final page in pages) {
+      final ordinal = _ordinal(page.surah, page.verse);
+      if (ordinal <= startOrdinal) first = page.number;
+      if (ordinal <= endOrdinal) last = page.number;
+    }
+    return (first, last);
+  }
 
   /// Juz terkecil yang belum selesai, atau null bila semuanya sudah selesai.
   static int? nextIncomplete(
