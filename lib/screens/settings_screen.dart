@@ -24,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late double _arabic;
   late double _translation;
   late int _targetSeconds;
+  late double _lineHeight;
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _arabic = SharedPreferencesService.getArabicFontSize();
     _translation = SharedPreferencesService.getTranslationFontSize();
     _targetSeconds = SharedPreferencesService.getDailyTargetSeconds();
+    _lineHeight = SharedPreferencesService.getArabicLineHeight();
   }
 
   @override
@@ -95,6 +97,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onSelectionChanged: (value) =>
                     controller.setThemeMode(value.first),
               ),
+              const SizedBox(height: 18),
+              const Text(
+                'Warna',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Sepia lebih teduh untuk membaca lama; kontras tinggi '
+                'memperjelas teks.',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final palette in AppPalette.values)
+                    ChoiceChip(
+                      label: Text(palette.label),
+                      selected: controller.palette == palette,
+                      onSelected: (_) => controller.setPalette(palette),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -141,6 +167,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _arabic = value);
                   SharedPreferencesService.setArabicFontSize(value);
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Jarak antar baris Arab',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  Text('${_lineHeight.toStringAsFixed(1)}×'),
+                ],
+              ),
+              Slider(
+                value: _lineHeight,
+                min: 1.6,
+                max: 3.0,
+                divisions: 7,
+                onChanged: (value) {
+                  setState(() => _lineHeight = value);
+                  SharedPreferencesService.setArabicLineHeight(value);
                 },
               ),
               Text(
