@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
+import 'package:quran_app_2025/screens/practice_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
@@ -49,11 +50,25 @@ class _MemorizationTileState extends State<MemorizationTile> {
         ),
         title: Text(meta.displayName),
         subtitle: Text('${meta.ayahCount} ayat · ${meta.revelation}'),
-        trailing: ActionChip(
-          avatar: Icon(_status.icon, size: 18),
-          label: Text(_status.label),
-          tooltip: 'Ubah status hafalan',
-          onPressed: _cycle,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: 'Latihan hafalan',
+              icon: const Icon(Icons.school_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => PracticeScreen(surah: meta),
+                ),
+              ),
+            ),
+            ActionChip(
+              avatar: Icon(_status.icon, size: 18),
+              label: Text(_status.label),
+              tooltip: 'Ubah status hafalan',
+              onPressed: _cycle,
+            ),
+          ],
         ),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => ReaderScreen(surah: meta)),
