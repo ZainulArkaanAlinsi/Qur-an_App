@@ -559,6 +559,11 @@ class SharedPreferencesService {
   static Future<void> setReaderTajweed(bool value) async =>
       _prefs?.setBool('reader_tajweed', value);
 
+  /// Kertas pembaca ("ivory", "sepia", "night"), atau null = ikut tema.
+  static String? getReaderPaper() => _prefs?.getString('reader_paper');
+  static Future<void> setReaderPaper(String value) async =>
+      _prefs?.setString('reader_paper', value);
+
   /// Terjemahan kedua di kartu ayat (JSON [TranslationEdition]), atau null.
   static String? getSecondTranslation() =>
       _prefs?.getString('reader_second_translation');

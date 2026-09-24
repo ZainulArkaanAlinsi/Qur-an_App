@@ -19,6 +19,7 @@ import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/features/murottal/presentation/murottal_sheet.dart';
 import 'package:quran_app_2025/features/reader/presentation/card_parts.dart';
+import 'package:quran_app_2025/features/reader/presentation/reading_mode_sheet.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/tajweed_legend_screen.dart';
@@ -75,6 +76,43 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   /// Warna tajwid di kartu (chip Tajwid).
   bool _tajweed = SharedPreferencesService.getReaderTajweed();
+
+  /// Kertas pembaca pilihan pengguna; null = ikut tema aplikasi.
+  ReaderPaper? _paper = ReaderPaper.byName(
+    SharedPreferencesService.getReaderPaper(),
+  );
+
+  /// Lembar "Tampilan baca": mode, tajwid, legenda, ukuran teks, kertas.
+  Future<void> _openReadingMode(_ReaderContent content) async {
+    final current =
+        _paper ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? ReaderPaper.night
+            : ReaderPaper.ivory);
+    var openTextSize = false;
+    await showReadingModeSheet(
+      context,
+      tajweed: _tajweed,
+      onTajweed: (value) {
+        if (value != _tajweed) _toggleTajweed(content);
+      },
+      paper: current,
+      onPaper: (paper) {
+        setState(() => _paper = paper);
+        unawaited(SharedPreferencesService.setReaderPaper(paper.name));
+      },
+      onLegend: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const TajweedLegendScreen(backLabel: 'Tampilan'),
+        ),
+      ),
+      onTextSize: () {
+        openTextSize = true;
+        Navigator.of(context).pop();
+      },
+    );
+    if (openTextSize && mounted) await _openDisplaySheet();
+  }
 
   /// Terjemahan kedua pilihan pengguna (maksimal dua terjemahan sekaligus),
   /// beserta isinya bila sudah tersimpan di perangkat.
@@ -615,9 +653,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     // Mode fokus memakai palet sepia seperti di mockup, apa pun tema aplikasi.
+    // Kertas pilihan (Tampilan baca) berlaku di mode kartu; tanpa pilihan,
+    // pembaca ikut tema aplikasi.
     final theme = _focusMode
         ? SacredTheme.themeFor(AppPalette.sepia, Brightness.light)
-        : Theme.of(context);
+        : _paper?.theme ?? Theme.of(context);
     return Theme(
       data: theme,
       child: Builder(builder: _buildBody),
@@ -670,7 +710,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       content: content,
                       onBack: () => Navigator.of(context).maybePop(),
                       onJump: _jumpToVerse,
-                      onDisplay: _openDisplaySheet,
+                      onDisplay: () => unawaited(_openReadingMode(content)),
                       onFocus: () => setState(() => _focusMode = true),
                     ),
                   if (!_focusMode)
