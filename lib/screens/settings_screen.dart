@@ -4,19 +4,29 @@ import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/chip_palette.dart';
+import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/app/widgets/theme_preview.dart';
 import 'package:quran_app_2025/core/app_version.dart';
+import 'package:quran_app_2025/data/juz_repository.dart';
+import 'package:quran_app_2025/features/khatam/domain/juz_coverage.dart';
+import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/screens/prayer_screen.dart';
+import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/reciter_picker.dart';
+import 'package:quran_app_2025/screens/sources_screen.dart';
+import 'package:quran_app_2025/screens/translation_picker.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/tajweed_legend_screen.dart';
 import 'package:quran_app_2025/services/auto_update_service.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
@@ -26,13 +36,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
 const _bottomInset = 132.0;
-
-/// Atribusi murottal yang mengikuti qari dan bitrate yang benar-benar dipakai.
-String _murottalAttribution() {
-  final reciter = SharedPreferencesService.getReciter();
-  return '${reciter.displayName}, per ayat ${reciter.bitrate ?? 128} kbps. '
-      '${reciter.attribution}';
-}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -65,6 +68,177 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _lineHeight = SharedPreferencesService.getArabicLineHeight();
   }
 
+  /// Lembar bawah v2 untuk pengaturan yang panjang. Isinya dibangun ulang
+  /// setiap kali nilainya berubah, begitu pula layar di belakangnya.
+  Future<void> _openSheet(
+    String title,
+    Widget Function(BuildContext context) body,
+  ) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: tokens.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheet) {
+          _refreshSheet = () => setSheet(() {});
+          return SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+                    child: Text(
+                      title,
+                      style: SacredText.stageTitle.copyWith(color: tokens.ink),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: tokens.surf,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: tokens.cardShadows,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: body(context),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ).whenComplete(() => _refreshSheet = null);
+  }
+
+  VoidCallback? _refreshSheet;
+
+  @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+    _refreshSheet?.call();
+  }
+
+  Widget _textSettings(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Column(
+      children: [
+        _SliderRow(
+          label: 'Ukuran teks Arab',
+          value: '${_arabic.round()} pt',
+          slider: Slider(
+            value: _arabic,
+            min: 22,
+            max: 42,
+            divisions: 10,
+            label: '${_arabic.round()} pt',
+            onChanged: (value) {
+              setState(() => _arabic = value);
+              SharedPreferencesService.setArabicFontSize(value);
+            },
+          ),
+          preview: _ArabicPreview(size: _arabic, lineHeight: _lineHeight),
+        ),
+        Divider(height: 1, thickness: 1, color: tokens.sep),
+        _SliderRow(
+          label: 'Jarak antar baris',
+          value: '${_lineHeight.toStringAsFixed(1)}×',
+          slider: Slider(
+            value: _lineHeight,
+            min: 1.6,
+            max: 3.0,
+            divisions: 7,
+            label: '${_lineHeight.toStringAsFixed(1)}×',
+            onChanged: (value) {
+              setState(() => _lineHeight = value);
+              SharedPreferencesService.setArabicLineHeight(value);
+            },
+          ),
+        ),
+        Divider(height: 1, thickness: 1, color: tokens.sep),
+        _SliderRow(
+          label: 'Ukuran terjemahan',
+          value: '${_translation.round()} pt',
+          slider: Slider(
+            value: _translation,
+            min: 14,
+            max: 24,
+            divisions: 10,
+            label: '${_translation.round()} pt',
+            onChanged: (value) {
+              setState(() => _translation = value);
+              SharedPreferencesService.setTranslationFontSize(value);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _themeSettings(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final controller = AppScope.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Pratinjau memakai warna temanya sendiri, jadi yang terlihat
+          // memang yang akan dipakai.
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final mode in ThemeMode.values)
+                ThemePreviewTile(
+                  tokens: SacredTheme.tokensFor(
+                    controller.palette,
+                    _brightnessFor(context, mode),
+                  ),
+                  label: switch (mode) {
+                    ThemeMode.system => 'Otomatis',
+                    ThemeMode.light => 'Terang',
+                    ThemeMode.dark => 'Gelap',
+                  },
+                  selected: controller.themeMode == mode,
+                  onTap: () => controller.setThemeMode(mode),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Sepia lebih teduh untuk membaca lama; kontras tinggi '
+            'memperjelas teks.',
+            style: SacredText.cardNote.copyWith(color: tokens.sec),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final palette in AppPalette.values)
+                ThemePreviewTile(
+                  tokens: SacredTheme.tokensFor(
+                    palette,
+                    _brightnessFor(context, controller.themeMode),
+                  ),
+                  label: palette.label,
+                  selected: controller.palette == palette,
+                  onTap: () => controller.setPalette(palette),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
@@ -73,122 +247,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: _bottomInset),
       children: [
-        const LargeTitle(
-          'Pengaturan',
-          subtitle: 'Atur ruang baca agar nyaman untukmu.',
-        ),
+        // Judul besar sekali saja (bug lama: "Pengaturan" tampil dobel).
+        const ScreenHeader(title: 'Saya'),
+        const SizedBox(height: 14),
         const Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: _SyncCard(),
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: _ProfileCard(),
         ),
-
-        _Group(
-          header: 'Tampilan',
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Pratinjau memakai warna temanya sendiri, jadi yang terlihat
-                // memang yang akan dipakai.
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    for (final mode in ThemeMode.values)
-                      ThemePreviewTile(
-                        tokens: SacredTheme.tokensFor(
-                          controller.palette,
-                          _brightnessFor(context, mode),
-                        ),
-                        label: switch (mode) {
-                          ThemeMode.system => 'Otomatis',
-                          ThemeMode.light => 'Terang',
-                          ThemeMode.dark => 'Gelap',
-                        },
-                        selected: controller.themeMode == mode,
-                        onTap: () => controller.setThemeMode(mode),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Sepia lebih teduh untuk membaca lama; kontras tinggi '
-                  'memperjelas teks.',
-                  style: SacredText.cardNote.copyWith(color: tokens.sec),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    for (final palette in AppPalette.values)
-                      ThemePreviewTile(
-                        tokens: SacredTheme.tokensFor(
-                          palette,
-                          _brightnessFor(context, controller.themeMode),
-                        ),
-                        label: palette.label,
-                        selected: controller.palette == palette,
-                        onTap: () => controller.setPalette(palette),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        _Group(
-          header: 'Bacaan',
-          child: Column(
+        // Progres pindah dari tab sendiri ke sini (12-saya.md).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: GroupedList(
             children: [
-              _SliderRow(
-                label: 'Ukuran teks Arab',
-                value: '${_arabic.round()} pt',
-                slider: Slider(
-                  value: _arabic,
-                  min: 22,
-                  max: 42,
-                  divisions: 10,
-                  label: '${_arabic.round()} pt',
-                  onChanged: (value) {
-                    setState(() => _arabic = value);
-                    SharedPreferencesService.setArabicFontSize(value);
-                  },
+              ListRow(
+                leading: const IconBadge(
+                  icon: SacredIcons.chart,
+                  color: SacredBadge.green,
                 ),
-                preview: _ArabicPreview(size: _arabic, lineHeight: _lineHeight),
-              ),
-              Divider(height: 1, thickness: 1, color: tokens.sep),
-              _SliderRow(
-                label: 'Jarak antar baris',
-                value: '${_lineHeight.toStringAsFixed(1)}×',
-                slider: Slider(
-                  value: _lineHeight,
-                  min: 1.6,
-                  max: 3.0,
-                  divisions: 7,
-                  label: '${_lineHeight.toStringAsFixed(1)}×',
-                  onChanged: (value) {
-                    setState(() => _lineHeight = value);
-                    SharedPreferencesService.setArabicLineHeight(value);
-                  },
-                ),
-              ),
-              Divider(height: 1, thickness: 1, color: tokens.sep),
-              _SliderRow(
-                label: 'Ukuran terjemahan',
-                value: '${_translation.round()} pt',
-                slider: Slider(
-                  value: _translation,
-                  min: 14,
-                  max: 24,
-                  divisions: 10,
-                  label: '${_translation.round()} pt',
-                  onChanged: (value) {
-                    setState(() => _translation = value);
-                    SharedPreferencesService.setTranslationFontSize(value);
-                  },
+                title: 'Progres lengkap',
+                subtitle: 'Istiqamah, menit, khatam',
+                chevron: true,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ProgressScreen(),
+                  ),
                 ),
               ),
             ],
@@ -196,10 +278,83 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
 
         _Group(
-          header: 'Kebiasaan & audio',
-          separatorInset: SettingsRow.separatorInset,
+          header: 'Membaca',
           child: Column(
             children: [
+              SettingsRow(
+                icon: SacredIcons.textSize,
+                chipColor: SacredBadge.green,
+                title: 'Tampilan teks',
+                value: '${_arabic.round()} pt',
+                onTap: () => _openSheet('Tampilan teks', _textSettings),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.translate,
+                chipColor: SacredBadge.blue,
+                title: 'Terjemahan',
+                value: 'Unduh bahasa lain',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const TranslationPicker(),
+                  ),
+                ),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.palette,
+                chipColor: SacredBadge.gold,
+                title: 'Warna tajwid',
+                value: 'Arti tiap warna',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        const TajweedLegendScreen(backLabel: 'Saya'),
+                  ),
+                ),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.sun,
+                chipColor: SacredBadge.grey,
+                title: 'Tema',
+                value: switch (controller.themeMode) {
+                  ThemeMode.system => 'Otomatis',
+                  ThemeMode.light => 'Terang',
+                  ThemeMode.dark => 'Gelap',
+                },
+                onTap: () => _openSheet('Tema', _themeSettings),
+              ),
+            ],
+          ),
+        ),
+
+        _Group(
+          header: 'Audio & kebiasaan',
+          child: Column(
+            children: [
+              const _ReciterCard(),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
               _TargetRow(
                 seconds: _targetSeconds,
                 onChanged: (seconds) {
@@ -208,73 +363,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
               Divider(
-                height: 1,
-                thickness: 1,
+                height: .5,
+                thickness: .5,
                 indent: SettingsRow.separatorInset,
                 color: tokens.sep,
               ),
-              const _ReciterCard(),
+              const _ReminderRow(),
             ],
           ),
         ),
 
         _Group(
-          header: 'Sumber & lisensi',
-          separatorInset: SettingsRow.separatorInset,
-          child: Column(
-            children: [
-              _SourceRow(
-                icon: SacredIcons.checkCircle,
-                chipColor: ChipTone.green.of(context),
-                title: 'Teks Arab offline',
-                body:
-                    'Tanzil Quran Text, Uthmani v1.0.2 (CC BY 3.0). Disimpan '
-                    'tanpa perubahan.',
-                url: 'https://tanzil.net/',
-              ),
-              _SourceRow(
-                icon: SacredIcons.translate,
-                chipColor: ChipTone.translate.of(context),
-                title: 'Terjemahan Kemenag RI',
-                body:
-                    'Edisi “Bahasa Indonesia” dari Tanzil (pembaruan 4 Juni '
-                    '2010), penerjemah Kementerian Agama RI. Tersimpan offline '
-                    'tanpa perubahan; untuk penggunaan non-komersial.',
-                url: 'https://tanzil.net/trans/',
-              ),
-              // Dulu baris ini selalu menyebut "Alafasy, 128 kbps" apa pun
-              // qari yang dipilih, karena seluruh grupnya `const` sehingga
-              // mustahil membaca pilihan pengguna.
-              _SourceRow(
-                icon: SacredIcons.headphones,
-                chipColor: ChipTone.gold.of(context),
-                title: 'Murottal',
-                body: _murottalAttribution(),
-                url: 'https://alquran.cloud/terms-and-conditions',
-              ),
-            ],
+          header: 'Salat',
+          child: SettingsRow(
+            icon: SacredIcons.sun,
+            chipColor: SacredBadge.blue,
+            title: 'Jadwal salat & adzan',
+            subtitle: 'Kota, metode, dan pengingat tiap waktu',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const PrayerScreen()),
+            ),
           ),
         ),
 
-        const _Group(
-          header: 'Pembaruan aplikasi',
-          separatorInset: SettingsRow.separatorInset,
-          child: _AutoUpdateCard(),
+        _Group(
+          header: 'Sumber & lisensi',
+          child: SettingsRow(
+            icon: SacredIcons.book,
+            chipColor: SacredBadge.gold,
+            title: 'Sumber & lisensi',
+            subtitle: 'Teks, terjemahan, audio, dan waktu salat',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SourcesScreen()),
+            ),
+          ),
         ),
 
-        const _Group(header: 'Tentang aplikasi', child: _AboutCard()),
+        // Tentang dan pembaruan digabung jadi satu kelompok (12-saya.md).
+        _Group(
+          header: 'Tentang & pembaruan',
+          child: Column(
+            children: [
+              const _AutoUpdateCard(),
+              Divider(height: .5, thickness: .5, color: tokens.sep),
+              const _AboutCard(),
+            ],
+          ),
+        ),
 
         // Konstanta `kDebugMode` membuat cabang ini (dan layar pratinjau yang
         // memanggil api.quran.com langsung) terbuang dari build rilis.
         if (kDebugMode)
           _Group(
             header: 'Debug',
-            separatorInset: SettingsRow.separatorInset,
             child: Column(
               children: [
                 SettingsRow(
                   icon: SacredIcons.palette,
-                  chipColor: ChipTone.gold.of(context),
+                  chipColor: SacredBadge.gold,
                   title: 'Pratinjau tajwid',
                   subtitle: 'Data langsung dari api.quran.com',
                   onTap: () => Navigator.of(context).push(
@@ -291,7 +437,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 SettingsRow(
                   icon: SacredIcons.book,
-                  chipColor: ChipTone.slate.of(context),
+                  chipColor: SacredBadge.grey,
                   title: 'Prototipe tiga layout baca',
                   subtitle: 'Card, mushaf 1 halaman, mushaf 2 halaman',
                   onTap: () => Navigator.of(context).push(
@@ -308,28 +454,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-/// Satu kelompok: judul kecil lalu kartu radius 22 (Pengaturan.html).
+/// Satu kelompok v2: label bagian lalu kartu radius 22 berbayang tipis.
 class _Group extends StatelessWidget {
-  const _Group({
-    required this.header,
-    required this.child,
-    this.separatorInset = 0,
-  });
+  const _Group({required this.header, required this.child});
 
   final String header;
   final Widget child;
-  final double separatorInset;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-    child: InsetGroupedList(
-      header: header,
-      radius: 22,
-      separatorInset: separatorInset,
-      children: [child],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionLabel(header),
+          Container(
+            decoration: BoxDecoration(
+              color: tokens.surf,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: tokens.cardShadows,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Baris dengan penggeser: label kiri, nilai kanan, lalu penggesernya.
@@ -384,47 +537,69 @@ class _TargetRow extends StatelessWidget {
   final int seconds;
   final ValueChanged<int> onChanged;
 
-  @override
-  Widget build(BuildContext context) {
+  Future<void> _choose(BuildContext context) async {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SettingsRow(
-          icon: SacredIcons.timer,
-          chipColor: ChipTone.green.of(context),
-          title: 'Target harian',
-          value: '${seconds ~/ 60} menit',
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(60, 0, 16, 12),
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: tokens.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+                child: Text(
+                  'Target harian',
+                  style: SacredText.stageTitle.copyWith(color: tokens.ink),
+                ),
+              ),
+              GroupedList(
                 children: [
                   for (final option in const [300, 600, 900, 1800])
-                    ChoiceChip(
-                      label: Text('${option ~/ 60} menit'),
-                      selected: seconds == option,
-                      onSelected: (_) => onChanged(option),
+                    ListRow(
+                      title: '${option ~/ 60} menit',
+                      trailing: seconds == option
+                          ? LineIcon(
+                              SacredIcons.checkCircle,
+                              color: tokens.primaryText,
+                              size: 22,
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(context, option),
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Perubahan target berlaku besok. Riwayat hari sebelumnya tetap '
-                'tersimpan.',
-                style: SacredText.cardNote.copyWith(color: tokens.sec),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Text(
+                  'Perubahan target berlaku besok. Riwayat hari sebelumnya '
+                  'tetap tersimpan.',
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+                ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
+    if (picked != null) onChanged(picked);
   }
+
+  @override
+  Widget build(BuildContext context) => SettingsRow(
+    icon: SacredIcons.timer,
+    chipColor: SacredBadge.grey,
+    title: 'Target harian',
+    value: '${seconds ~/ 60} menit',
+    onTap: () => _choose(context),
+  );
 }
 
 /// Pemilih qari. Daftarnya diambil dinamis dari provider, bukan ditulis tetap
@@ -455,67 +630,15 @@ class _ReciterCardState extends State<_ReciterCard> {
     if (mounted) setState(() => _storageBytes = used);
   }
 
+  /// Layar Qari menyimpan pilihannya sendiri; sepulangnya, qari dan ukuran
+  /// unduhan dibaca ulang.
   Future<void> _choose() async {
-    setState(() => _busy = true);
-    final reciters = await _repository.load();
-    if (!mounted) return;
-    setState(() => _busy = false);
-
-    final picked = await showReciterPicker(
+    await Navigator.of(
       context,
-      reciters: reciters,
-      selected: _selected,
-      // Contoh diputar dengan qari yang sedang disorot, bukan qari terpilih,
-      // supaya bisa dibandingkan sebelum memutuskan.
-      onPreview: (reciter) => _preview(reciter),
-    );
-    if (picked == null || !mounted) return;
-
-    setState(() => _busy = true);
-    final resolved = await _repository.resolveBitrate(picked);
+    ).push(MaterialPageRoute<void>(builder: (_) => const ReciterPicker()));
     if (!mounted) return;
-    setState(() => _busy = false);
-    if (resolved == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Murottal ${picked.displayName} belum tersedia di server. '
-            'Qari sebelumnya tetap dipakai.',
-          ),
-        ),
-      );
-      return;
-    }
-    await SharedPreferencesService.setReciter(resolved);
-    // Antrean yang sedang berjalan memakai qari lama; hentikan agar tidak
-    // tercampur di tengah surah.
-    await QuranAudioService.instance.stop();
-    if (mounted) setState(() => _selected = resolved);
-  }
-
-  /// Memutar Al-Fatihah ayat 1 dengan [reciter] sebagai contoh suara.
-  ///
-  /// Bitrate-nya belum tentu tersedia, jadi dipastikan dulu; kalau tidak ada,
-  /// dikatakan apa adanya alih-alih memutar berkas yang tidak ada.
-  Future<void> _preview(Reciter reciter) async {
-    final resolved = await _repository.resolveBitrate(reciter);
-    if (!mounted) return;
-    if (resolved == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Contoh ${reciter.displayName} belum tersedia.'),
-        ),
-      );
-      return;
-    }
-    try {
-      await QuranAudioService.instance.playPreview(resolved);
-    } on Object {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contoh gagal diputar. Periksa koneksi.')),
-      );
-    }
+    setState(() => _selected = SharedPreferencesService.getReciter());
+    await _refreshStorage();
   }
 
   Future<void> _toggleLowData(bool value) async {
@@ -565,12 +688,9 @@ class _ReciterCardState extends State<_ReciterCard> {
       children: [
         SettingsRow(
           icon: SacredIcons.headphones,
-          chipColor: ChipTone.slate.of(context),
+          chipColor: SacredBadge.grey,
           title: 'Qari',
           value: _selected.displayName,
-          subtitle: _selected.name.isEmpty
-              ? 'Ketuk untuk memilih qari lain'
-              : '${_selected.name} · ${_selected.bitrate ?? 128} kbps',
           trailing: _busy
               ? const SizedBox.square(
                   dimension: 18,
@@ -587,7 +707,7 @@ class _ReciterCardState extends State<_ReciterCard> {
         ),
         SettingsRow(
           icon: SacredIcons.cloud,
-          chipColor: ChipTone.terracotta.of(context),
+          chipColor: SacredBadge.red,
           title: 'Hemat kuota',
           subtitle:
               'Pakai berkas 64 kbps bila tersedia. Ukurannya sekitar separuh, '
@@ -607,7 +727,7 @@ class _ReciterCardState extends State<_ReciterCard> {
           ),
           SettingsRow(
             icon: SacredIcons.download,
-            chipColor: ChipTone.gold.of(context),
+            chipColor: SacredBadge.gold,
             title: 'Murottal offline',
             value: '${megabytes.toStringAsFixed(1)} MB',
             subtitle: 'Tersimpan untuk ${_selected.displayName}.',
@@ -643,7 +763,7 @@ class _AutoUpdateCardState extends State<_AutoUpdateCard> {
       children: [
         SettingsRow(
           icon: SacredIcons.download,
-          chipColor: ChipTone.translate.of(context),
+          chipColor: SacredBadge.blue,
           title: 'Unduh pembaruan otomatis',
           subtitle:
               'Versi baru diunduh sendiri saat aplikasi dibuka, lalu pemasang '
@@ -665,7 +785,7 @@ class _AutoUpdateCardState extends State<_AutoUpdateCard> {
         ),
         SettingsRow(
           icon: SacredIcons.checkCircle,
-          chipColor: ChipTone.green.of(context),
+          chipColor: SacredBadge.green,
           title: 'Izin pasang aplikasi',
           subtitle:
               'Diperlukan sekali agar pembaruan bisa dipasang langsung dari '
@@ -763,42 +883,6 @@ class _AboutCardState extends State<_AboutCard> {
       ),
     );
   }
-}
-
-/// Baris sumber teks/audio. Membuka tautan lisensinya di peramban.
-class _SourceRow extends StatelessWidget {
-  const _SourceRow({
-    required this.icon,
-    required this.chipColor,
-    required this.title,
-    required this.body,
-    required this.url,
-  });
-
-  final List<String> icon;
-  final Color chipColor;
-  final String title;
-  final String body;
-  final String url;
-
-  @override
-  Widget build(BuildContext context) => SettingsRow(
-    icon: icon,
-    chipColor: chipColor,
-    title: title,
-    subtitle: body,
-    onTap: () async {
-      final opened = await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      ).catchError((Object _) => false);
-      if (!opened && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tautan tidak dapat dibuka: $url')),
-        );
-      }
-    },
-  );
 }
 
 class _SyncCard extends StatefulWidget {
@@ -1081,6 +1165,289 @@ class _ArabicPreview extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// Kartu profil v2: avatar, nama akun, status sinkron, dan tiga angka nyata
+/// (hari istiqamah, menit minggu ini, juz khatam). Ketuk untuk akun &
+/// sinkronisasi.
+class _ProfileCard extends StatefulWidget {
+  const _ProfileCard();
+
+  @override
+  State<_ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<_ProfileCard> {
+  final Future<List<JuzBoundary>> _juz = JuzRepository.load();
+  late Future<DateTime?> _lastSync = _loadLastSync();
+
+  Future<DateTime?> _loadLastSync() async {
+    try {
+      return await AccountService.instance.sync?.lastSuccess();
+    } on Object {
+      return null;
+    }
+  }
+
+  Future<void> _openAccount() async {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: tokens.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => const SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(16, 20, 16, 16),
+          child: _SyncCard(),
+        ),
+      ),
+    );
+    if (mounted) setState(() => _lastSync = _loadLastSync());
+  }
+
+  /// Menit membaca Senin–hari ini.
+  static int _minutesThisWeek() {
+    final now = DateTime.now();
+    var seconds = 0;
+    for (var i = 0; i < now.weekday; i++) {
+      final day = DateTime(now.year, now.month, now.day - i);
+      seconds += SharedPreferencesService.getReadingSeconds(
+        ReadingProgressService.localDate(day),
+      );
+    }
+    return seconds ~/ 60;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final streak = ReadingProgressService.read().currentStreak;
+    return SacredCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          ValueListenableBuilder<SyncAccount?>(
+            valueListenable: AccountService.instance.account,
+            builder: (context, account, _) {
+              final name = account?.name?.trim();
+              final initial = (name == null || name.isEmpty)
+                  ? null
+                  : name.substring(0, 1).toUpperCase();
+              return InkWell(
+                onTap: _openAccount,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: tokens.cta,
+                          shape: BoxShape.circle,
+                        ),
+                        child: initial == null
+                            ? LineIcon(
+                                SacredIcons.user,
+                                color: tokens.ctaInk,
+                                size: 24,
+                              )
+                            : Text(
+                                initial,
+                                textScaler: TextScaler.noScaling,
+                                style: SacredText.profileInitial.copyWith(
+                                  color: tokens.ctaInk,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              account == null
+                                  ? 'Belum masuk'
+                                  : (name == null || name.isEmpty
+                                        ? (account.email ?? 'Akun Google')
+                                        : name),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: SacredText.profileName.copyWith(
+                                color: tokens.ink,
+                              ),
+                            ),
+                            FutureBuilder<DateTime?>(
+                              future: _lastSync,
+                              builder: (context, snapshot) => Text(
+                                _syncLine(account, snapshot.data),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: SacredText.rowSubtitle.copyWith(
+                                  color: tokens.sec,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      LineIcon(
+                        SacredIcons.chevronRight,
+                        color: tokens.tertiary,
+                        size: 17,
+                        strokeWidth: 2.2,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          Divider(
+            height: .5,
+            thickness: .5,
+            indent: 16,
+            endIndent: 16,
+            color: tokens.sep,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: FutureBuilder<List<JuzBoundary>>(
+              future: _juz,
+              builder: (context, snapshot) {
+                final boundaries = snapshot.data;
+                final juz = boundaries == null
+                    ? null
+                    : JuzCoverage.completeJuz(
+                        SharedPreferencesService.getCompletedSurahs(),
+                        boundaries,
+                      ).length;
+                final stats = [
+                  ('$streak', 'hari istiqamah'),
+                  ('${_minutesThisWeek()}', 'menit minggu ini'),
+                  (juz == null ? '–' : '$juz/30', 'juz khatam'),
+                ];
+                // Teks sangat besar: angka ditumpuk sebaris dengan
+                // keterangannya supaya "istiqamah" dan "0/30" tidak dipecah.
+                if (MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final (value, label) in stats)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: _Stat(value, label, inline: true),
+                        ),
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final (value, label) in stats)
+                      Expanded(child: _Stat(value, label)),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _syncLine(SyncAccount? account, DateTime? last) {
+    if (account == null) return 'Masuk untuk menyimpan progres di cloud';
+    if (last == null) return 'Belum pernah tersinkron';
+    final local = last.toLocal();
+    final now = DateTime.now();
+    final sameDay =
+        local.year == now.year &&
+        local.month == now.month &&
+        local.day == now.day;
+    final time =
+        '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}';
+    return sameDay
+        ? 'Tersinkron · $time'
+        : 'Tersinkron · ${local.day}/${local.month} $time';
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat(this.value, this.label, {this.inline = false});
+
+  final String value;
+  final String label;
+
+  /// Angka dan keterangan sebaris (dipakai saat teks sangat besar).
+  final bool inline;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Semantics(
+      label: '$value $label',
+      excludeSemantics: true,
+      child: inline
+          ? Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$value  ',
+                    style: SacredText.metric.copyWith(color: tokens.ink),
+                  ),
+                  TextSpan(
+                    text: label,
+                    style: SacredText.cardNote.copyWith(color: tokens.sec),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: SacredText.metric.copyWith(color: tokens.ink),
+                ),
+                Text(
+                  label,
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+/// Pengingat tilawah: jamnya atau "Nonaktif". Diatur di layar Salat karena
+/// penjadwalannya ikut jadwal salat hari itu.
+class _ReminderRow extends StatelessWidget {
+  const _ReminderRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = SharedPreferencesService.getQuranReminderMinutes();
+    return SettingsRow(
+      icon: SacredIcons.bell,
+      chipColor: SacredBadge.red,
+      title: 'Pengingat tilawah',
+      value: minutes == null
+          ? 'Nonaktif'
+          : '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
+                '${(minutes % 60).toString().padLeft(2, '0')}',
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const PrayerScreen())),
     );
   }
 }

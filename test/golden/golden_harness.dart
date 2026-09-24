@@ -1,0 +1,103 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/app/sacred_theme.dart';
+
+/// Ukuran acuan mockup v2 (docs/design/v2/screens/*.png berukuran 2×).
+const phone = Size(390, 844);
+const phoneLandscape = Size(844, 390);
+
+/// Bilah status dan bilah gestur yang dianggap ada di layar acuan: judul
+/// mockup mulai di y=58 (47 + 11) dan tab bar 24 dari bawah.
+const statusBar = 47.0;
+const gestureBar = 24.0;
+
+/// Memuat semua font di FontManifest (Plus Jakarta Sans, EB Garamond,
+/// Amiri Quran, ikon Material) supaya golden memakai huruf yang sebenarnya.
+Future<void> loadAppFonts() async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final manifest =
+      jsonDecode(await rootBundle.loadString('FontManifest.json'))
+          as List<dynamic>;
+  for (final entry in manifest.cast<Map<String, dynamic>>()) {
+    final loader = FontLoader(entry['family'] as String);
+    for (final font in (entry['fonts'] as List).cast<Map<String, dynamic>>()) {
+      loader.addFont(rootBundle.load(font['asset'] as String));
+    }
+    await loader.load();
+  }
+}
+
+/// Satu varian golden: tema dan skala teks.
+class GoldenVariant {
+  const GoldenVariant(this.brightness, this.textScale);
+
+  final Brightness brightness;
+  final double textScale;
+
+  String get suffix =>
+      '${brightness == Brightness.dark ? 'dark' : 'light'}'
+      '${textScale == 1 ? '' : '_x${textScale.toStringAsFixed(0)}'}';
+
+  static const all = [
+    GoldenVariant(Brightness.light, 1),
+    GoldenVariant(Brightness.dark, 1),
+    GoldenVariant(Brightness.light, 2),
+  ];
+}
+
+/// Memasang [child] di layar 390×844 (atau [size]) dengan tema aplikasi.
+Future<void> pumpGolden(
+  WidgetTester tester,
+  Widget child, {
+  GoldenVariant variant = const GoldenVariant(Brightness.light, 1),
+  Size size = phone,
+}) async {
+  tester.view.physicalSize = size * 3;
+  tester.view.devicePixelRatio = 3;
+  tester.view.padding = const FakeViewPadding(
+    top: statusBar * 3,
+    bottom: gestureBar * 3,
+  );
+  tester.view.viewPadding = const FakeViewPadding(
+    top: statusBar * 3,
+    bottom: gestureBar * 3,
+  );
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: SacredTheme.themeFor(AppPalette.sacred, variant.brightness),
+      builder: (context, app) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(variant.textScale)),
+        child: app!,
+      ),
+      home: child,
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Semua teks yang tampil terpotong (elipsis atau melebihi maxLines).
+List<String> truncatedTexts(WidgetTester tester) {
+  final result = <String>[];
+  for (final element in find.byType(RichText).evaluate()) {
+    final render = element.renderObject;
+    if (render is RenderParagraph && render.didExceedMaxLines) {
+      result.add(render.text.toPlainText());
+    }
+  }
+  return result;
+}
+
+/// Gagal bila salah satu [labels] wajib tampil terpotong.
+void expectNotTruncated(WidgetTester tester, Iterable<String> labels) {
+  final cut = truncatedTexts(tester).toSet();
+  final offending = labels.where(cut.contains).toList();
+  expect(offending, isEmpty, reason: 'Label wajib terpotong: $offending');
+}

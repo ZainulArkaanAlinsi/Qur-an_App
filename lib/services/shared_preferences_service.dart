@@ -325,6 +325,17 @@ class SharedPreferencesService {
     learnRevision.value++;
   }
 
+  /// Bagian terjauh yang sudah dibuka di satu pelajaran (0 = belum mulai).
+  /// Dipakai kartu tahap di Belajar ("2 / 6").
+  static int getLessonStep(String id) =>
+      _prefs?.getInt('belajar_langkah_$id') ?? 0;
+
+  static Future<void> setLessonStep(String id, int step) async {
+    if (step <= getLessonStep(id)) return;
+    await _prefs?.setInt('belajar_langkah_$id', step);
+    learnRevision.value++;
+  }
+
   /// Riwayat jawaban kuis satu pelajaran, per id soal.
   ///
   /// Dipakai menyusun ronde berikutnya: soal yang belum pernah dijawab dan
@@ -374,6 +385,22 @@ class SharedPreferencesService {
     await _prefs?.setInt('belajar_kuis_ronde', next);
     return next;
   }
+
+  /// Target ziyadah: berapa ayat baru per hari (bawaan 5).
+  static int getHafalanDailyAyat() =>
+      _prefs?.getInt('hafalan_ayat_harian') ?? 5;
+
+  static Future<void> setHafalanDailyAyat(int value) async {
+    await _prefs?.setInt('hafalan_ayat_harian', value.clamp(1, 20));
+    memorizationRevision.value++;
+  }
+
+  /// Berapa kali satu ayat diputar di sesi hafalan (1–10, bawaan 3).
+  static int getHafalanRepeat() =>
+      (_prefs?.getInt('hafalan_ulang') ?? 3).clamp(1, 10);
+
+  static Future<void> setHafalanRepeat(int value) async =>
+      _prefs?.setInt('hafalan_ulang', value.clamp(1, 10));
 
   /// Catatan hafalan per ayat untuk satu surah.
   ///
@@ -526,6 +553,12 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_city', city.trim());
     await _prefs?.setString('prayer_country', country.trim());
   }
+
+  /// Jadwal salat terakhir yang berhasil dimuat (JSON), untuk dipakai saat
+  /// luring.
+  static String? getPrayerCache() => _prefs?.getString('prayer_day_cache');
+  static Future<void> setPrayerCache(String value) async =>
+      _prefs?.setString('prayer_day_cache', value);
 
   static Set<String> getPrayerReminders() =>
       (_prefs?.getStringList('prayer_reminders') ?? const <String>[]).toSet();

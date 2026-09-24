@@ -2,12 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
+import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
 import 'package:quran_app_2025/screens/learn_screen.dart';
-import 'package:quran_app_2025/screens/progress_screen.dart';
+import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/screens/quran_library_screen.dart';
-import 'package:quran_app_2025/screens/quran_search_screen.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/screens/settings_screen.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
@@ -18,31 +18,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
 
 const _tabs = [
-  SacredTab(
-    icon: Icons.home_outlined,
-    activeIcon: Icons.home_rounded,
-    label: 'Beranda',
-  ),
-  SacredTab(
-    icon: Icons.menu_book_outlined,
-    activeIcon: Icons.menu_book_rounded,
-    label: 'Qur’an',
-  ),
-  SacredTab(
-    icon: Icons.school_outlined,
-    activeIcon: Icons.school_rounded,
-    label: 'Belajar',
-  ),
-  SacredTab(
-    icon: Icons.insights_outlined,
-    activeIcon: Icons.insights_rounded,
-    label: 'Progres',
-  ),
-  SacredTab(
-    icon: Icons.tune_outlined,
-    activeIcon: Icons.tune_rounded,
-    label: 'Pengaturan',
-  ),
+  SacredTab(icon: SacredIcons.home, label: 'Beranda'),
+  SacredTab(icon: SacredIcons.book, label: 'Qur’an'),
+  SacredTab(icon: SacredIcons.cap, label: 'Belajar'),
+  SacredTab(icon: SacredIcons.layers, label: 'Hafalan'),
+  SacredTab(icon: SacredIcons.user, label: 'Saya'),
 ];
 
 class AppShell extends StatefulWidget {
@@ -119,12 +99,13 @@ class _AppShellState extends State<AppShell> {
       HomeScreen(
         onOpenQuran: () => setState(() => _index = 1),
         onOpenLearn: () => setState(() => _index = 2),
+        onOpenHafalan: () => setState(() => _index = 3),
       ),
       const QuranLibraryScreen(),
       const LearnScreen(),
-      const ProgressScreen(),
-      // SettingsScreen memasang judul besarnya sendiri; dulu di sini ada
-      // pembungkus yang memasang judul kedua, jadi "Pengaturan" tampil dobel.
+      const MemorizationScreen(),
+      // Tab Saya: profil, progres, dan pengaturan (docs/design/v2/screens/
+      // 12-saya.md). Progres lengkap dibuka dari baris di dalamnya.
       const SettingsScreen(),
     ];
     return Scaffold(
@@ -161,11 +142,6 @@ class _AppShellState extends State<AppShell> {
                   tabs: _tabs,
                   currentIndex: _index,
                   onSelected: (value) => setState(() => _index = value),
-                  onSearch: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const QuranSearchScreen(),
-                    ),
-                  ),
                 ),
               ],
             ),

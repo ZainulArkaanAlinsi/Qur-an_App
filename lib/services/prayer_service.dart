@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:http/http.dart' as http;
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class PrayerDay {
@@ -12,7 +14,51 @@ class PrayerDay {
     this.timezone,
     this.sunrise,
     this.sunset,
+    this.hijriDay,
+    this.hijriMonthNumber,
+    this.hijriYear,
+    this.fromCache = false,
   });
+
+  factory PrayerDay.fromJson(
+    Map<String, dynamic> json, {
+    bool fromCache = false,
+  }) => PrayerDay(
+    gregorianDate: DateTime.parse(json['date'] as String),
+    timezone: json['timezone'] as String?,
+    hijriDate: json['hijriDate'] as String? ?? '',
+    hijriMonth: json['hijriMonth'] as String? ?? '',
+    prayers: (json['prayers'] as Map).cast<String, String>(),
+    sunrise: json['sunrise'] as String?,
+    sunset: json['sunset'] as String?,
+    hijriDay: json['hijriDay'] as int?,
+    hijriMonthNumber: json['hijriMonthNumber'] as int?,
+    hijriYear: json['hijriYear'] as int?,
+    fromCache: fromCache,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'date': dateKey(gregorianDate),
+    'timezone': timezone,
+    'hijriDate': hijriDate,
+    'hijriMonth': hijriMonth,
+    'prayers': prayers,
+    'sunrise': sunrise,
+    'sunset': sunset,
+    'hijriDay': hijriDay,
+    'hijriMonthNumber': hijriMonthNumber,
+    'hijriYear': hijriYear,
+  };
+
+  /// "2026-09-24".
+  static String dateKey(DateTime day) =>
+      '${day.year.toString().padLeft(4, '0')}-'
+      '${day.month.toString().padLeft(2, '0')}-'
+      '${day.day.toString().padLeft(2, '0')}';
+
+  /// Diambil dari simpanan di perangkat karena AlAdhan tidak terjangkau.
+  /// Hanya jadwal untuk tanggal yang sama yang boleh dipakai.
+  final bool fromCache;
 
   final DateTime gregorianDate;
 
@@ -22,6 +68,42 @@ class PrayerDay {
   final String hijriDate;
   final String hijriMonth;
   final Map<String, String> prayers;
+
+  /// Tanggal Hijriah dalam angka dari AlAdhan, supaya nama bulannya bisa
+  /// ditulis dalam bahasa Indonesia. Null bila responsnya tidak memuatnya.
+  final int? hijriDay;
+  final int? hijriMonthNumber;
+  final int? hijriYear;
+
+  /// Nama bulan Hijriah baku bahasa Indonesia (KBBI), Muharram = 1.
+  static const hijriMonthsId = [
+    'Muharram',
+    'Safar',
+    'Rabiulawal',
+    'Rabiulakhir',
+    'Jumadilawal',
+    'Jumadilakhir',
+    'Rajab',
+    'Syakban',
+    'Ramadan',
+    'Syawal',
+    'Zulkaidah',
+    'Zulhijah',
+  ];
+
+  /// "13 Rabiulakhir 1448 H". Bulan hanya ditulis sekali (dulu tampil dobel:
+  /// "…1448 Rabī' al-t…"). Kalau angka bulannya tidak ada, pakai teks asli.
+  String get hijriIndonesian {
+    final month = hijriMonthNumber;
+    if (hijriDay == null ||
+        hijriYear == null ||
+        month == null ||
+        month < 1 ||
+        month > 12) {
+      return hijriDate;
+    }
+    return '$hijriDay ${hijriMonthsId[month - 1]} $hijriYear H';
+  }
 
   /// Terbit dan terbenam menurut AlAdhan, dipakai sebagai keterangan di kartu
   /// salat berikutnya. Keduanya bisa null: kalau responsnya tidak memuatnya,
@@ -89,16 +171,106 @@ class PrayerService {
   /// phone and the city can be on different calendar days (e.g. just after
   /// midnight in Jakarta while Honolulu is still on the previous day), so an
   /// omitted date is re-resolved in the city's zone.
+  ///
+  /// Every successful day is kept on the device. When AlAdhan cannot be
+  /// reached, a kept schedule is returned only if it is for the very same
+  /// date ([PrayerDay.fromCache] set); yesterday's times are never shown as
+  /// today's.
   static Future<PrayerDay> fetch({
     required String city,
     required String country,
     DateTime? date,
+    http.Client? client,
+    DateTime Function() clock = DateTime.now,
   }) async {
-    final day = await _fetchDay(city: city, country: country, date: date);
-    if (date != null) return day;
-    final cityToday = cityDate(day.timezone, DateTime.now());
-    if (cityToday == null || cityToday == day.gregorianDate) return day;
-    return _fetchDay(city: city, country: country, date: cityToday);
+    try {
+      var day = await _fetchDay(
+        city: city,
+        country: country,
+        date: date,
+        client: client,
+      );
+      if (date == null) {
+        final cityToday = cityDate(day.timezone, clock());
+        if (cityToday != null && cityToday != day.gregorianDate) {
+          day = await _fetchDay(
+            city: city,
+            country: country,
+            date: cityToday,
+            client: client,
+          );
+        }
+      }
+      await _remember(city, country, day);
+      return day;
+    } on Object {
+      final kept = _recall(city, country, date, clock());
+      if (kept != null) return kept;
+      rethrow;
+    }
+  }
+
+  /// Nama metode singkat untuk baris keterangan.
+  static const methodShort = 'Kemenag RI';
+
+  static const _keptDays = 6;
+
+  static String _placeKey(String city, String country) =>
+      '${city.trim().toLowerCase()}|${country.trim().toLowerCase()}';
+
+  static Map<String, dynamic> _kept() {
+    final raw = SharedPreferencesService.getPrayerCache();
+    if (raw == null) return {};
+    try {
+      return (jsonDecode(raw) as Map).cast<String, dynamic>();
+    } on Object {
+      return {};
+    }
+  }
+
+  static Future<void> _remember(
+    String city,
+    String country,
+    PrayerDay day,
+  ) async {
+    final kept = _kept();
+    kept['${_placeKey(city, country)}|${PrayerDay.dateKey(day.gregorianDate)}'] =
+        day.toJson();
+    // Hanya beberapa hari terakhir yang disimpan.
+    final keys = kept.keys.toList()
+      ..sort((a, b) => a.split('|').last.compareTo(b.split('|').last));
+    for (final key in keys.take(math.max(0, keys.length - _keptDays))) {
+      kept.remove(key);
+    }
+    await SharedPreferencesService.setPrayerCache(jsonEncode(kept));
+  }
+
+  static PrayerDay? _recall(
+    String city,
+    String country,
+    DateTime? date,
+    DateTime now,
+  ) {
+    final place = _placeKey(city, country);
+    for (final entry in _kept().entries) {
+      if (!entry.key.startsWith('$place|')) continue;
+      final PrayerDay day;
+      try {
+        day = PrayerDay.fromJson(
+          (entry.value as Map).cast<String, dynamic>(),
+          fromCache: true,
+        );
+      } on Object {
+        continue;
+      }
+      final wanted =
+          date ??
+          cityDate(day.timezone, now) ??
+          DateTime(now.year, now.month, now.day);
+      final target = DateTime(wanted.year, wanted.month, wanted.day);
+      if (day.gregorianDate == target) return day;
+    }
+    return null;
   }
 
   /// Calendar date at [now] in [zone], or null if the zone is unknown.
@@ -116,6 +288,7 @@ class PrayerService {
     required String city,
     required String country,
     DateTime? date,
+    http.Client? client,
   }) async {
     final requested = date ?? DateTime.now();
     final day = DateTime(requested.year, requested.month, requested.day);
@@ -126,7 +299,9 @@ class PrayerService {
       '/v1/timingsByCity/$formattedDate',
       {'city': city, 'country': country, 'method': '$methodId'},
     );
-    final response = await http.get(uri).timeout(const Duration(seconds: 12));
+    final response = await (client?.get(uri) ?? http.get(uri)).timeout(
+      const Duration(seconds: 12),
+    );
     if (response.statusCode != 200) {
       throw Exception('Jadwal salat belum dapat dimuat.');
     }
@@ -173,6 +348,9 @@ class PrayerService {
       gregorianDate: day,
       hijriDate: '${hijri['day']} ${month?['en'] ?? ''} ${hijri['year']}',
       hijriMonth: month?['en'] as String? ?? '',
+      hijriDay: int.tryParse('${hijri['day']}'),
+      hijriMonthNumber: int.tryParse('${month?['number']}'),
+      hijriYear: int.tryParse('${hijri['year']}'),
       prayers: prayers,
     );
   }

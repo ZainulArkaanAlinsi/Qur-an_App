@@ -66,8 +66,9 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(SettingsScreen), findsOneWidget);
-    // Judul kelompok pada mockup ditulis kapital.
-    expect(find.text('TAMPILAN'), findsOneWidget);
+    // Judul kelompok pada mockup ditulis kapital; judul besar sekali saja.
+    expect(find.text('MEMBACA'), findsOneWidget);
+    expect(find.text('Saya'), findsOneWidget);
   });
 
   testWidgets('mengganti palet dari route Pengaturan tersimpan', (
@@ -78,6 +79,8 @@ void main() {
     await tester.pumpWidget(_app(controller));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Buka Pengaturan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tema'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.bySemanticsLabel(AppPalette.sepia.label));

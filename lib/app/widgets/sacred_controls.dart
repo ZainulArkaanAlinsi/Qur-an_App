@@ -125,61 +125,73 @@ class SegmentedPill<T> extends StatelessWidget {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     // Tinggi 36, radius 12, padding 3; segmen aktif radius 9 berlatar putih
     // dengan dua bayangan (Quran.html, Progres.html, Cari.html).
+    // Tinggi minimal 36; ikut membesar pada teks besar supaya label tidak
+    // terpotong.
     return Container(
-      height: 36,
+      constraints: const BoxConstraints(minHeight: 36),
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: tokens.fill,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          for (final entry in segments.entries)
-            Expanded(
-              child: Semantics(
-                selected: entry.key == value,
-                button: true,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(9),
-                  onTap: () => onChanged(entry.key),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: entry.key == value
-                        ? BoxDecoration(
-                            color: const Color(0xFFFFFFFF),
-                            borderRadius: BorderRadius.circular(9),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x1A000000),
-                                blurRadius: 8,
-                                offset: Offset(0, 3),
-                              ),
-                              BoxShadow(
-                                color: Color(0x0F000000),
-                                blurRadius: 1,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          )
-                        : null,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(
-                        entry.value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style:
-                            (entry.key == value
-                                    ? SacredText.segmentActive
-                                    : SacredText.segmentIdle)
-                                .copyWith(color: tokens.ink),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final entry in segments.entries)
+              Expanded(
+                child: Semantics(
+                  selected: entry.key == value,
+                  button: true,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(9),
+                    onTap: () => onChanged(entry.key),
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: entry.key == value
+                          ? BoxDecoration(
+                              color: tokens.segment,
+                              borderRadius: BorderRadius.circular(9),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x1A000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 3),
+                                ),
+                                BoxShadow(
+                                  color: Color(0x0F000000),
+                                  blurRadius: 1,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            )
+                          : null,
+                      constraints: const BoxConstraints(minHeight: 30),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            entry.value,
+                            maxLines: 1,
+                            softWrap: false,
+                            style:
+                                (entry.key == value
+                                        ? SacredText.segmentActive
+                                        : SacredText.segmentIdle)
+                                    .copyWith(color: tokens.ink),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -202,7 +214,10 @@ class IosToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final enabled = onChanged != null;
+    // Node sendiri: pembaca layar bisa fokus ke sakelar tanpa ikut
+    // tergabung ke label baris di sekitarnya.
     return Semantics(
+      container: true,
       label: semanticsLabel,
       toggled: value,
       child: GestureDetector(
@@ -250,99 +265,96 @@ class IosToggle extends StatelessWidget {
   }
 }
 
-/// Satu tujuan pada [FloatingTabBar].
+/// Satu tujuan pada [FloatingTabBar]: ikon garis (path SVG mockup) + label.
 class SacredTab {
-  const SacredTab({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
+  const SacredTab({required this.icon, required this.label});
 
-  final IconData icon;
-  final IconData activeIcon;
+  final List<String> icon;
   final String label;
 }
 
-/// Tab bar kaca mengambang: kapsul 4 tab + tombol Cari bulat terpisah,
-/// dengan scrim gradien di belakangnya (DESIGN_SPEC §5).
+/// Tab bar v2 (DESIGN.md §3): kapsul kaca tinggi 64, 12 dari kiri/kanan dan
+/// 24 dari bawah, 5 tab sama lebar, ikon 22 + label 11, tab aktif berupa
+/// kapsul primarySoft. Scrim gradien setinggi 140 di belakangnya.
+///
+/// Tidak ada tombol cari terpisah lagi; cari ada di header Beranda & Qur'an.
+/// Dulu tombol itu membuat label terpotong ("Beran…", "Penga…").
 class FloatingTabBar extends StatelessWidget {
   const FloatingTabBar({
     super.key,
     required this.tabs,
     required this.currentIndex,
     required this.onSelected,
-    required this.onSearch,
-    this.searchTooltip = 'Cari',
   });
 
   final List<SacredTab> tabs;
   final int currentIndex;
   final ValueChanged<int> onSelected;
-  final VoidCallback onSearch;
-  final String searchTooltip;
+
+  /// Tinggi yang harus disisakan isi layar di bawahnya: 64 + 24 + jeda.
+  static const reservedHeight = 104.0;
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
         IgnorePointer(
           child: Container(
-            height: 150,
+            height: 140 + bottomInset,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [tokens.bg.withValues(alpha: 0), tokens.bg],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [tokens.bg, tokens.bg, tokens.bg.withValues(alpha: 0)],
+                stops: const [0, .36, 1],
               ),
             ),
           ),
         ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            // Label tab sangat kecil; batasi penskalaan agar tidak terpotong.
-            child: MediaQuery.withClampedTextScaling(
-              maxScaleFactor: 1.3,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GlassSurface(
-                      borderRadius: BorderRadius.circular(31),
-                      tint: tokens.glass,
-                      child: SizedBox(
-                        height: 62,
-                        child: Row(
-                          children: [
-                            for (var i = 0; i < tabs.length; i++)
-                              Expanded(
-                                child: _TabButton(
-                                  tab: tabs[i],
-                                  selected: i == currentIndex,
-                                  onTap: () => onSelected(i),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+        Padding(
+          // 24 dari bawah layar, atau di atas bilah gestur bila lebih tinggi.
+          padding: EdgeInsets.fromLTRB(
+            12,
+            0,
+            12,
+            bottomInset > 24 ? bottomInset : 24,
+          ),
+          // Label tab kecil; penskalaannya dibatasi seperti tab bar iOS.
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: tokens.floatShadows,
+              ),
+              child: GlassSurface(
+                borderRadius: BorderRadius.circular(32),
+                tint: tokens.glass,
+                borderColor: tokens.glassBorder,
+                shadowless: true,
+                child: SizedBox(
+                  height: 64,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < tabs.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 2),
+                          Expanded(
+                            child: _TabButton(
+                              tab: tabs[i],
+                              selected: i == currentIndex,
+                              onTap: () => onSelected(i),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  GlassSurface(
-                    borderRadius: BorderRadius.circular(31),
-                    tint: tokens.glass,
-                    child: SizedBox.square(
-                      dimension: 62,
-                      child: IconButton(
-                        tooltip: searchTooltip,
-                        onPressed: onSearch,
-                        icon: Icon(Icons.search_rounded, color: tokens.ink),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -366,7 +378,7 @@ class _TabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final color = selected ? tokens.primaryText : tokens.sec;
+    final color = selected ? tokens.primaryText : tokens.ink;
     return Semantics(
       selected: selected,
       button: true,
@@ -374,29 +386,38 @@ class _TabButton extends StatelessWidget {
       child: ExcludeSemantics(
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(27),
+          borderRadius: BorderRadius.circular(28),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            height: 56,
             decoration: selected
                 ? BoxDecoration(
                     color: tokens.primarySoft,
-                    borderRadius: BorderRadius.circular(27),
+                    borderRadius: BorderRadius.circular(28),
                   )
                 : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(selected ? tab.activeIcon : tab.icon, color: color),
-                const SizedBox(height: 2),
-                Flexible(
+                LineIcon(
+                  tab.icon,
+                  color: color,
+                  size: 22,
+                  strokeWidth: selected
+                      ? SacredIcons.strokeNavActive
+                      : SacredIcons.strokeNav,
+                ),
+                const SizedBox(height: 3),
+                // Label utuh, tidak pernah dielipsis; kalau sangat sempit ia
+                // diperkecil, bukan dipotong.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
                   child: Text(
                     tab.label,
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: SacredText.tabLabel.copyWith(
-                      color: color,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                    ),
+                    softWrap: false,
+                    style:
+                        (selected ? SacredText.tabActive : SacredText.tabIdle)
+                            .copyWith(color: color),
                   ),
                 ),
               ],
@@ -467,9 +488,9 @@ class SacredCircleButton extends StatelessWidget {
   }
 }
 
-/// Baris pengaturan gaya Pengaturan.html: lencana ikon 30 px berwarna, label,
-/// nilai di kanan, lalu chevron. Tinggi minimum 50 supaya tetap nyaman
-/// disentuh meski lencananya hanya 30 px.
+/// Baris pengaturan v2 (V2-Saya.png): lencana ikon 32 radius 10, judul
+/// 16/700, nilai 15/500 di kanan, chevron. Tinggi minimal 56. Judul selalu
+/// [Expanded] satu baris; nilai dan trailing tidak menjepitnya.
 class SettingsRow extends StatelessWidget {
   const SettingsRow({
     super.key,
@@ -492,7 +513,7 @@ class SettingsRow extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  /// 16 padding kiri + 30 lencana + 14 jarak: garis pemisah sejajar teks.
+  /// 16 padding kiri + 32 lencana + 12 jarak: garis pemisah sejajar teks.
   static const separatorInset = 60.0;
 
   @override
@@ -503,21 +524,20 @@ class SettingsRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: chipColor,
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(10),
             ),
-            // Lencananya selalu berwarna pekat, jadi glifnya putih di tema
-            // apa pun — bukan warna tinta tema yang bisa ikut menggelap.
-            child: LineIcon(icon, color: const Color(0xFFFFFFFF), size: 17),
+            // Lencananya selalu pekat, jadi glifnya putih di tema apa pun.
+            child: LineIcon(icon, color: SacredBadge.glyph, size: 18),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 9, 16, 9),
+              padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
               child: Row(
                 children: [
                   Expanded(
@@ -526,14 +546,18 @@ class SettingsRow extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: SacredText.settingTitle.copyWith(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: SacredText.rowTitle.copyWith(
                             color: tokens.ink,
                           ),
                         ),
                         if (subtitle != null)
                           Text(
                             subtitle!,
-                            style: SacredText.cardNote.copyWith(
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: SacredText.rowSubtitle.copyWith(
                               color: tokens.sec,
                             ),
                           ),
@@ -541,8 +565,11 @@ class SettingsRow extends StatelessWidget {
                     ),
                   ),
                   if (value != null) ...[
-                    const SizedBox(width: 8),
-                    Flexible(
+                    const SizedBox(width: 10),
+                    // Lebar nilai dibatasi, bukan dibagi rata dengan judul,
+                    // supaya nilai tetap rata kanan seperti mockup.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 160),
                       child: Text(
                         value!,
                         maxLines: 1,
@@ -561,7 +588,7 @@ class SettingsRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     LineIcon(
                       SacredIcons.chevronRight,
-                      color: tokens.sec,
+                      color: tokens.tertiary,
                       size: 17,
                       strokeWidth: 2.2,
                     ),
@@ -575,7 +602,7 @@ class SettingsRow extends StatelessWidget {
     );
 
     final content = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 50),
+      constraints: const BoxConstraints(minHeight: 56),
       child: row,
     );
     if (onTap == null) {

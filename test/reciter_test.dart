@@ -338,6 +338,24 @@ void main() {
       expect(groups[RecitationStyle.muallim]!.single.identifier, 'ar.husary');
     });
 
+    test('inisial avatar mengabaikan keterangan dalam kurung', () {
+      Reciter named(String english, [String arabic = 'قارئ']) =>
+          Reciter(identifier: 'x', name: arabic, englishName: english);
+      expect(reciterInitials(named('Mahmoud Khalil Al-Husary')), 'MK');
+      expect(reciterInitials(named('Husary (Mujawwad)')), 'H');
+      expect(reciterInitials(named('Alafasy')), 'A');
+      expect(reciterInitials(named('', 'الحصري')), 'ا');
+    });
+
+    test('gaya juga dibaca dari identifier penyedia', () {
+      final reciter = Reciter.fromEdition({
+        'identifier': 'ar.abdulbasitmurattal',
+        'name': 'عبد الباسط',
+        'englishName': 'Abdul Basit',
+      });
+      expect(reciter.style, RecitationStyle.murattal);
+    });
+
     test('kelompok kosong tidak ikut muncul', () {
       final groups = groupReciters([all.first]);
       expect(groups.keys, [RecitationStyle.murattal]);

@@ -1,0 +1,324 @@
+{
+  "name": "Qur'an App — Masukan pengguna",
+  "nodes": [
+    {
+      "id": "5ab61dd3-b7fd-4b7c-bea5-30a0f8726402",
+      "name": "Masukan dari aplikasi",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "12b7d4c7-a5bf-4536-9710-7dc9c90f7c19",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quran-app/masukan",
+        "responseMode": "onReceived",
+        "options": {
+          "responseData": "{\"ok\":true}"
+        }
+      }
+    },
+    {
+      "id": "a2707fe9-8761-45a0-9990-d336d0c64591",
+      "name": "Formulir masukan",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        220
+      ],
+      "webhookId": "7b94cd87-485f-46e0-b73a-628a8fab36b4",
+      "parameters": {
+        "formTitle": "Masukan untuk Qur'an App",
+        "formDescription": "Ceritakan kendala atau fitur yang kamu inginkan. Masukanmu dibaca manusia, bukan dijawab otomatis.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Jenis masukan",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Laporan bug"
+                  },
+                  {
+                    "option": "Kesalahan konten (ayat/terjemahan/tajwid)"
+                  },
+                  {
+                    "option": "Permintaan fitur"
+                  },
+                  {
+                    "option": "Lainnya"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Layar/fitur",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Beranda"
+                  },
+                  {
+                    "option": "Mushaf"
+                  },
+                  {
+                    "option": "Kartu ayat"
+                  },
+                  {
+                    "option": "Belajar"
+                  },
+                  {
+                    "option": "Hafalan"
+                  },
+                  {
+                    "option": "Audio/Qari"
+                  },
+                  {
+                    "option": "Salat"
+                  },
+                  {
+                    "option": "Pengaturan"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Pesan",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Rujukan ayat (jika ada)",
+              "placeholder": "contoh 2:255"
+            },
+            {
+              "fieldLabel": "Boleh dihubungi?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Tidak"
+                  },
+                  {
+                    "option": "Ya"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            }
+          ]
+        },
+        "options": {
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Jazakallahu khairan, masukanmu sudah kami terima."
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "67093bb1-da0e-49b7-aca4-b05affc4c5de",
+      "name": "Rapikan & klasifikasi",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        110
+      ],
+      "parameters": {
+        "jsCode": "\n// Normalisasi masukan dari aplikasi (webhook) atau formulir, lalu klasifikasi dengan aturan kata kunci.\n// Tidak memakai AI: hasilnya bisa dijelaskan dan gratis. Ubah daftar kata sesuai kebutuhan.\nconst RULES = [\n  { kategori: 'bug',        kata: ['error', 'crash', 'keluar sendiri', 'tidak bisa', 'gak bisa', 'nggak bisa', 'force close', 'macet', 'hang', 'lemot', 'bug'] },\n  { kategori: 'konten',     kata: ['ayat salah', 'terjemah', 'tajwid', 'harakat', 'salah ketik', 'typo', 'basmalah', 'warna tajwid', 'qari'] },\n  { kategori: 'audio',      kata: ['audio', 'murottal', 'suara', 'unduh', 'download', 'putar'] },\n  { kategori: 'belajar',    kata: ['belajar', 'pelajaran', 'huruf', 'iqro', 'latihan', 'kuis'] },\n  { kategori: 'hafalan',    kata: ['hafal', 'murajaah', 'muraja', 'ziyadah', 'setoran'] },\n  { kategori: 'tampilan',   kata: ['tampilan', 'ui', 'warna', 'font', 'huruf kecil', 'terpotong', 'gelap', 'dark'] },\n  { kategori: 'permintaan', kata: ['tolong tambah', 'minta', 'semoga ada', 'fitur', 'bisa ditambah', 'request'] },\n];\nconst URGENT = ['ayat salah', 'harakat', 'crash', 'tidak bisa dibuka', 'data hilang', 'bookmark hilang'];\n\nreturn $input.all().map(item => {\n  const b = item.json.body ?? item.json;               // webhook membawa body, formulir tidak\n  const teks = String(b.pesan ?? b['Pesan'] ?? '').trim();\n  const lower = teks.toLowerCase();\n  const hit = RULES.find(r => r.kata.some(k => lower.includes(k)));\n  let kategori = String(b.jenis ?? b['Jenis masukan'] ?? '').toLowerCase() || (hit ? hit.kategori : 'lainnya');\n  if (kategori.startsWith('laporan bug')) kategori = 'bug';\n  if (kategori.startsWith('kesalahan konten')) kategori = 'konten';\n  if (kategori.startsWith('permintaan fitur')) kategori = 'permintaan';\n  const mendesak = URGENT.some(k => lower.includes(k)) || kategori === 'konten';\n  return { json: {\n    id: 'FB-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),\n    diterima: new Date().toISOString(),\n    sumber: item.json.body ? 'aplikasi' : 'formulir',\n    kategori,\n    prioritas: mendesak ? 'P1' : (kategori === 'bug' ? 'P2' : 'P3'),\n    pesan: teks.slice(0, 2000),\n    layar: String(b.layar ?? b['Layar/fitur'] ?? ''),\n    rujukan_ayat: String(b.rujukan_ayat ?? b['Rujukan ayat (jika ada)'] ?? ''),\n    versi_app: String(b.versi_app ?? ''),\n    perangkat: String(b.perangkat ?? ''),\n    // email hanya disimpan bila pengguna mencentang izin dihubungi\n    kontak: (b.boleh_dihubungi === true || b['Boleh dihubungi?'] === 'Ya') ? String(b.email ?? b['Email'] ?? '') : '',\n    status: 'baru',\n  }};\n});\n"
+      }
+    },
+    {
+      "id": "578a1426-bdff-4d86-afa5-73d2aa4c9526",
+      "name": "Simpan ke sheet Masukan",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        520,
+        110
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "GANTI_DENGAN_URL_GOOGLE_SHEET"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Masukan"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4f8a4c77-b63e-4b63-be93-b5d74b1a29d3",
+      "name": "Bug atau konten?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        780,
+        110
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "d15545df-c252-4005-9976-6298aaa375ee",
+              "leftValue": "={{ $json.kategori }}",
+              "rightValue": "bug",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "59388bfe-caa5-4dab-ad8a-b0449e11b8be",
+              "leftValue": "={{ $json.kategori }}",
+              "rightValue": "konten",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "6182c595-4d1b-4920-9a55-6e380cd99b39",
+      "name": "Buat issue GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        20
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "owner": "ZainulArkaanAlinsi",
+        "repository": "Qur-an_App",
+        "title": "=[{{ $json.prioritas }}][{{ $json.kategori }}] {{ $json.pesan.slice(0, 70) }}",
+        "body": "=**ID:** {{ $json.id }}\n**Sumber:** {{ $json.sumber }} · **Layar:** {{ $json.layar }}\n**Rujukan ayat:** {{ $json.rujukan_ayat || '-' }}\n**Versi app:** {{ $json.versi_app || '-' }} · **Perangkat:** {{ $json.perangkat || '-' }}\n\n> {{ $json.pesan }}\n\n_Dibuat otomatis dari masukan pengguna. Kontak pengguna tidak dicantumkan di sini._",
+        "labels": [
+          {
+            "label": "masukan-pengguna"
+          },
+          {
+            "label": "={{ $json.kategori }}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "12251bf0-27b2-45ef-95ef-5e03084893da",
+      "name": "Kabari tim (Telegram)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1300,
+        20
+      ],
+      "parameters": {
+        "chatId": "GANTI_DENGAN_CHAT_ID",
+        "text": "=🟢 Masukan {{ $('Rapikan & klasifikasi').item.json.prioritas }} · {{ $('Rapikan & klasifikasi').item.json.kategori }}\n{{ $('Rapikan & klasifikasi').item.json.pesan.slice(0, 300) }}\nIssue: {{ $json.html_url }}",
+        "additionalFields": {}
+      }
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Masukan dari aplikasi": {
+      "main": [
+        [
+          {
+            "node": "Rapikan & klasifikasi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formulir masukan": {
+      "main": [
+        [
+          {
+            "node": "Rapikan & klasifikasi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rapikan & klasifikasi": {
+      "main": [
+        [
+          {
+            "node": "Simpan ke sheet Masukan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simpan ke sheet Masukan": {
+      "main": [
+        [
+          {
+            "node": "Bug atau konten?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bug atau konten?": {
+      "main": [
+        [
+          {
+            "node": "Buat issue GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Buat issue GitHub": {
+      "main": [
+        [
+          {
+            "node": "Kabari tim (Telegram)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

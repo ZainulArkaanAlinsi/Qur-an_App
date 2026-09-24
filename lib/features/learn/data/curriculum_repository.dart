@@ -166,7 +166,32 @@ class CurriculumRepository {
         if (text.isEmpty) {
           throw FormatException('Blok "$type" pada "$id" kosong.');
         }
-        return type == 'text' ? LessonText(text) : LessonTip(text);
+        if (type == 'tip') return LessonTip(text);
+        final heading = _string(item['heading']);
+        return LessonText(text, heading: heading.isEmpty ? null : heading);
+
+      case 'letters':
+        final items = item['items'];
+        if (items is! List || items.isEmpty) {
+          throw FormatException('Blok huruf pada "$id" tanpa "items".');
+        }
+        return LessonLetters(
+          [
+            for (final entry in items)
+              if (entry is Map<String, dynamic>)
+                LessonLetter(
+                  letter: _string(entry['letter']),
+                  name: _string(entry['name']),
+                  note: _string(entry['note']),
+                )
+              else
+                throw FormatException('Isi blok huruf pada "$id" tidak valid.'),
+          ]..forEach((letter) {
+            if (letter.letter.isEmpty || letter.name.isEmpty) {
+              throw FormatException('Kartu huruf pada "$id" tanpa huruf/nama.');
+            }
+          }),
+        );
 
       case 'example':
         final surah = item['surah'];

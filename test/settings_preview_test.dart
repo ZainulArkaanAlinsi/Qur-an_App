@@ -35,6 +35,10 @@ void main() {
     await tester.pumpWidget(_app(controller));
     await tester.pump();
 
+    // Pilihan tema ada di lembar "Tema" (baris ringkas seperti mockup Saya).
+    await tester.tap(find.text('Tema'));
+    await tester.pumpAndSettle();
+
     // Tiga mode dan tiga palet tetap tersedia setelah diganti pratinjau.
     expect(find.byType(ThemePreviewTile), findsNWidgets(6));
     for (final label in ['Otomatis', 'Terang', 'Gelap']) {

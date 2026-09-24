@@ -29,6 +29,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     required this.glass,
     required this.glassBorder,
     required this.heatmap,
+    required this.ring,
+    required this.tertiary,
+    required this.onGold,
+    required this.shadow,
+    required this.floatShadow,
+    required this.floatShadowSoft,
+    required this.segment,
+    required this.success,
+    required this.successSoft,
+    required this.danger,
+    required this.dangerSoft,
   });
 
   final Color bg;
@@ -59,6 +70,49 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   /// Empat tingkat heatmap istiqamah, dari kosong ke penuh.
   final List<Color> heatmap;
 
+  /// Garis 0.5 px di tepi kartu (v2: `0 0 0 .5px`).
+  final Color ring;
+
+  /// Abu ketiga untuk chevron dan ikon pasif.
+  final Color tertiary;
+
+  /// Tinta di atas tombol emas pada kartu hero; sama di kedua tema.
+  final Color onGold;
+
+  /// Bayangan kartu (`0 1px 2px`); transparan di tema gelap.
+  final Color shadow;
+
+  /// Dua lapis bayangan untuk elemen mengambang seperti tab bar.
+  final Color floatShadow;
+  final Color floatShadowSoft;
+
+  /// Segmen aktif pada segmented control (putih di terang, #2C3A35 di gelap).
+  final Color segment;
+
+  /// Jawaban benar (cincin + teks) dan latar lembutnya; juga "Lancar".
+  final Color success;
+  final Color successSoft;
+
+  /// Jawaban salah dan latar lembutnya; juga tombol "Salah" di sesi hafalan.
+  final Color danger;
+  final Color dangerSoft;
+
+  /// Bayangan kartu v2: bayangan tipis + cincin 0.5 px.
+  List<BoxShadow> get cardShadows => [
+    BoxShadow(color: shadow, blurRadius: 2, offset: const Offset(0, 1)),
+    BoxShadow(color: ring, spreadRadius: .5),
+  ];
+
+  /// Bayangan tab bar dan panel mengambang.
+  List<BoxShadow> get floatShadows => [
+    BoxShadow(color: floatShadow, blurRadius: 32, offset: const Offset(0, 12)),
+    BoxShadow(
+      color: floatShadowSoft,
+      blurRadius: 3,
+      offset: const Offset(0, 1),
+    ),
+  ];
+
   static const light = SacredTokens(
     bg: Color(0xFFF4F1EA),
     surf: Color(0xFFFCF9F8),
@@ -86,6 +140,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFFE7BE45),
       Color(0xFFA57E14),
     ],
+    ring: Color(0x0F00281C),
+    tertiary: Color(0xFF9A9D97),
+    onGold: Color(0xFF1F1A05),
+    shadow: Color(0x0F00281C),
+    floatShadow: Color(0x2100281C),
+    floatShadowSoft: Color(0x1400281C),
+    segment: Color(0xFFFFFFFF),
+    success: Color(0xFF1B7D3A),
+    successSoft: Color(0xFFE3F2E8),
+    danger: Color(0xFF9B1C1C),
+    dangerSoft: Color(0xFFFBE3E3),
   );
 
   static const dark = SacredTokens(
@@ -107,7 +172,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF2F9E75),
     art: Color(0xFF0B3D2F),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC2142320),
+    glass: Color(0xC214201C),
     glassBorder: Color(0x17FFFFFF),
     heatmap: [
       Color(0xFF1A2823),
@@ -115,6 +180,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFF8A7424),
       Color(0xFFFED65B),
     ],
+    ring: Color(0x0FFFFFFF),
+    tertiary: Color(0xFF646D67),
+    onGold: Color(0xFF1F1A05),
+    shadow: Color(0x00000000),
+    floatShadow: Color(0x8C000000),
+    floatShadowSoft: Color(0x66000000),
+    segment: Color(0xFF2C3A35),
+    success: Color(0xFF6FD890),
+    successSoft: Color(0x1F6FD890),
+    danger: Color(0xFFFF9B9B),
+    dangerSoft: Color(0x1FFF7B7B),
   );
 
   /// Sepia memakai kaca dan aksen tema terang, sesuai spesifikasi.
@@ -145,6 +221,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFFE7BE45),
       Color(0xFFA57E14),
     ],
+    ring: Color(0x143E3222),
+    tertiary: Color(0xFF9A8E78),
+    onGold: Color(0xFF1F1A05),
+    shadow: Color(0x0F3E3222),
+    floatShadow: Color(0x213E3222),
+    floatShadowSoft: Color(0x143E3222),
+    segment: Color(0xFFFFFFFF),
+    success: Color(0xFF1B7D3A),
+    successSoft: Color(0xFFE3F2E8),
+    danger: Color(0xFF9B1C1C),
+    dangerSoft: Color(0xFFFBE3E3),
   );
 
   /// Kontras tinggi: hitam/putih penuh, aksen tetap dapat dibedakan.
@@ -175,6 +262,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFF8A6B12),
       Color(0xFF3F3005),
     ],
+    ring: Color(0x663A3A3A),
+    tertiary: Color(0xFF2B2B2B),
+    onGold: Color(0xFF000000),
+    shadow: Color(0x00000000),
+    floatShadow: Color(0x33000000),
+    floatShadowSoft: Color(0x1F000000),
+    segment: Color(0xFFFFFFFF),
+    success: Color(0xFF0B5A26),
+    successSoft: Color(0xFFD9EFE0),
+    danger: Color(0xFF7A0F0F),
+    dangerSoft: Color(0xFFF7D6D6),
   );
 
   static const highContrastDark = SacredTokens(
@@ -204,6 +302,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFFB79B2C),
       Color(0xFFFFE27A),
     ],
+    ring: Color(0x669A9A9A),
+    tertiary: Color(0xFFD7D7D7),
+    onGold: Color(0xFF000000),
+    shadow: Color(0x00000000),
+    floatShadow: Color(0x8C000000),
+    floatShadowSoft: Color(0x66000000),
+    segment: Color(0xFF2B2B2B),
+    success: Color(0xFF8FF0AE),
+    successSoft: Color(0x338FF0AE),
+    danger: Color(0xFFFFB3B3),
+    dangerSoft: Color(0x33FFB3B3),
   );
 
   @override
@@ -229,6 +338,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     Color? glass,
     Color? glassBorder,
     List<Color>? heatmap,
+    Color? ring,
+    Color? tertiary,
+    Color? onGold,
+    Color? shadow,
+    Color? floatShadow,
+    Color? floatShadowSoft,
+    Color? segment,
+    Color? success,
+    Color? successSoft,
+    Color? danger,
+    Color? dangerSoft,
   }) => SacredTokens(
     bg: bg ?? this.bg,
     surf: surf ?? this.surf,
@@ -251,6 +371,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     glass: glass ?? this.glass,
     glassBorder: glassBorder ?? this.glassBorder,
     heatmap: heatmap ?? this.heatmap,
+    ring: ring ?? this.ring,
+    tertiary: tertiary ?? this.tertiary,
+    onGold: onGold ?? this.onGold,
+    shadow: shadow ?? this.shadow,
+    floatShadow: floatShadow ?? this.floatShadow,
+    floatShadowSoft: floatShadowSoft ?? this.floatShadowSoft,
+    segment: segment ?? this.segment,
+    success: success ?? this.success,
+    successSoft: successSoft ?? this.successSoft,
+    danger: danger ?? this.danger,
+    dangerSoft: dangerSoft ?? this.dangerSoft,
   );
 
   @override
@@ -282,6 +413,17 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
         for (var i = 0; i < heatmap.length; i++)
           mix(heatmap[i], other.heatmap[i]),
       ],
+      ring: mix(ring, other.ring),
+      tertiary: mix(tertiary, other.tertiary),
+      onGold: mix(onGold, other.onGold),
+      shadow: mix(shadow, other.shadow),
+      floatShadow: mix(floatShadow, other.floatShadow),
+      floatShadowSoft: mix(floatShadowSoft, other.floatShadowSoft),
+      segment: mix(segment, other.segment),
+      success: mix(success, other.success),
+      successSoft: mix(successSoft, other.successSoft),
+      danger: mix(danger, other.danger),
+      dangerSoft: mix(dangerSoft, other.dangerSoft),
     );
   }
 }
@@ -303,17 +445,29 @@ enum SkyPeriod {
   final List<Color> colors;
 
   /// Periode dari jam setempat; dipakai bila jadwal salat belum dimuat.
+  /// Subuh hanya sampai jam 7; jam 9 pagi sudah langit siang, bukan fajar.
   static SkyPeriod fromHour(int hour) => switch (hour) {
-    >= 4 && < 11 => SkyPeriod.fajr,
-    >= 11 && < 15 => SkyPeriod.day,
+    >= 4 && < 7 => SkyPeriod.fajr,
+    >= 7 && < 15 => SkyPeriod.day,
     >= 15 && < 18 => SkyPeriod.dusk,
     _ => SkyPeriod.night,
   };
 
-  LinearGradient get gradient => LinearGradient(
+  /// Gradien empat warna memakai titik henti mockup (0, 44%, 76%, 100%).
+  LinearGradient get gradient => gradientFor(Brightness.light);
+
+  /// Di tema gelap langitnya diredupkan 45% supaya tidak menyilaukan
+  /// (V2-Beranda-Gelap: #06161A → #8C6A43).
+  LinearGradient gradientFor(Brightness brightness) => LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: colors,
+    colors: brightness == Brightness.dark
+        ? [
+            for (final color in colors)
+              Color.lerp(color, const Color(0xFF000000), .45)!,
+          ]
+        : colors,
+    stops: colors.length == 4 ? const [0, .44, .76, 1] : null,
   );
 }
 
@@ -478,4 +632,120 @@ abstract final class SacredText {
     22,
     800,
   ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+
+  // Gaya v2 (docs/design/v2/DESIGN.md §3).
+
+  /// Baris list: judul 16/700 dan subjudul 13/500.
+  static TextStyle get rowTitle => _font(ui, 16, 21, 700);
+  static TextStyle get rowSubtitle => _font(ui, 13, 17, 500);
+
+  /// Pill status 12/800, satu baris.
+  static TextStyle get pill => _font(ui, 12, 16, 800);
+
+  /// Label tab bar v2: 11, tebal 800 bila aktif dan 600 bila tidak.
+  static TextStyle get tabActive => _font(ui, 11, 14, 800);
+  static TextStyle get tabIdle => _font(ui, 11, 14, 600);
+
+  /// Label tombol utama dan tombol lunak.
+  static TextStyle get button => _font(ui, 15, 20, 800);
+  static TextStyle get buttonSmall => _font(ui, 14, 18, 800);
+
+  /// Beranda v2: nama pengguna 38/44 dan judul surah kartu hero 30/34.
+  static TextStyle get homeName => _font(serif, 38, 44, 500);
+  static TextStyle get heroTitleV2 => _font(serif, 30, 34, 500);
+
+  /// Belajar v2: kotak info 13/18, angka node 15/800, kartu tahap aktif
+  /// (judul 17/800, ringkasan 13/19).
+  static TextStyle get infoBox => _font(ui, 13, 18, 600);
+  static TextStyle get nodeNumber => _font(ui, 15, 18, 800);
+  static TextStyle get stageTitle => _font(ui, 17, 22, 800);
+  static TextStyle get stageSummary => _font(ui, 13, 19, 500);
+
+  /// Pelajaran v2: penghitung "3/5", paragraf 15/22, kartu huruf, soal,
+  /// pilihan, umpan balik.
+  static TextStyle get stepCounter => _font(ui, 13, 17, 800);
+  static TextStyle get lessonBody => _font(ui, 15, 22, 500);
+  static TextStyle get letterName => _font(ui, 15, 19, 800);
+  static TextStyle get letterNote => _font(ui, 11.5, 15, 600);
+  static TextStyle get question => _font(ui, 17, 22, 800);
+  static TextStyle get option => _font(ui, 15, 20, 700);
+  static TextStyle get feedback => _font(ui, 13.5, 19, 700);
+  static TextStyle get dashedNote => _font(ui, 13.5, 18, 700);
+
+  /// Hafalan v2: kartu tujuan (14/800, 11.5/15) dan "18/40 ayat" 12.5/700.
+  static TextStyle get goalTitle => _font(ui, 14, 18, 800);
+  static TextStyle get goalBody => _font(ui, 11.5, 15, 500);
+  static TextStyle get surahCount => _font(ui, 12.5, 16, 700);
+
+  /// Sesi hafalan v2: judul 15/800, petunjuk 14/20, stepper langkah, dan
+  /// penghitung ulang "− 3× +".
+  static TextStyle get sessionTitle => _font(ui, 15, 20, 800);
+  static TextStyle get sessionHint => _font(ui, 14, 20, 500);
+  static TextStyle get stepActive => _font(ui, 11, 14, 800);
+  static TextStyle get stepIdle => _font(ui, 11, 14, 600);
+  static TextStyle get stepNumber => _font(ui, 12, 14, 800);
+  static TextStyle get stepperSign => _font(ui, 18, 22, 500);
+  static TextStyle get stepperValue => _font(ui, 15, 20, 800);
+
+  /// Saya v2: inisial avatar (serif 26) dan nama profil 18/800.
+  static TextStyle get profileInitial => _font(serif, 26, 30, 500);
+  static TextStyle get profileName => _font(ui, 18, 23, 800);
+
+  /// Judul serif layar turunan (Pelajaran: 32/36).
+  static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
+}
+
+/// Warna lencana ikon kotak (baris Saya, Mode baca, Salat, Sesi hafalan).
+///
+/// Mockup memakai nilai yang sama di tema terang dan gelap: lencananya selalu
+/// pekat dan glifnya putih, jadi kontrasnya tidak bergantung pada tema.
+abstract final class SacredBadge {
+  static const green = Color(0xFF0E6A4C);
+  static const gold = Color(0xFF9A7415);
+  static const blue = Color(0xFF2C6E8F);
+  static const grey = Color(0xFF56635C);
+  static const red = Color(0xFFB0533A);
+
+  /// Glif di atas lencana.
+  static const glyph = Color(0xFFFFFFFF);
+}
+
+/// Warna di atas kartu hero hijau dan strip langit. Latarnya selalu gelap di
+/// kedua tema, jadi nilainya tetap (Beranda v2, Hafalan v2).
+abstract final class SacredArt {
+  /// Judul putih dan keterangan 82%.
+  static const ink = Color(0xFFFFFFFF);
+  static const inkSoft = Color(0xD1FFFFFF);
+
+  /// Isi sampul mihrab kecil (hitam 22%).
+  static const plate = Color(0x38000000);
+
+  /// Tombol ikon kaca di atas kartu hero: isi 12%, garis 22%.
+  static const glass = Color(0x1FFFFFFF);
+  static const glassBorder = Color(0x38FFFFFF);
+
+  /// Strip salat: lingkaran ikon 16%, ikon matahari, pill hitung mundur 28%,
+  /// bayangan teks 30%.
+  static const skyIconBg = Color(0x29FFFFFF);
+  static const skyIcon = Color(0xFFFFF1C9);
+  static const skyPill = Color(0x47000000);
+  static const skyTextShadow = Color(0x4D000000);
+
+  /// Kartu langit mihrab di layar Salat (V2-Salat.html). Latarnya gelap di
+  /// kedua tema; warnanya tidak mengklaim apa pun tentang langit sungguhan.
+  static const salatSky = [
+    Color(0xFF0B3F48),
+    Color(0xFF2E7078),
+    Color(0xFFB7A383),
+    Color(0xFFF2C98A),
+  ];
+  static const salatSkyStops = [0.0, .44, .76, 1.0];
+  static const salatEyebrow = Color(0xFFF6E3B4);
+  static const salatInfo = Color(0xEBFFFFFF);
+  static const salatOutline = Color(0x8CFFECC4);
+  static const salatArc = Color(0x73FFFFFF);
+  static const salatArcEnd = Color(0xB3FFFFFF);
+  static const salatPattern = Color(0x0DFFFFFF);
+  static const sunGlow = Color(0xFFFFE2A8);
+  static const sunCore = Color(0xFFFFF4D6);
 }

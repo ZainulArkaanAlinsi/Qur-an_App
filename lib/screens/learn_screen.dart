@@ -1,38 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
-import 'package:quran_app_2025/app/widgets/chip_palette.dart';
+import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
-import 'package:quran_app_2025/screens/learn_path.dart';
-import 'package:quran_app_2025/screens/memorization_screen.dart';
-import 'package:quran_app_2025/screens/tajweed_lessons_screen.dart';
-import 'package:quran_app_2025/widgets/memorization_tile.dart';
+import 'package:quran_app_2025/screens/lesson_screen.dart';
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
-/// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
-const _bottomInset = 132.0;
+/// Kelompok tahap pada segmented control Belajar.
+enum LearnSegment {
+  dasar('Dasar', 0, 9),
+  tajwid('Tajwid', 10, 13),
+  mahir('Mahir', 14, 16);
 
-/// Tab Belajar: jalur belajar membaca, Akademi Tajwid, lalu hafalan.
+  const LearnSegment(this.label, this.firstLevel, this.lastLevel);
+
+  final String label;
+  final int firstLevel;
+  final int lastLevel;
+
+  bool contains(int level) => level >= firstLevel && level <= lastLevel;
+
+  static LearnSegment of(int level) => values.firstWhere(
+    (segment) => segment.contains(level),
+    orElse: () => dasar,
+  );
+}
+
+/// Tab Belajar v2 (docs/design/v2/screens/08-belajar.md, V2-Belajar.png):
+/// satu jalur dari huruf sampai bacaan gharib. Akademi Tajwid tidak lagi
+/// layar kosong terpisah; hukum tajwid adalah tahap 10–16 di jalur ini.
 ///
-/// Urutannya mengikuti tujuan revisi v2 — belajar dulu sampai lancar, baru
-/// menghafal. Materi tajwid dan materi belajar membaca ditulis dan ditinjau
-/// manusia (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`); yang belum ditinjau tidak
-/// ditampilkan sebagai kartu kosong, melainkan disebut apa adanya.
+/// Materi yang belum ditinjau tetap terlihat di jalurnya (supaya orang tahu
+/// apa yang akan datang) tetapi terkunci dan diberi keterangan jujur
+/// (docs/RELIGIOUS_CONTENT_GOVERNANCE.md).
 class LearnScreen extends StatefulWidget {
-  const LearnScreen({super.key});
+  const LearnScreen({super.key, this.includeDrafts});
 
-  /// Juz 30 dimulai dari An-Naba (78) sampai An-Nas (114).
-  static const _juzAmmaStart = 78;
-  static const _juzAmmaEnd = 114;
+  /// Hanya untuk tes: paksa tampilan rilis (false) atau debug (true).
+  @visibleForTesting
+  final bool? includeDrafts;
 
   @override
   State<LearnScreen> createState() => _LearnScreenState();
 }
 
 class _LearnScreenState extends State<LearnScreen> {
-  final Future<Curriculum> _curriculum = CurriculumRepository.load();
+  late Future<Curriculum> _curriculum = CurriculumRepository.load();
+
+  /// Null = ikuti tahap yang sedang dijalani.
+  LearnSegment? _segment;
+
+  bool get _drafts => widget.includeDrafts ?? showDraftLessons;
 
   @override
   void initState() {
@@ -50,101 +72,457 @@ class _LearnScreenState extends State<LearnScreen> {
     if (mounted) setState(() {});
   }
 
+  bool _available(Lesson lesson) => lesson.isPublished || _drafts;
+
+  void _open(Lesson lesson) => Navigator.of(context)
+      .push(
+        MaterialPageRoute<void>(builder: (_) => LessonScreen(lesson: lesson)),
+      )
+      .then((_) => _refresh());
+
+  void _explainLocked(Lesson lesson) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            'Tahap ${lesson.level} masih ditinjau guru sebelum bisa dibuka.',
+          ),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Curriculum>(
+      future: _curriculum,
+      builder: (context, snapshot) {
+        final children = <Widget>[
+          const ScreenHeader(
+            title: 'Belajar',
+            subtitle: 'Dari mengenal huruf sampai lancar bertajwid',
+          ),
+        ];
+        if (snapshot.hasError) {
+          children.add(
+            _Message(
+              text: 'Jalur belajar gagal dimuat.',
+              actionLabel: 'Coba lagi',
+              onAction: () =>
+                  setState(() => _curriculum = CurriculumRepository.load()),
+            ),
+          );
+        } else if (snapshot.data case final curriculum?) {
+          children.addAll(_path(context, curriculum));
+        }
+        return ListView(
+          physics: const BouncingScrollPhysics(),
+          // Ruang untuk tab bar mengambang.
+          padding: const EdgeInsets.only(bottom: 120),
+          children: children,
+        );
+      },
+    );
+  }
+
+  List<Widget> _path(BuildContext context, Curriculum curriculum) {
+    final done = SharedPreferencesService.getCompletedLessons();
+    final lessons = curriculum.lessons;
+    // Tahap sekarang: yang pertama belum selesai dan boleh dibuka.
+    final current = lessons
+        .where((lesson) => _available(lesson) && !done.contains(lesson.id))
+        .firstOrNull;
+    final segment =
+        _segment ?? LearnSegment.of(current?.level ?? lessons.last.level);
+    final shown = [
+      for (final lesson in lessons)
+        if (segment.contains(lesson.level)) lesson,
+    ];
+    final anyOpen = shown.any(_available);
+    final start = lessons.where((lesson) => lesson.level == 0).firstOrNull;
+
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+        child: SegmentedPill<LearnSegment>(
+          segments: {for (final item in LearnSegment.values) item: item.label},
+          value: segment,
+          onChanged: (value) => setState(() => _segment = value),
+        ),
+      ),
+      if (!anyOpen)
+        // Semua tahap di segmen ini masih ditinjau: katakan itu, jangan
+        // tampilkan layar kosong.
+        const _InfoBox(
+          text:
+              'Materi di bagian ini sedang ditinjau guru bersanad. '
+              'Tahapnya sudah terlihat di bawah dan akan terbuka satu per '
+              'satu setelah diperiksa.',
+        )
+      else if (segment == LearnSegment.dasar &&
+          (current == null || current.level <= 1) &&
+          start != null &&
+          _available(start))
+        _InfoBox(
+          text: 'Belajar berurutan lebih mudah. Kalau sudah bisa membaca, ',
+          link: 'ikut tes penempatan',
+          onLink: () => _open(start),
+        ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+        child: Column(
+          children: [
+            for (var i = 0; i < shown.length; i++)
+              _PathStep(
+                lesson: shown[i],
+                state: _stateOf(shown[i], done, current),
+                last: i == shown.length - 1,
+                drafts: _drafts,
+                onOpen: () => _available(shown[i])
+                    ? _open(shown[i])
+                    : _explainLocked(shown[i]),
+              ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  _StepState _stateOf(Lesson lesson, Set<String> done, Lesson? current) {
+    if (!_available(lesson)) return _StepState.locked;
+    if (done.contains(lesson.id)) return _StepState.done;
+    if (lesson.id == current?.id) return _StepState.current;
+    return _StepState.upcoming;
+  }
+}
+
+enum _StepState { done, current, upcoming, locked }
+
+/// Kotak info emas: saran + tautan opsional.
+class _InfoBox extends StatelessWidget {
+  const _InfoBox({required this.text, this.link, this.onLink});
+
+  final String text;
+  final String? link;
+  final VoidCallback? onLink;
+
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: _bottomInset),
-      children: [
-        const LargeTitle(
-          'Belajar',
-          subtitle: 'Dari mengenal huruf sampai lancar dan hafal.',
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: InsetGroupedList(
-            header: 'Jalur belajar',
-            radius: 22,
-            separatorInset: SettingsRow.separatorInset,
-            children: [
-              Column(
-                children: [
-                  LearnPathCard(future: _curriculum),
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    indent: SettingsRow.separatorInset,
-                    color: tokens.sep,
-                  ),
-                  SettingsRow(
-                    icon: SacredIcons.palette,
-                    chipColor: ChipTone.gold.of(context),
-                    title: 'Akademi Tajwid',
-                    subtitle:
-                        'Hukum bacaan beserta contoh ayatnya, dari materi '
-                        'yang ditinjau manusia.',
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const TajweedLessonsScreen(),
-                      ),
-                    ),
-                  ),
-                ],
+    final style = SacredText.infoBox.copyWith(color: tokens.ink);
+    final body = Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: text),
+          if (link != null) ...[
+            TextSpan(
+              text: link,
+              style: style.copyWith(
+                color: tokens.primaryText,
+                fontWeight: FontWeight.w800,
+                fontVariations: const [FontVariation('wght', 800)],
               ),
-            ],
+            ),
+            const TextSpan(text: '.'),
+          ],
+        ],
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Semantics(
+        button: onLink != null,
+        child: InkWell(
+          onTap: onLink,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: tokens.goldSoft,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                LineIcon(SacredIcons.info, color: tokens.goldText, size: 20),
+                const SizedBox(width: 10),
+                Expanded(child: body),
+              ],
+            ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-          child: InsetGroupedList(
-            header: 'Hafalan',
-            radius: 22,
-            separatorInset: SettingsRow.separatorInset,
-            children: [
-              SettingsRow(
-                icon: SacredIcons.checkCircle,
-                chipColor: ChipTone.green.of(context),
-                title: 'Hafalan saya',
-                subtitle: 'Surah yang sedang dihafal dan perlu diulang.',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const MemorizationScreen(),
+      ),
+    );
+  }
+}
+
+/// Satu tahap pada jalur: node 44 + garis penghubung 2 px, lalu judul atau
+/// kartu tahap aktif.
+class _PathStep extends StatelessWidget {
+  const _PathStep({
+    required this.lesson,
+    required this.state,
+    required this.last,
+    required this.drafts,
+    required this.onOpen,
+  });
+
+  final Lesson lesson;
+  final _StepState state;
+  final bool last;
+  final bool drafts;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 44,
+            child: Column(
+              children: [
+                _Node(level: lesson.level, state: state, onTap: onOpen),
+                if (!last)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      color: state == _StepState.done
+                          ? tokens.gold
+                          : tokens.surf2,
+                    ),
                   ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: state == _StepState.current
+                  ? _ActiveCard(lesson: lesson, drafts: drafts, onOpen: onOpen)
+                  : _StepLabel(
+                      lesson: lesson,
+                      state: state,
+                      drafts: drafts,
+                      onTap: onOpen,
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Node extends StatelessWidget {
+  const _Node({required this.level, required this.state, required this.onTap});
+
+  final int level;
+  final _StepState state;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final (Color bg, Color fg, Color? ring) = switch (state) {
+      _StepState.done => (tokens.gold, tokens.onGold, null),
+      _StepState.current => (tokens.cta, tokens.ctaInk, null),
+      _StepState.upcoming => (tokens.surf, tokens.sec, tokens.sep),
+      _StepState.locked => (tokens.surf, tokens.tertiary, tokens.sep),
+    };
+    return ExcludeSemantics(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+            border: ring == null ? null : Border.all(color: ring, width: 1.5),
+          ),
+          child: state == _StepState.done
+              ? LineIcon(SacredIcons.checkCircle, color: fg, size: 22)
+              : Text(
+                  '$level',
+                  textScaler: TextScaler.noScaling,
+                  style: SacredText.nodeNumber.copyWith(color: fg),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Judul + keterangan tahap yang bukan tahap aktif.
+class _StepLabel extends StatelessWidget {
+  const _StepLabel({
+    required this.lesson,
+    required this.state,
+    required this.drafts,
+    required this.onTap,
+  });
+
+  final Lesson lesson;
+  final _StepState state;
+  final bool drafts;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final locked = state == _StepState.locked;
+    final draft = !lesson.isPublished && drafts && !locked;
+    final String note = switch (state) {
+      _StepState.done => 'Selesai',
+      _StepState.locked => 'Materi sedang ditinjau',
+      _ when draft => 'Tahap ${lesson.level} · draf',
+      _ => 'Tahap ${lesson.level}',
+    };
+    return Semantics(
+      button: true,
+      label: 'Tahap ${lesson.level}, ${lesson.title}, $note',
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                lesson.title,
+                style: SacredText.rowTitle.copyWith(
+                  color: locked ? tokens.sec : tokens.ink,
+                ),
+              ),
+              Text(
+                note,
+                style: SacredText.listMeta.copyWith(
+                  color: draft ? tokens.goldText : tokens.sec,
                 ),
               ),
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-          child: InsetGroupedList(
-            header: 'Juz Amma',
-            radius: 22,
+      ),
+    );
+  }
+}
+
+/// Kartu tahap aktif: judul, pill bagian "2 / 6", ringkasan, bar progres,
+/// tombol Mulai/Lanjutkan.
+class _ActiveCard extends StatelessWidget {
+  const _ActiveCard({
+    required this.lesson,
+    required this.drafts,
+    required this.onOpen,
+  });
+
+  final Lesson lesson;
+  final bool drafts;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final total = lesson.stepCount;
+    final step = SharedPreferencesService.getLessonStep(
+      lesson.id,
+    ).clamp(0, total);
+    final started = step > 0;
+    return SacredCard(
+      radius: 20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                    child: Text(
-                      'Surah pendek yang paling sering dibaca — '
-                      '${LearnScreen._juzAmmaEnd - LearnScreen._juzAmmaStart + 1} surah.',
-                      style: SacredText.cardNote.copyWith(color: tokens.sec),
-                    ),
-                  ),
-                  for (
-                    var surah = LearnScreen._juzAmmaStart;
-                    surah <= LearnScreen._juzAmmaEnd;
-                    surah++
-                  )
-                    MemorizationTile(surah: surah),
-                ],
+              Expanded(
+                child: Text(
+                  lesson.title,
+                  style: SacredText.stageTitle.copyWith(color: tokens.ink),
+                ),
               ),
+              if (total > 0) ...[
+                const SizedBox(width: 8),
+                StatusPill('$step / $total', tone: PillTone.primary),
+              ],
             ],
           ),
-        ),
-      ],
+          if (!lesson.isPublished && drafts) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Draf · belum ditinjau',
+              style: SacredText.listMeta.copyWith(color: tokens.goldText),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            lesson.summary,
+            style: SacredText.stageSummary.copyWith(color: tokens.sec),
+          ),
+          if (total > 0) ...[
+            const SizedBox(height: 8),
+            ProgressBar(value: step / total, height: 5),
+          ],
+          const SizedBox(height: 8),
+          SacredButton(
+            label: !lesson.hasContent
+                ? 'Lihat kerangka'
+                : started
+                ? 'Lanjutkan'
+                : 'Mulai',
+            icon: SacredIcons.play,
+            iconFilled: true,
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            textStyle: SacredText.buttonSmall,
+            onTap: onOpen,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Message extends StatelessWidget {
+  const _Message({
+    required this.text,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String text;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(text, style: SacredText.body.copyWith(color: tokens.sec)),
+          const SizedBox(height: 12),
+          SacredButton(
+            label: actionLabel,
+            tone: ButtonTone.soft,
+            height: 40,
+            textStyle: SacredText.buttonSmall,
+            onTap: onAction,
+          ),
+        ],
+      ),
     );
   }
 }

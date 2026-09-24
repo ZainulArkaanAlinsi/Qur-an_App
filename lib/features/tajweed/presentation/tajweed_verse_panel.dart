@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
 import 'package:quran_app_2025/features/tajweed/domain/tajweed_rule.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/tajweed_palette.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/tajweed_legend_screen.dart';
 
 /// Teks Arab satu ayat dengan warna tajwid, chip hukum, dan legend untuk
 /// kartu ayat.
@@ -247,7 +248,11 @@ class TajweedRuleChips extends StatelessWidget {
         IconButton(
           tooltip: 'Legend warna tajwid',
           icon: const Icon(Icons.palette_outlined),
-          onPressed: () => showTajweedLegendSheet(context, palette: palette),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TajweedLegendScreen(palette: palette),
+            ),
+          ),
         ),
       ],
     );
