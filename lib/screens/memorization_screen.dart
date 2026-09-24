@@ -111,13 +111,17 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _practice(HafalanRange range) async {
+  Future<void> _practice(
+    HafalanRange range, [
+    SessionMode mode = SessionMode.ziyadah,
+  ]) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => PracticeScreen(
           surah: range.surah,
           fromAyah: range.from,
           toAyah: range.to,
+          mode: mode,
         ),
       ),
     );
@@ -154,7 +158,7 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
         : await _pickSurah(context, title: 'Setor hafalan', numbers: memorized);
     if (chosen == null) return;
     final surah = surahCatalog[chosen - 1];
-    await _practice(HafalanRange(surah, 1, surah.ayahCount));
+    await _practice(HafalanRange(surah, 1, surah.ayahCount), SessionMode.tasmi);
   }
 
   Future<void> _addSurah(List<int> tracked) async {
@@ -298,7 +302,7 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                 body: 'ulang agar tak lupa',
                 onTap: firstDue == null
                     ? () => _say('Belum ada ayat yang jatuh tempo hari ini.')
-                    : () => _practice(firstDue),
+                    : () => _practice(firstDue, SessionMode.murajaah),
               ),
               _GoalCard(
                 icon: SacredIcons.mic,
@@ -329,7 +333,9 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
               _MurajaahRow(
                 all: all,
                 due: due,
-                onTap: firstDue == null ? null : () => _practice(firstDue),
+                onTap: firstDue == null
+                    ? null
+                    : () => _practice(firstDue, SessionMode.murajaah),
               ),
             ],
           ),

@@ -677,6 +677,16 @@ abstract final class SacredText {
   static TextStyle get goalBody => _font(ui, 11.5, 15, 500);
   static TextStyle get surahCount => _font(ui, 12.5, 16, 700);
 
+  /// Sesi hafalan v2: judul 15/800, petunjuk 14/20, stepper langkah, dan
+  /// penghitung ulang "− 3× +".
+  static TextStyle get sessionTitle => _font(ui, 15, 20, 800);
+  static TextStyle get sessionHint => _font(ui, 14, 20, 500);
+  static TextStyle get stepActive => _font(ui, 11, 14, 800);
+  static TextStyle get stepIdle => _font(ui, 11, 14, 600);
+  static TextStyle get stepNumber => _font(ui, 12, 14, 800);
+  static TextStyle get stepperSign => _font(ui, 18, 22, 500);
+  static TextStyle get stepperValue => _font(ui, 15, 20, 800);
+
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
 }

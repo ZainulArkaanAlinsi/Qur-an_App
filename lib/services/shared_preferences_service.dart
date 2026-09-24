@@ -395,6 +395,13 @@ class SharedPreferencesService {
     memorizationRevision.value++;
   }
 
+  /// Berapa kali satu ayat diputar di sesi hafalan (1–10, bawaan 3).
+  static int getHafalanRepeat() =>
+      (_prefs?.getInt('hafalan_ulang') ?? 3).clamp(1, 10);
+
+  static Future<void> setHafalanRepeat(int value) async =>
+      _prefs?.setInt('hafalan_ulang', value.clamp(1, 10));
+
   /// Catatan hafalan per ayat untuk satu surah.
   ///
   /// Status per surah (`hafalan_status_*`) tetap ada sebagai ringkasan; yang
