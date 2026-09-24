@@ -125,61 +125,73 @@ class SegmentedPill<T> extends StatelessWidget {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     // Tinggi 36, radius 12, padding 3; segmen aktif radius 9 berlatar putih
     // dengan dua bayangan (Quran.html, Progres.html, Cari.html).
+    // Tinggi minimal 36; ikut membesar pada teks besar supaya label tidak
+    // terpotong.
     return Container(
-      height: 36,
+      constraints: const BoxConstraints(minHeight: 36),
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: tokens.fill,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          for (final entry in segments.entries)
-            Expanded(
-              child: Semantics(
-                selected: entry.key == value,
-                button: true,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(9),
-                  onTap: () => onChanged(entry.key),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: entry.key == value
-                        ? BoxDecoration(
-                            color: const Color(0xFFFFFFFF),
-                            borderRadius: BorderRadius.circular(9),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x1A000000),
-                                blurRadius: 8,
-                                offset: Offset(0, 3),
-                              ),
-                              BoxShadow(
-                                color: Color(0x0F000000),
-                                blurRadius: 1,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          )
-                        : null,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(
-                        entry.value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style:
-                            (entry.key == value
-                                    ? SacredText.segmentActive
-                                    : SacredText.segmentIdle)
-                                .copyWith(color: tokens.ink),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final entry in segments.entries)
+              Expanded(
+                child: Semantics(
+                  selected: entry.key == value,
+                  button: true,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(9),
+                    onTap: () => onChanged(entry.key),
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: entry.key == value
+                          ? BoxDecoration(
+                              color: tokens.segment,
+                              borderRadius: BorderRadius.circular(9),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x1A000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 3),
+                                ),
+                                BoxShadow(
+                                  color: Color(0x0F000000),
+                                  blurRadius: 1,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            )
+                          : null,
+                      constraints: const BoxConstraints(minHeight: 30),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            entry.value,
+                            maxLines: 1,
+                            softWrap: false,
+                            style:
+                                (entry.key == value
+                                        ? SacredText.segmentActive
+                                        : SacredText.segmentIdle)
+                                    .copyWith(color: tokens.ink),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

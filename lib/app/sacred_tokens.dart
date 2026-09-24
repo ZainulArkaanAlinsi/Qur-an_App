@@ -35,6 +35,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     required this.shadow,
     required this.floatShadow,
     required this.floatShadowSoft,
+    required this.segment,
   });
 
   final Color bg;
@@ -80,6 +81,9 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   /// Dua lapis bayangan untuk elemen mengambang seperti tab bar.
   final Color floatShadow;
   final Color floatShadowSoft;
+
+  /// Segmen aktif pada segmented control (putih di terang, #2C3A35 di gelap).
+  final Color segment;
 
   /// Bayangan kartu v2: bayangan tipis + cincin 0.5 px.
   List<BoxShadow> get cardShadows => [
@@ -130,6 +134,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     shadow: Color(0x0F00281C),
     floatShadow: Color(0x2100281C),
     floatShadowSoft: Color(0x1400281C),
+    segment: Color(0xFFFFFFFF),
   );
 
   static const dark = SacredTokens(
@@ -165,6 +170,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     shadow: Color(0x00000000),
     floatShadow: Color(0x8C000000),
     floatShadowSoft: Color(0x66000000),
+    segment: Color(0xFF2C3A35),
   );
 
   /// Sepia memakai kaca dan aksen tema terang, sesuai spesifikasi.
@@ -201,6 +207,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     shadow: Color(0x0F3E3222),
     floatShadow: Color(0x213E3222),
     floatShadowSoft: Color(0x143E3222),
+    segment: Color(0xFFFFFFFF),
   );
 
   /// Kontras tinggi: hitam/putih penuh, aksen tetap dapat dibedakan.
@@ -237,6 +244,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     shadow: Color(0x00000000),
     floatShadow: Color(0x33000000),
     floatShadowSoft: Color(0x1F000000),
+    segment: Color(0xFFFFFFFF),
   );
 
   static const highContrastDark = SacredTokens(
@@ -272,6 +280,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     shadow: Color(0x00000000),
     floatShadow: Color(0x8C000000),
     floatShadowSoft: Color(0x66000000),
+    segment: Color(0xFF2B2B2B),
   );
 
   @override
@@ -303,6 +312,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     Color? shadow,
     Color? floatShadow,
     Color? floatShadowSoft,
+    Color? segment,
   }) => SacredTokens(
     bg: bg ?? this.bg,
     surf: surf ?? this.surf,
@@ -331,6 +341,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     shadow: shadow ?? this.shadow,
     floatShadow: floatShadow ?? this.floatShadow,
     floatShadowSoft: floatShadowSoft ?? this.floatShadowSoft,
+    segment: segment ?? this.segment,
   );
 
   @override
@@ -368,6 +379,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       shadow: mix(shadow, other.shadow),
       floatShadow: mix(floatShadow, other.floatShadow),
       floatShadowSoft: mix(floatShadowSoft, other.floatShadowSoft),
+      segment: mix(segment, other.segment),
     );
   }
 }
@@ -597,6 +609,13 @@ abstract final class SacredText {
   /// Beranda v2: nama pengguna 38/44 dan judul surah kartu hero 30/34.
   static TextStyle get homeName => _font(serif, 38, 44, 500);
   static TextStyle get heroTitleV2 => _font(serif, 30, 34, 500);
+
+  /// Belajar v2: kotak info 13/18, angka node 15/800, kartu tahap aktif
+  /// (judul 17/800, ringkasan 13/19).
+  static TextStyle get infoBox => _font(ui, 13, 18, 600);
+  static TextStyle get nodeNumber => _font(ui, 15, 18, 800);
+  static TextStyle get stageTitle => _font(ui, 17, 22, 800);
+  static TextStyle get stageSummary => _font(ui, 13, 19, 500);
 
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);

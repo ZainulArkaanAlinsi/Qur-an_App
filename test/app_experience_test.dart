@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/screens/learn_screen.dart';
 import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:quran_app_2025/widgets/memorization_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Menggulir daftar sampai [finder] terbangun; ListView membangun anaknya
@@ -16,12 +18,31 @@ Future<void> _scrollTo(WidgetTester tester, Finder finder) async {
   }
 }
 
+/// Memasang tab Belajar dan menunggu kurikulum terbaca (aset dibaca di luar
+/// waktu semu).
+Future<void> _pumpLearn(WidgetTester tester) async {
+  await tester.pumpWidget(_host(const LearnScreen(includeDrafts: false)));
+  for (var i = 0; i < 6; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump();
+  }
+}
+
 Widget _host(Widget child) => MaterialApp(
   theme: SacredTheme.light,
   home: Scaffold(body: child),
 );
 
 void main() {
+  // rootBundle menyimpan future aset; muat kurikulum sekali di waktu nyata
+  // supaya setiap tes menerimanya.
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    await CurriculumRepository.load();
+  });
+
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     await SharedPreferencesService.init();
@@ -101,31 +122,56 @@ void main() {
   });
 
   testWidgets(
-    'tab Belajar memuat Juz Amma dan menandai fitur yang belum tersedia',
+    'tab Belajar: satu jalur, tanpa layar Akademi Tajwid atau Juz Amma',
     (tester) async {
-      await tester.pumpWidget(_host(const LearnScreen()));
-      await tester.pumpAndSettle();
+      await _pumpLearn(tester);
 
-      // Jalur belajar berada di atas. Tes berjalan dalam mode debug, jadi
-      // materi draf ikut tampil — berlabel — dan kemajuannya terbaca.
-      expect(find.text('Akademi Tajwid'), findsOneWidget);
-      expect(find.text('Belajar Membaca Al-Qur’an'), findsOneWidget);
-      expect(find.text('0/17'), findsOneWidget);
-
-      // Daftar Juz Amma ada di bawahnya.
+      expect(find.text('Dasar'), findsOneWidget);
+      expect(find.text('Tajwid'), findsOneWidget);
+      expect(find.text('Mahir'), findsOneWidget);
+      // Tahap pertama yang belum selesai menjadi kartu aktif.
+      expect(find.text('Mulai dari mana'), findsOneWidget);
+      expect(find.text('Mulai'), findsOneWidget);
+      // Layar terpisah yang dulu kosong sudah tidak ada.
+      expect(find.text('Akademi Tajwid'), findsNothing);
+      // Juz Amma ada di tab Hafalan, bukan di sini.
       await _scrollTo(tester, find.text('An-Naba’'));
-      expect(find.text('An-Naba’'), findsOneWidget);
-
-      await _scrollTo(tester, find.text('An-Nas'));
-      expect(find.text('An-Nas'), findsOneWidget);
+      expect(find.text('An-Naba’'), findsNothing);
     },
   );
 
+  testWidgets('tahap draf terkunci di rilis dan menjelaskan alasannya', (
+    tester,
+  ) async {
+    await _pumpLearn(tester);
+
+    await tester.tap(find.text('Mahir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Materi sedang ditinjau'), findsNWidgets(3));
+
+    await tester.tap(find.text('Makharij dan sifat'));
+    await tester.pump();
+    expect(
+      find.text('Tahap 14 masih ditinjau guru sebelum bisa dibuka.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('tahap selesai ditandai dan tahap berikutnya jadi aktif', (
+    tester,
+  ) async {
+    await SharedPreferencesService.setLessonCompleted('mulai', true);
+    await _pumpLearn(tester);
+
+    expect(find.text('Selesai'), findsOneWidget);
+    expect(find.text('Huruf hijaiyah'), findsOneWidget);
+    expect(find.text('0 / 5'), findsOneWidget);
+  });
+
   testWidgets('ketuk chip status menyimpan hafalan surah', (tester) async {
-    await tester.pumpWidget(_host(const LearnScreen()));
+    await tester.pumpWidget(_host(const MemorizationTile(surah: 78)));
     await tester.pumpAndSettle();
 
-    await _scrollTo(tester, find.byTooltip('Ubah status hafalan').first);
     await tester.tap(find.byTooltip('Ubah status hafalan').first);
     await tester.pumpAndSettle();
 

@@ -152,6 +152,12 @@ class Lesson {
   /// Ada isinya yang bisa dibaca, bukan sekadar kerangka.
   bool get hasContent => blocks.isNotEmpty;
 
+  /// Banyaknya bagian yang dilalui satu per satu di layar pelajaran:
+  /// tiap blok bacaan, ditambah satu bagian latihan bila ada soal.
+  int get stepCount =>
+      blocks.where((block) => block is! LessonQuiz).length +
+      (quizzes.isEmpty ? 0 : 1);
+
   List<LessonQuiz> get quizzes => [
     for (final block in blocks)
       if (block is LessonQuiz) block,

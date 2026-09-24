@@ -150,8 +150,8 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Tambahkan surah, atau mulai dari Juz Amma di tab '
-                      'Belajar.',
+                      'Ketuk Tambah surah. Juz Amma (An-Naba’ sampai '
+                      'An-Nas) cocok untuk memulai.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall,
                     ),

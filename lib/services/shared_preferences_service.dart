@@ -325,6 +325,17 @@ class SharedPreferencesService {
     learnRevision.value++;
   }
 
+  /// Bagian terjauh yang sudah dibuka di satu pelajaran (0 = belum mulai).
+  /// Dipakai kartu tahap di Belajar ("2 / 6").
+  static int getLessonStep(String id) =>
+      _prefs?.getInt('belajar_langkah_$id') ?? 0;
+
+  static Future<void> setLessonStep(String id, int step) async {
+    if (step <= getLessonStep(id)) return;
+    await _prefs?.setInt('belajar_langkah_$id', step);
+    learnRevision.value++;
+  }
+
   /// Riwayat jawaban kuis satu pelajaran, per id soal.
   ///
   /// Dipakai menyusun ronde berikutnya: soal yang belum pernah dijawab dan
