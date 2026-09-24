@@ -128,10 +128,15 @@ class ListRow extends StatelessWidget {
     this.chevron = false,
     this.titleColor,
     this.semanticsLabel,
+    this.subtitleSpan,
   });
 
   final String title;
   final String? subtitle;
+
+  /// Subjudul bercampur font (mis. nama Arab + keterangan Latin); dipakai
+  /// sebagai pengganti [subtitle] bila diisi.
+  final InlineSpan? subtitleSpan;
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -159,7 +164,15 @@ class ListRow extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: SacredText.rowTitle.copyWith(color: titleColor ?? tokens.ink),
         ),
-        if (subtitle != null) ...[
+        if (subtitleSpan != null) ...[
+          const SizedBox(height: 2),
+          Text.rich(
+            subtitleSpan!,
+            maxLines: lines,
+            overflow: TextOverflow.ellipsis,
+            style: SacredText.rowSubtitle.copyWith(color: tokens.sec),
+          ),
+        ] else if (subtitle != null) ...[
           const SizedBox(height: 2),
           Text(
             subtitle!,

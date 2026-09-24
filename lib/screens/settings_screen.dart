@@ -611,67 +611,15 @@ class _ReciterCardState extends State<_ReciterCard> {
     if (mounted) setState(() => _storageBytes = used);
   }
 
+  /// Layar Qari menyimpan pilihannya sendiri; sepulangnya, qari dan ukuran
+  /// unduhan dibaca ulang.
   Future<void> _choose() async {
-    setState(() => _busy = true);
-    final reciters = await _repository.load();
-    if (!mounted) return;
-    setState(() => _busy = false);
-
-    final picked = await showReciterPicker(
+    await Navigator.of(
       context,
-      reciters: reciters,
-      selected: _selected,
-      // Contoh diputar dengan qari yang sedang disorot, bukan qari terpilih,
-      // supaya bisa dibandingkan sebelum memutuskan.
-      onPreview: (reciter) => _preview(reciter),
-    );
-    if (picked == null || !mounted) return;
-
-    setState(() => _busy = true);
-    final resolved = await _repository.resolveBitrate(picked);
+    ).push(MaterialPageRoute<void>(builder: (_) => const ReciterPicker()));
     if (!mounted) return;
-    setState(() => _busy = false);
-    if (resolved == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Murottal ${picked.displayName} belum tersedia di server. '
-            'Qari sebelumnya tetap dipakai.',
-          ),
-        ),
-      );
-      return;
-    }
-    await SharedPreferencesService.setReciter(resolved);
-    // Antrean yang sedang berjalan memakai qari lama; hentikan agar tidak
-    // tercampur di tengah surah.
-    await QuranAudioService.instance.stop();
-    if (mounted) setState(() => _selected = resolved);
-  }
-
-  /// Memutar Al-Fatihah ayat 1 dengan [reciter] sebagai contoh suara.
-  ///
-  /// Bitrate-nya belum tentu tersedia, jadi dipastikan dulu; kalau tidak ada,
-  /// dikatakan apa adanya alih-alih memutar berkas yang tidak ada.
-  Future<void> _preview(Reciter reciter) async {
-    final resolved = await _repository.resolveBitrate(reciter);
-    if (!mounted) return;
-    if (resolved == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Contoh ${reciter.displayName} belum tersedia.'),
-        ),
-      );
-      return;
-    }
-    try {
-      await QuranAudioService.instance.playPreview(resolved);
-    } on Object {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contoh gagal diputar. Periksa koneksi.')),
-      );
-    }
+    setState(() => _selected = SharedPreferencesService.getReciter());
+    await _refreshStorage();
   }
 
   Future<void> _toggleLowData(bool value) async {
