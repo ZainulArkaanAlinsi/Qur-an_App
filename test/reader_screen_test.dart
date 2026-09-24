@@ -4,6 +4,7 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
+import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +28,7 @@ void main() {
     final translation = await tester.runAsync(
       () => TranslationRepository.instance.forSurah(1),
     );
+    await tester.runAsync(() => TajweedRepository.instance.forSurah(1));
 
     await tester.pumpWidget(
       MaterialApp(
@@ -46,10 +48,9 @@ void main() {
     // akhir ayat, jadi dicocokkan sebagai bagian dari teks polosnya).
     expect(find.textContaining(verses!.first), findsWidgets);
     expect(find.text(translation!.first), findsOneWidget);
-    expect(find.text('1:1'), findsOneWidget);
-
-    // Juz dan halaman dari metadata Tanzil, bukan angka contoh.
-    expect(find.text('Juz 1 · Hal. 1 · Ayat 1'), findsOneWidget);
+    // Kartu ayat v2: jumlah ayat dari katalog, bukan angka contoh.
+    expect(find.text('Kartu ayat · 7 ayat'), findsOneWidget);
+    expect(find.text('ID'), findsWidgets);
 
     // Selama pemutar diam tidak ada ayat yang disorot.
     final tokens = SacredTheme.tokensFor(AppPalette.sacred, Brightness.light);

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,16 @@ import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/sura_names_repository.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
+import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
+import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/features/murottal/presentation/murottal_sheet.dart';
+import 'package:quran_app_2025/features/reader/presentation/card_parts.dart';
+import 'package:quran_app_2025/features/reader/presentation/reading_mode_sheet.dart';
+import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
+import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/tajweed_legend_screen.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/tajweed_palette.dart';
+import 'package:quran_app_2025/screens/translation_picker.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
@@ -40,7 +50,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   late Future<_ReaderContent> _content;
   late ReadingSessionTracker _tracker;
   bool _focusMode = false;
-  bool _showTranslation = true;
+  bool _showTranslation = SharedPreferencesService.getShowIndonesian();
   double _arabicSize = SharedPreferencesService.getArabicFontSize();
   double _lineHeight = SharedPreferencesService.getArabicLineHeight();
   final _scroll = ItemScrollController();
@@ -54,15 +64,188 @@ class _ReaderScreenState extends State<ReaderScreen> {
   int _currentVerse = 1;
   bool _ready = false;
 
+  /// Kartu pertama yang terlihat saat layar dibuka.
+  late final int _firstCard = widget.initialVerse
+      .clamp(1, widget.surah.ayahCount)
+      .toInt();
+
   /// Pesan kegagalan murottal yang sedang ditampilkan, beserta ayat yang
   /// gagal diputar supaya tombol "Coba lagi" tahu harus mengulang apa.
   String? _audioError;
   int? _audioErrorVerse;
 
+  /// Warna tajwid di kartu (chip Tajwid).
+  bool _tajweed = SharedPreferencesService.getReaderTajweed();
+
+  /// Kertas pembaca pilihan pengguna; null = ikut tema aplikasi.
+  ReaderPaper? _paper = ReaderPaper.byName(
+    SharedPreferencesService.getReaderPaper(),
+  );
+
+  /// Lembar "Tampilan baca": mode, tajwid, legenda, ukuran teks, kertas.
+  Future<void> _openReadingMode(_ReaderContent content) async {
+    final current =
+        _paper ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? ReaderPaper.night
+            : ReaderPaper.ivory);
+    var openTextSize = false;
+    await showReadingModeSheet(
+      context,
+      tajweed: _tajweed,
+      onTajweed: (value) {
+        if (value != _tajweed) _toggleTajweed(content);
+      },
+      paper: current,
+      onPaper: (paper) {
+        setState(() => _paper = paper);
+        unawaited(SharedPreferencesService.setReaderPaper(paper.name));
+      },
+      onLegend: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const TajweedLegendScreen(backLabel: 'Tampilan'),
+        ),
+      ),
+      onTextSize: () {
+        openTextSize = true;
+        Navigator.of(context).pop();
+      },
+    );
+    if (openTextSize && mounted) await _openDisplaySheet();
+  }
+
+  /// Terjemahan kedua pilihan pengguna (maksimal dua terjemahan sekaligus),
+  /// beserta isinya bila sudah tersimpan di perangkat.
+  TranslationEdition? _second = readSecondTranslation();
+  List<String>? _secondVerses;
+  DownloadState _download = DownloadState.idle;
+
+  /// Memuat isi terjemahan kedua dari perangkat; tidak mengunduh apa pun.
+  Future<void> _loadSecond() async {
+    final edition = _second;
+    List<String>? verses;
+    if (edition != null) {
+      try {
+        final saved = await TranslationRepository.instance.online.load(edition);
+        final surah = saved?.verses[widget.surah.number - 1];
+        if (surah != null && surah.length == widget.surah.ayahCount) {
+          verses = surah;
+        }
+      } on Object {
+        verses = null;
+      }
+    }
+    if (mounted) setState(() => _secondVerses = verses);
+  }
+
+  Future<void> _setSecond(TranslationEdition? edition) async {
+    await SharedPreferencesService.setSecondTranslation(
+      edition == null ? null : jsonEncode(edition.toJson()),
+    );
+    setState(() {
+      _second = edition;
+      _secondVerses = null;
+      _download = DownloadState.idle;
+    });
+    await _loadSecond();
+  }
+
+  Future<void> _downloadSecond() async {
+    final edition = _second;
+    if (edition == null) return;
+    setState(() => _download = DownloadState.downloading);
+    try {
+      final saved = await TranslationRepository.instance.online.download(
+        edition,
+      );
+      if (!mounted) return;
+      // Bila QuranEnc gagal, padanan dari fawazahmed0 yang tersimpan.
+      if (saved != edition) {
+        await _setSecond(saved);
+      } else {
+        await _loadSecond();
+      }
+      if (mounted) setState(() => _download = DownloadState.idle);
+    } on Object {
+      if (mounted) setState(() => _download = DownloadState.failed);
+    }
+  }
+
+  String get _languageLabel {
+    final parts = [
+      if (_showTranslation) 'Indonesia',
+      if (_second != null) translationLanguage(_second!),
+    ];
+    return parts.isEmpty ? 'Tanpa terjemahan' : parts.join(' + ');
+  }
+
+  void _toggleTajweed(_ReaderContent content) {
+    final next = !_tajweed;
+    setState(() => _tajweed = next);
+    unawaited(SharedPreferencesService.setReaderTajweed(next));
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    if (next && content.tajweed == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Data warna tajwid tidak dapat dimuat.')),
+      );
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(next ? 'Warna tajwid menyala' : 'Warna tajwid dimatikan'),
+        action: next
+            ? SnackBarAction(
+                label: 'Arti warna',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        const TajweedLegendScreen(backLabel: 'Kartu'),
+                  ),
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+
+  /// Layar Terjemahan (06): memilih Indonesia bawaan dan satu terjemahan
+  /// lain. Sepulangnya, pilihan dibaca ulang dari penyimpanan.
+  Future<void> _openTranslations() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const TranslationPicker(backLabel: 'Kartu'),
+      ),
+    );
+    if (!mounted) return;
+    setState(() {
+      _showTranslation = SharedPreferencesService.getShowIndonesian();
+      _second = readSecondTranslation();
+      _secondVerses = null;
+      _download = DownloadState.idle;
+    });
+    await _loadSecond();
+  }
+
   Future<_ReaderContent> _load() async {
     final arabic = await QuranTextRepository.instance.versesForSurah(
       widget.surah.number,
     );
+    // Basmalah di awal ayat 1 (bawaan teks Tanzil) ditampilkan terpisah;
+    // pembandingnya ayat 1:1 dari dataset yang sama.
+    final fatihah = await QuranTextRepository.instance.versesForSurah(1);
+    final basmalah = basmalahPrefix(
+      widget.surah.number,
+      arabic.first,
+      fatihah.first,
+    );
+    // Warna tajwid hanya pelengkap: bila gagal, ayat tetap tampil polos.
+    List<TajweedVerse>? tajweed;
+    try {
+      tajweed = await TajweedRepository.instance.forSurah(widget.surah.number);
+      if (tajweed.length != arabic.length) tajweed = null;
+    } on Object {
+      tajweed = null;
+    }
     List<String>? translation;
     try {
       translation = await TranslationRepository.instance.forSurah(
@@ -86,7 +269,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
       _ready = true;
       _tracker.start();
     }
-    return _ReaderContent(arabic, translation, arabicName, juz, pages);
+    return _ReaderContent(
+      arabic,
+      translation,
+      arabicName,
+      juz,
+      pages,
+      tajweed: tajweed,
+      basmalah: basmalah,
+    );
   }
 
   void _positionChanged() {
@@ -239,14 +430,28 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     SharedPreferencesService.setArabicLineHeight(value),
                   ),
                 ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Tampilkan terjemahan'),
-                  value: _showTranslation,
-                  onChanged: (value) {
-                    setSheetState(() {});
-                    setState(() => _showTranslation = value);
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Tampilkan terjemahan Indonesia',
+                        style: SacredText.settingTitle.copyWith(
+                          color: tokens.ink,
+                        ),
+                      ),
+                    ),
+                    IosToggle(
+                      value: _showTranslation,
+                      semanticsLabel: 'Tampilkan terjemahan Indonesia',
+                      onChanged: (value) {
+                        setSheetState(() {});
+                        setState(() => _showTranslation = value);
+                        unawaited(
+                          SharedPreferencesService.setShowIndonesian(value),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -306,6 +511,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     _tracker.verseKey = '${widget.surah.number}:$_currentVerse';
     _timerText.value = _timerLabel();
     _content = _load();
+    unawaited(_loadSecond());
     _positions.itemPositions.addListener(_positionChanged);
     QuranAudioService.instance.playingVerse.addListener(_followAudio);
     QuranAudioService.instance.error.addListener(_showAudioError);
@@ -352,9 +558,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     // Mode fokus memakai palet sepia seperti di mockup, apa pun tema aplikasi.
+    // Kertas pilihan (Tampilan baca) berlaku di mode kartu; tanpa pilihan,
+    // pembaca ikut tema aplikasi.
     final theme = _focusMode
         ? SacredTheme.themeFor(AppPalette.sepia, Brightness.light)
-        : Theme.of(context);
+        : _paper?.theme ?? Theme.of(context);
     return Theme(
       data: theme,
       child: Builder(builder: _buildBody),
@@ -407,8 +615,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       content: content,
                       onBack: () => Navigator.of(context).maybePop(),
                       onJump: _jumpToVerse,
-                      onDisplay: _openDisplaySheet,
+                      onDisplay: () => unawaited(_openReadingMode(content)),
                       onFocus: () => setState(() => _focusMode = true),
+                    ),
+                  if (!_focusMode)
+                    ReaderChips(
+                      languageLabel: _languageLabel,
+                      tajweed: _tajweed,
+                      onLanguage: () => unawaited(_openTranslations()),
+                      onTajweed: () => _toggleTajweed(content),
                     ),
                   Expanded(
                     child: Listener(
@@ -448,12 +663,37 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           }
                           final number = index;
                           final translation = content.translation;
+                          final second = _second;
+                          final secondVerses = _secondVerses;
+                          // Bahasa kedua yang belum tersimpan ditawarkan
+                          // sekali, di kartu pertama yang dibuka.
+                          final offerDownload =
+                              second != null &&
+                              secondVerses == null &&
+                              number == _firstCard;
                           return _VerseCard(
                             key: ValueKey('${widget.surah.number}:$number'),
                             verseNumber: number,
                             arabic: verses[number - 1],
+                            basmalah: number == 1 ? content.basmalah : 0,
+                            tajweed: _tajweed && content.tajweed != null
+                                ? content.tajweed![number - 1]
+                                : null,
                             translation: _showTranslation && translation != null
                                 ? translation[number - 1]
+                                : null,
+                            secondCode: second == null
+                                ? null
+                                : translationCode(second),
+                            secondText: secondVerses?[number - 1],
+                            secondRtl: second?.direction == 'rtl',
+                            extra: offerDownload
+                                ? TranslationDownloadRow(
+                                    edition: second,
+                                    state: _download,
+                                    onDownload: () =>
+                                        unawaited(_downloadSecond()),
+                                  )
                                 : null,
                             surahNumber: widget.surah.number,
                             arabicSize: _arabicSize,
@@ -586,7 +826,13 @@ class _ReaderNav extends StatelessWidget {
                             Flexible(
                               child: Text(
                                 surah.displayName,
-                                maxLines: 1,
+                                textAlign: TextAlign.center,
+                                maxLines:
+                                    MediaQuery.textScalerOf(context).scale(16) /
+                                            16 >=
+                                        1.6
+                                    ? 2
+                                    : 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: SacredText.navTitle.copyWith(
                                   color: tokens.ink,
@@ -602,15 +848,18 @@ class _ReaderNav extends StatelessWidget {
                             ),
                           ],
                         ),
-                        ValueListenableBuilder<int>(
-                          valueListenable: verse,
-                          builder: (context, value, _) => Text(
-                            content.locationLabel(surah.number, value),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: SacredText.navSubtitle.copyWith(
-                              color: tokens.sec,
-                            ),
+                        Text(
+                          'Kartu ayat · ${surah.ayahCount} ayat',
+                          textAlign: TextAlign.center,
+                          // Teks besar: boleh dua baris, jangan terpotong.
+                          maxLines:
+                              MediaQuery.textScalerOf(context).scale(16) / 16 >=
+                                  1.6
+                              ? 2
+                              : 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: SacredText.navSubtitle.copyWith(
+                            color: tokens.sec,
                           ),
                         ),
                       ],
@@ -1142,6 +1391,8 @@ class _ReaderError extends StatelessWidget {
   );
 }
 
+/// Kartu ayat v2 (V2-Kartu.html): rosette nomor, putar & bookmark, Arab
+/// bertajwid, lalu terjemahan berlabel kode bahasa.
 class _VerseCard extends StatefulWidget {
   const _VerseCard({
     super.key,
@@ -1152,6 +1403,12 @@ class _VerseCard extends StatefulWidget {
     required this.arabicSize,
     required this.lineHeight,
     required this.onPlay,
+    this.basmalah = 0,
+    this.tajweed,
+    this.secondCode,
+    this.secondText,
+    this.secondRtl = false,
+    this.extra,
   });
   final int verseNumber;
   final String arabic;
@@ -1160,6 +1417,18 @@ class _VerseCard extends StatefulWidget {
   final double arabicSize;
   final double lineHeight;
   final Future<void> Function(int ayah) onPlay;
+
+  /// Panjang awalan basmalah pada [arabic] (ayat 1 teks Tanzil), atau 0.
+  final int basmalah;
+
+  /// Rentang tajwid ayat ini; null = teks polos.
+  final TajweedVerse? tajweed;
+  final String? secondCode;
+  final String? secondText;
+  final bool secondRtl;
+
+  /// Baris tambahan di bawah terjemahan (tawaran unduh bahasa kedua).
+  final Widget? extra;
 
   @override
   State<_VerseCard> createState() => _VerseCardState();
@@ -1177,11 +1446,67 @@ class _VerseCardState extends State<_VerseCard> {
     );
   }
 
+  Future<void> _onBookmark() async {
+    if (!bookmarked) {
+      await SharedPreferencesService.saveBookmark(
+        widget.surahNumber,
+        widget.verseNumber,
+      );
+      if (!mounted) return;
+      setState(() => bookmarked = true);
+      await _chooseBookmarkCollection();
+      return;
+    }
+    // Sudah ditandai: tawarkan pindah koleksi atau hapus, supaya ketukan
+    // tidak sengaja tidak langsung menghapus.
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: tokens.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: GroupedList(
+            label: 'Bookmark ayat ${widget.verseNumber}',
+            children: [
+              ListRow(
+                title: 'Pindahkan ke koleksi',
+                chevron: true,
+                onTap: () => Navigator.pop(context, 'move'),
+              ),
+              ListRow(
+                title: 'Hapus bookmark',
+                titleColor: tokens.danger,
+                onTap: () => Navigator.pop(context, 'remove'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'move') {
+      await _chooseBookmarkCollection();
+      return;
+    }
+    await SharedPreferencesService.removeBookmark(
+      widget.surahNumber,
+      widget.verseNumber,
+    );
+    if (mounted) setState(() => bookmarked = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final brightness = Theme.of(context).brightness;
     final translationSize = SharedPreferencesService.getTranslationFontSize();
     final verseKey = '${widget.surahNumber}:${widget.verseNumber}';
+    final tajweed = widget.tajweed;
     return RepaintBoundary(
       child: ValueListenableBuilder<String?>(
         valueListenable: QuranAudioService.instance.playingVerse,
@@ -1189,12 +1514,13 @@ class _VerseCardState extends State<_VerseCard> {
           final active = playing == verseKey;
           return AnimatedContainer(
             duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 18),
+            margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            padding: const EdgeInsets.fromLTRB(16, 12, 12, 18),
             decoration: BoxDecoration(
-              // Mockup tidak memberi garis pada kartu; hanya ayat yang sedang
-              // diputar yang diberi latar.
-              color: active ? tokens.primarySoft : Colors.transparent,
-              borderRadius: BorderRadius.circular(22),
+              // Ayat yang sedang diputar diberi latar hijau lembut.
+              color: active ? tokens.primarySoft : tokens.surf,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: tokens.cardShadows,
             ),
             child: child,
           );
@@ -1206,59 +1532,93 @@ class _VerseCardState extends State<_VerseCard> {
               verseKey: verseKey,
               ayah: widget.verseNumber,
               bookmarked: bookmarked,
-              onBookmark: () async {
-                if (bookmarked) {
-                  await SharedPreferencesService.removeBookmark(
-                    widget.surahNumber,
-                    widget.verseNumber,
-                  );
-                } else {
-                  await SharedPreferencesService.saveBookmark(
-                    widget.surahNumber,
-                    widget.verseNumber,
-                  );
-                  if (mounted) await _chooseBookmarkCollection();
-                }
-                if (mounted) setState(() => bookmarked = !bookmarked);
-              },
+              onBookmark: _onBookmark,
               onPlay: () => widget.onPlay(widget.verseNumber),
-              onMore: _showMore,
             ),
-            const SizedBox(height: 10),
-            Directionality(
-              textDirection: TextDirection.rtl,
+            const SizedBox(height: 6),
+            if (widget.basmalah > 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text.rich(
+                  TextSpan(
+                    children: tajweed == null
+                        ? [
+                            TextSpan(
+                              text: widget.arabic.substring(
+                                0,
+                                widget.basmalah - 1,
+                              ),
+                            ),
+                          ]
+                        : tajweedSpans(
+                            tajweed,
+                            palette: TajweedPalette.draftPreview,
+                            brightness: brightness,
+                            base: tokens.ink,
+                            to: widget.basmalah - 1,
+                          ),
+                  ),
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.rtl,
+                  semanticsLabel: 'Basmalah',
+                  style: TextStyle(
+                    fontFamily: SacredText.quran,
+                    fontSize: widget.arabicSize * .8,
+                    height: 2,
+                    color: tokens.ink,
+                  ),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
               child: Text.rich(
                 TextSpan(
-                  children: [
-                    TextSpan(text: widget.arabic),
-                    const WidgetSpan(child: SizedBox(width: 4)),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: RosetteBadge.ayah(
-                        widget.verseNumber,
-                        size: widget.arabicSize,
-                      ),
-                    ),
-                  ],
+                  children: tajweed == null
+                      ? [
+                          TextSpan(
+                            text: widget.arabic.substring(widget.basmalah),
+                          ),
+                        ]
+                      : tajweedSpans(
+                          tajweed,
+                          palette: TajweedPalette.draftPreview,
+                          brightness: brightness,
+                          base: tokens.ink,
+                          from: widget.basmalah,
+                        ),
                 ),
                 textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+                semanticsLabel: 'Ayat ${widget.verseNumber}',
                 style: TextStyle(
                   fontFamily: SacredText.quran,
                   fontSize: widget.arabicSize,
-                  height: widget.lineHeight,
+                  // Minimal 2.0 supaya harakat tidak terpotong.
+                  height: widget.lineHeight < 2 ? 2 : widget.lineHeight,
                   color: tokens.ink,
                 ),
               ),
             ),
             if (widget.translation != null) ...[
               const SizedBox(height: 10),
-              Text(
-                widget.translation!,
-                style: SacredText.body.copyWith(
-                  color: tokens.ink.withValues(alpha: .82),
-                  fontSize: translationSize,
-                ),
+              LabeledTranslation(
+                code: 'ID',
+                text: widget.translation!,
+                size: translationSize,
               ),
+            ],
+            if (widget.secondText != null && widget.secondCode != null) ...[
+              const SizedBox(height: 10),
+              LabeledTranslation(
+                code: widget.secondCode!,
+                text: widget.secondText!,
+                size: translationSize,
+                rtl: widget.secondRtl,
+              ),
+            ],
+            if (widget.extra != null) ...[
+              const SizedBox(height: 12),
+              widget.extra!,
             ],
           ],
         ),
@@ -1266,44 +1626,28 @@ class _VerseCardState extends State<_VerseCard> {
     );
   }
 
-  Future<void> _showMore() async {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: tokens.surf,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(CupertinoIcons.folder),
-              title: const Text('Pindahkan ke koleksi'),
-              onTap: () {
-                Navigator.pop(context);
-                unawaited(_chooseBookmarkCollection());
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _chooseBookmarkCollection() async {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
     final collection = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: tokens.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final option in const ['Umum', 'Hafalan', 'Favorit'])
-              ListTile(
-                leading: const Icon(CupertinoIcons.folder),
-                title: Text(option),
-                onTap: () => Navigator.pop(context, option),
-              ),
-          ],
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: GroupedList(
+            label: 'Simpan ke koleksi',
+            children: [
+              for (final option in const ['Umum', 'Hafalan', 'Favorit'])
+                ListRow(
+                  title: option,
+                  onTap: () => Navigator.pop(context, option),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -1323,7 +1667,6 @@ class _VerseHeader extends StatelessWidget {
     required this.bookmarked,
     required this.onBookmark,
     required this.onPlay,
-    required this.onMore,
   });
 
   final String verseKey;
@@ -1331,7 +1674,6 @@ class _VerseHeader extends StatelessWidget {
   final bool bookmarked;
   final VoidCallback onBookmark;
   final VoidCallback onPlay;
-  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) {
@@ -1349,9 +1691,10 @@ class _VerseHeader extends StatelessWidget {
         final accent = current ? tokens.primaryText : tokens.sec;
         return Row(
           children: [
-            Text(
-              verseKey,
-              style: SacredText.verseLabel.copyWith(color: accent),
+            Semantics(
+              label: 'Ayat $ayah',
+              excludeSemantics: true,
+              child: RosetteBadge.ayah(ayah, size: 30),
             ),
             const Spacer(),
             _RoundIcon(
@@ -1368,32 +1711,22 @@ class _VerseHeader extends StatelessWidget {
                     )
                   : LineIcon(
                       playing ? SacredIcons.pause : SacredIcons.play,
-                      color: accent,
+                      color: current ? accent : tokens.ink,
                       size: 14,
                       filled: true,
                     ),
             ),
             _RoundIcon(
               tooltip: bookmarked
-                  ? 'Hapus bookmark ayat $ayah'
+                  ? 'Bookmark ayat $ayah: pindah atau hapus'
                   : 'Bookmark ayat $ayah',
               onTap: onBookmark,
               child: LineIcon(
                 bookmarked ? SacredIcons.bookmarkFilled : SacredIcons.bookmark,
-                color: bookmarked ? tokens.primaryText : accent,
+                color: bookmarked ? tokens.primaryText : tokens.ink,
                 size: 18,
                 strokeWidth: SacredIcons.strokeNav,
                 filled: bookmarked,
-              ),
-            ),
-            _RoundIcon(
-              tooltip: 'Lainnya untuk ayat $ayah',
-              onTap: onMore,
-              child: LineIcon(
-                SacredIcons.more,
-                color: accent,
-                size: 18,
-                filled: true,
               ),
             ),
           ],
@@ -1447,8 +1780,16 @@ class _ReaderContent {
     this.translation,
     this.arabicName,
     this.juz,
-    this.pages,
-  );
+    this.pages, {
+    this.tajweed,
+    this.basmalah = 0,
+  });
+
+  /// Panjang awalan basmalah di ayat 1 (0 bila tidak ada).
+  final int basmalah;
+
+  /// Ayat beserta rentang tajwidnya (cpfair), atau null bila gagal dimuat.
+  final List<TajweedVerse>? tajweed;
 
   final List<String> arabic;
   final List<String>? translation;

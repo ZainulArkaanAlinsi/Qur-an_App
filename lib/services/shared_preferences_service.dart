@@ -554,6 +554,29 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_country', country.trim());
   }
 
+  /// Warna tajwid di kartu ayat (bawaan menyala).
+  static bool getReaderTajweed() => _prefs?.getBool('reader_tajweed') ?? true;
+  static Future<void> setReaderTajweed(bool value) async =>
+      _prefs?.setBool('reader_tajweed', value);
+
+  /// Terjemahan Indonesia bawaan tampil di kartu ayat (bawaan ya).
+  static bool getShowIndonesian() =>
+      _prefs?.getBool('reader_show_indonesian') ?? true;
+  static Future<void> setShowIndonesian(bool value) async =>
+      _prefs?.setBool('reader_show_indonesian', value);
+
+  /// Kertas pembaca ("ivory", "sepia", "night"), atau null = ikut tema.
+  static String? getReaderPaper() => _prefs?.getString('reader_paper');
+  static Future<void> setReaderPaper(String value) async =>
+      _prefs?.setString('reader_paper', value);
+
+  /// Terjemahan kedua di kartu ayat (JSON [TranslationEdition]), atau null.
+  static String? getSecondTranslation() =>
+      _prefs?.getString('reader_second_translation');
+  static Future<void> setSecondTranslation(String? json) async => json == null
+      ? _prefs?.remove('reader_second_translation')
+      : _prefs?.setString('reader_second_translation', json);
+
   /// Jadwal salat terakhir yang berhasil dimuat (JSON), untuk dipakai saat
   /// luring.
   static String? getPrayerCache() => _prefs?.getString('prayer_day_cache');
