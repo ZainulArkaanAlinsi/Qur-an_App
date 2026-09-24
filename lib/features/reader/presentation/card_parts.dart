@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
@@ -5,7 +6,10 @@ import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/data/online_translations.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
+import 'package:quran_app_2025/features/tajweed/domain/tajweed_rule.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/tajweed_palette.dart';
+
+export 'package:quran_app_2025/data/basmalah.dart';
 
 /// Potongan teks ayat berwarna tajwid. Teksnya dipotong per rentang tanpa
 /// diubah; bagian tanpa hukum memakai [base]. [from]/[to] membatasi ke
@@ -17,8 +21,19 @@ List<InlineSpan> tajweedSpans(
   required Color base,
   int from = 0,
   int? to,
+  void Function(TajweedRule rule)? onTap,
+  List<TapGestureRecognizer>? recognizers,
 }) {
   final end = to ?? verse.text.length;
+  // Huruf berwarna bisa diketuk untuk melihat hukumnya. Recognizer dibuat
+  // di sini dan dikumpulkan ke [recognizers] supaya pemanggil membuangnya.
+  TapGestureRecognizer? tapFor(TajweedRule? rule) {
+    if (rule == null || onTap == null) return null;
+    final recognizer = TapGestureRecognizer()..onTap = () => onTap(rule);
+    recognizers?.add(recognizer);
+    return recognizer;
+  }
+
   return [
     for (final run in verse.runs)
       if (run.end > from && run.start < end)
@@ -32,29 +47,9 @@ List<InlineSpan> tajweedSpans(
                 ? base
                 : palette.colorFor(run.rule!, brightness),
           ),
+          recognizer: tapFor(run.rule),
         ),
   ];
-}
-
-/// Panjang awalan basmalah pada ayat 1 teks Tanzil (termasuk spasi
-/// sesudahnya), atau 0. Tanzil menyertakan basmalah di awal ayat 1 setiap
-/// surah kecuali Al-Fatihah (di sana basmalah adalah ayat 1) dan At-Taubah.
-/// [fatihahFirst] adalah ayat 1:1 dari dataset yang sama, bukan diketik.
-///
-/// Di surah 95 dan 97 Tanzil menulis ba basmalah bersyaddah (bekas idgham
-/// dari akhir surah sebelumnya). Syaddah itu diabaikan hanya untuk
-/// pencocokan; teks yang tampil tetap persis dataset.
-int basmalahPrefix(int surah, String firstVerse, String fatihahFirst) {
-  if (surah == 1 || surah == 9) return 0;
-  final count = fatihahFirst.split(' ').length;
-  final words = firstVerse.split(' ');
-  if (words.length <= count) return 0;
-  final head = words.take(count).join(' ');
-  final shaddah = String.fromCharCode(0x0651);
-  String bare(String text) => text.replaceAll(shaddah, '');
-  return head == fatihahFirst || bare(head) == bare(fatihahFirst)
-      ? head.length + 1
-      : 0;
 }
 
 /// Nama bahasa dalam aksaranya sendiri untuk kode ISO QuranEnc; nama bahasa
@@ -235,6 +230,53 @@ class _Chip extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Petunjuk untuk pembaca awam: huruf berwarna bisa diketuk.
+class TajweedHint extends StatelessWidget {
+  const TajweedHint({super.key, required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
+      child: Row(
+        children: [
+          LineIcon(SacredIcons.info, color: tokens.primaryText, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Ketuk huruf berwarna untuk melihat artinya.',
+              style: SacredText.infoBox.copyWith(color: tokens.ink),
+            ),
+          ),
+          Semantics(
+            button: true,
+            excludeSemantics: true,
+            label: 'Tutup petunjuk',
+            child: InkResponse(
+              onTap: onClose,
+              radius: 22,
+              child: SizedBox.square(
+                dimension: 44,
+                child: Center(
+                  child: LineIcon(
+                    SacredIcons.close,
+                    color: tokens.sec,
+                    size: 16,
+                    strokeWidth: 2.2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Terjemahan berlabel kode bahasa: "ID  Katakanlah…".

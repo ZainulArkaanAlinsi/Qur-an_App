@@ -11,6 +11,7 @@ import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
+import 'package:quran_app_2025/data/basmalah.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
@@ -98,9 +99,14 @@ class _PracticeScreenState extends State<PracticeScreen> {
   DateTime get _today => widget.now?.call() ?? DateTime.now();
 
   Future<_Texts> _load() async {
-    final arabic = await QuranTextRepository.instance.versesForSurah(
+    final raw = await QuranTextRepository.instance.versesForSurah(
       widget.surah.number,
     );
+    // Basmalah bawaan Tanzil di ayat 1 bukan bagian ayat yang dihafal:
+    // ditampilkan terpisah dan tidak pernah ditutup.
+    final fatihah = await QuranTextRepository.instance.versesForSurah(1);
+    final split = splitBasmalah(widget.surah.number, raw, fatihah.first);
+    final arabic = split.verses;
     List<String>? translation;
     try {
       translation = await TranslationRepository.instance.forSurah(
@@ -109,7 +115,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     } on Object {
       translation = null; // Terjemahan pelengkap; sesi tetap jalan.
     }
-    return _Texts(arabic, translation);
+    return _Texts(arabic, translation, basmalah: split.basmalah);
   }
 
   @override
@@ -278,6 +284,21 @@ class _PracticeScreenState extends State<PracticeScreen> {
                   ),
                   const SizedBox(height: 6),
                 ],
+                if (_ayah == 1 && texts.basmalah != null) ...[
+                  Text(
+                    texts.basmalah!,
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.center,
+                    semanticsLabel: 'Basmalah',
+                    style: TextStyle(
+                      fontFamily: SacredText.quran,
+                      fontSize: 22,
+                      height: 2.0,
+                      color: tokens.sec,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
                 _MaskedVerse(words: words, shown: shown, ayah: _ayah),
                 if ((_step == _Step.dengar || _step == _Step.baca) &&
                     texts.translation != null) ...[
@@ -414,9 +435,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
 }
 
 class _Texts {
-  const _Texts(this.arabic, this.translation);
+  const _Texts(this.arabic, this.translation, {this.basmalah});
   final List<String> arabic;
   final List<String>? translation;
+
+  /// Basmalah di atas ayat 1, atau null.
+  final String? basmalah;
 }
 
 /// Atas: tutup 40, judul + subjudul di tengah.
