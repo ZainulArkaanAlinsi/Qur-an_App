@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -19,6 +21,8 @@ import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/features/murottal/presentation/murottal_sheet.dart';
+import 'package:quran_app_2025/features/mushaf/data/qf_debug_mushaf_source.dart';
+import 'package:quran_app_2025/features/mushaf/presentation/mushaf_screen.dart';
 import 'package:quran_app_2025/features/reader/presentation/card_parts.dart';
 import 'package:quran_app_2025/features/reader/presentation/reading_mode_sheet.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
@@ -34,6 +38,12 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/widgets/audio_mini_player.dart';
+
+/// Mode halaman mushaf memakai data QF langsung hanya di build debug di
+/// perangkat, bukan di rilis dan bukan saat `flutter test` (golden mewakili
+/// tampilan rilis).
+final bool debugMushafLayout =
+    kDebugMode && !Platform.environment.containsKey('FLUTTER_TEST');
 
 /// Banyaknya ayat per blok pada mode fokus. Mockup menyambung seluruh ayat
 /// jadi satu paragraf; blok kecil membuat tampilannya tetap mengalir tetapi
@@ -126,8 +136,16 @@ class _ReaderScreenState extends State<ReaderScreen> {
             ? ReaderPaper.night
             : ReaderPaper.ivory);
     var openTextSize = false;
+    ReadingMode? picked;
     await showReadingModeSheet(
       context,
+      // Mode halaman mushaf butuh data tata letak yang sah. Sampai izin
+      // lisensinya ada, hanya build debug yang memakai data QF langsung
+      // (docs/DATA_SOURCES_AND_LICENSES.md); rilis menampilkan "segera".
+      available: debugMushafLayout
+          ? const {ReadingMode.cards, ReadingMode.onePage, ReadingMode.twoPages}
+          : const {ReadingMode.cards},
+      onMode: (mode) => picked = mode,
       tajweed: _tajweed,
       onTajweed: (value) {
         if (value != _tajweed) _toggleTajweed(content);
@@ -148,6 +166,69 @@ class _ReaderScreenState extends State<ReaderScreen> {
       },
     );
     if (openTextSize && mounted) await _openDisplaySheet();
+    final mode = picked;
+    if (mode != null && mode != ReadingMode.cards && mounted) {
+      await _openMushaf(content, twoPages: mode == ReadingMode.twoPages);
+    }
+  }
+
+  /// Membuka mushaf di halaman ayat yang sedang dibaca (peta halaman
+  /// Tanzil). Hanya dipanggil bila ada sumber tata letak (build debug).
+  Future<void> _openMushaf(
+    _ReaderContent content, {
+    required bool twoPages,
+  }) async {
+    var page = 1;
+    for (final boundary in content.pages) {
+      if (boundary.surah < widget.surah.number ||
+          (boundary.surah == widget.surah.number &&
+              boundary.verse <= _currentVerse)) {
+        page = boundary.number;
+      }
+    }
+    final source = QfDebugMushafSource();
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => MushafScreen(
+            initialPage: page,
+            layout: source.page,
+            twoPages: twoPages,
+            onReadingMode: (mushafContext) => showReadingModeSheet(
+              mushafContext,
+              mode: ReadingMode.onePage,
+              available: const {
+                ReadingMode.cards,
+                ReadingMode.onePage,
+                ReadingMode.twoPages,
+              },
+              // Kembali ke kartu ayat = keluar dari mushaf.
+              onMode: (mode) {
+                if (mode == ReadingMode.cards) {
+                  Navigator.of(mushafContext).pop();
+                }
+              },
+              tajweed: _tajweed,
+              onTajweed: (_) => _toggleTajweed(content),
+              paper: _paper ?? ReaderPaper.ivory,
+              onPaper: (paper) {
+                setState(() => _paper = paper);
+                unawaited(SharedPreferencesService.setReaderPaper(paper.name));
+              },
+              onLegend: () => Navigator.of(mushafContext).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      const TajweedLegendScreen(backLabel: 'Tampilan'),
+                ),
+              ),
+              onTextSize: () => Navigator.of(mushafContext).pop(),
+            ),
+          ),
+        ),
+      );
+    } finally {
+      source.dispose();
+    }
   }
 
   /// Terjemahan kedua pilihan pengguna (maksimal dua terjemahan sekaligus),
