@@ -1359,7 +1359,7 @@ class _ProfileCardState extends State<_ProfileCard> {
                                   : (name == null || name.isEmpty
                                         ? (account.email ?? 'Akun Google')
                                         : name),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: SacredText.profileName.copyWith(
                                 color: tokens.ink,
@@ -1369,7 +1369,7 @@ class _ProfileCardState extends State<_ProfileCard> {
                               future: _lastSync,
                               builder: (context, snapshot) => Text(
                                 _syncLine(account, snapshot.data),
-                                maxLines: 2,
+                                maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                                 style: SacredText.rowSubtitle.copyWith(
                                   color: tokens.sec,
@@ -1411,16 +1411,30 @@ class _ProfileCardState extends State<_ProfileCard> {
                         SharedPreferencesService.getCompletedSurahs(),
                         boundaries,
                       ).length;
+                final stats = [
+                  ('$streak', 'hari istiqamah'),
+                  ('${_minutesThisWeek()}', 'menit minggu ini'),
+                  (juz == null ? '–' : '$juz/30', 'juz khatam'),
+                ];
+                // Teks sangat besar: angka ditumpuk sebaris dengan
+                // keterangannya supaya "istiqamah" dan "0/30" tidak dipecah.
+                if (MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final (value, label) in stats)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: _Stat(value, label, inline: true),
+                        ),
+                    ],
+                  );
+                }
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _Stat('$streak', 'hari istiqamah')),
-                    Expanded(
-                      child: _Stat('${_minutesThisWeek()}', 'menit minggu ini'),
-                    ),
-                    Expanded(
-                      child: _Stat(juz == null ? '–' : '$juz/30', 'juz khatam'),
-                    ),
+                    for (final (value, label) in stats)
+                      Expanded(child: _Stat(value, label)),
                   ],
                 );
               },
@@ -1450,10 +1464,13 @@ class _ProfileCardState extends State<_ProfileCard> {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat(this.value, this.label);
+  const _Stat(this.value, this.label, {this.inline = false});
 
   final String value;
   final String label;
+
+  /// Angka dan keterangan sebaris (dipakai saat teks sangat besar).
+  final bool inline;
 
   @override
   Widget build(BuildContext context) {
@@ -1461,13 +1478,34 @@ class _Stat extends StatelessWidget {
     return Semantics(
       label: '$value $label',
       excludeSemantics: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(value, style: SacredText.metric.copyWith(color: tokens.ink)),
-          Text(label, style: SacredText.cardNote.copyWith(color: tokens.sec)),
-        ],
-      ),
+      child: inline
+          ? Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$value  ',
+                    style: SacredText.metric.copyWith(color: tokens.ink),
+                  ),
+                  TextSpan(
+                    text: label,
+                    style: SacredText.cardNote.copyWith(color: tokens.sec),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: SacredText.metric.copyWith(color: tokens.ink),
+                ),
+                Text(
+                  label,
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+                ),
+              ],
+            ),
     );
   }
 }
