@@ -57,28 +57,57 @@ int basmalahPrefix(int surah, String firstVerse, String fatihahFirst) {
       : 0;
 }
 
-/// Nama bahasa untuk kode ISO QuranEnc; nama bahasa fawazahmed0 dipakai apa
-/// adanya.
+/// Nama bahasa dalam aksaranya sendiri untuk kode ISO QuranEnc; nama bahasa
+/// fawazahmed0 (sudah berupa nama) dipakai apa adanya.
 const _languageNames = {
+  'id': 'Bahasa Indonesia',
   'en': 'English',
   'ar': 'العربية',
-  'ur': 'Urdu',
+  'ur': 'اردو',
   'fr': 'Français',
   'de': 'Deutsch',
   'es': 'Español',
+  'pt': 'Português',
+  'it': 'Italiano',
+  'nl': 'Nederlands',
   'tr': 'Türkçe',
-  'ms': 'Melayu',
-  'bn': 'Bengali',
+  'ms': 'Bahasa Melayu',
+  'bn': 'বাংলা',
   'ru': 'Русский',
   'zh': '中文',
   'ja': '日本語',
+  'ko': '한국어',
   'fa': 'فارسی',
-  'hi': 'Hindi',
-  'id': 'Indonesia',
+  'hi': 'हिन्दी',
+  'ta': 'தமிழ்',
+  'th': 'ไทย',
+  'vi': 'Tiếng Việt',
+  'sw': 'Kiswahili',
+  'ha': 'Hausa',
+  'so': 'Soomaali',
+  'am': 'አማርኛ',
+  'ps': 'پښتو',
+  'ku': 'Kurdî',
+  'bs': 'Bosanski',
+  'sq': 'Shqip',
+  'uz': 'Oʻzbek',
+  'az': 'Azərbaycan',
+  'tl': 'Tagalog',
+  'jv': 'Basa Jawa',
+  'su': 'Basa Sunda',
 };
 
 String translationLanguage(TranslationEdition edition) =>
     _languageNames[edition.language.toLowerCase()] ?? edition.language;
+
+/// Nama penerjemah dari judul sumber. QuranEnc menulis "Bahasa - Penerjemah";
+/// bagian sesudah " - " pertama adalah penerjemahnya. Judul tanpa pemisah
+/// dipakai utuh.
+String translatorOf(TranslationEdition edition) {
+  final title = edition.title.trim();
+  final dash = title.indexOf(' - ');
+  return dash < 0 ? title : title.substring(dash + 3).trim();
+}
 
 /// Kode dua huruf di depan terjemahan ("EN").
 String translationCode(TranslationEdition edition) {
@@ -276,7 +305,7 @@ class TranslationDownloadRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final title = '${translationLanguage(edition)} · ${edition.title}';
+    final title = '${translationLanguage(edition)} · ${translatorOf(edition)}';
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       decoration: BoxDecoration(

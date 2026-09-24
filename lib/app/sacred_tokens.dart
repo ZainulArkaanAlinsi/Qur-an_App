@@ -488,6 +488,9 @@ abstract final class SacredText {
     double weight,
   ) => TextStyle(
     fontFamily: family,
+    // Huruf Arab/Urdu dalam teks UI (nama bahasa, nama qari) memakai Amiri
+    // yang dibundel; font UI hanya berisi huruf Latin.
+    fontFamilyFallback: const ['Amiri'],
     fontSize: size,
     height: height / size,
     fontWeight: _weightOf(weight),

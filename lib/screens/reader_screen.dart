@@ -50,7 +50,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   late Future<_ReaderContent> _content;
   late ReadingSessionTracker _tracker;
   bool _focusMode = false;
-  bool _showTranslation = true;
+  bool _showTranslation = SharedPreferencesService.getShowIndonesian();
   double _arabicSize = SharedPreferencesService.getArabicFontSize();
   double _lineHeight = SharedPreferencesService.getArabicLineHeight();
   final _scroll = ItemScrollController();
@@ -116,21 +116,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   /// Terjemahan kedua pilihan pengguna (maksimal dua terjemahan sekaligus),
   /// beserta isinya bila sudah tersimpan di perangkat.
-  TranslationEdition? _second = _readSecond();
+  TranslationEdition? _second = readSecondTranslation();
   List<String>? _secondVerses;
   DownloadState _download = DownloadState.idle;
-
-  static TranslationEdition? _readSecond() {
-    final raw = SharedPreferencesService.getSecondTranslation();
-    if (raw == null) return null;
-    try {
-      return TranslationEdition.fromJson(
-        jsonDecode(raw) as Map<String, dynamic>,
-      );
-    } on Object {
-      return null;
-    }
-  }
 
   /// Memuat isi terjemahan kedua dari perangkat; tidak mengunduh apa pun.
   Future<void> _loadSecond() async {
@@ -220,109 +208,23 @@ class _ReaderScreenState extends State<ReaderScreen> {
     );
   }
 
-  /// Pilih terjemahan: Indonesia bawaan (bisa disembunyikan) dan satu
-  /// terjemahan kedua. Bahasa lain diunduh lewat layar Terjemahan.
-  Future<void> _openLanguageSheet() async {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final saved = await TranslationRepository.instance.online.saved();
-    if (!mounted) return;
-    final editions = [
-      for (final item in saved) item.edition,
-      if (!saved.any((s) => s.edition == suggestedSecondTranslation))
-        suggestedSecondTranslation,
-    ];
-    final picked = await showModalBottomSheet<Object>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: tokens.bg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setSheet) => SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
-                  child: Text(
-                    'Terjemahan',
-                    style: SacredText.stageTitle.copyWith(color: tokens.ink),
-                  ),
-                ),
-                GroupedList(
-                  children: [
-                    ListRow(
-                      title: 'Bahasa Indonesia',
-                      subtitle: 'Kementerian Agama RI · bawaan',
-                      trailing: IosToggle(
-                        value: _showTranslation,
-                        semanticsLabel: 'Tampilkan terjemahan Indonesia',
-                        onChanged: (value) {
-                          setSheet(() {});
-                          setState(() => _showTranslation = value);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                GroupedList(
-                  label: 'Terjemahan kedua',
-                  children: [
-                    ListRow(
-                      title: 'Tidak ada',
-                      trailing: _second == null ? _check(tokens) : null,
-                      onTap: () => Navigator.pop(sheetContext, false),
-                    ),
-                    for (final edition in editions)
-                      ListRow(
-                        title:
-                            '${translationLanguage(edition)} · ${edition.title}',
-                        subtitle: saved.any((s) => s.edition == edition)
-                            ? '${edition.provider.label} · tersimpan'
-                            : '${edition.provider.label} · perlu diunduh',
-                        trailing: _second == edition ? _check(tokens) : null,
-                        onTap: () => Navigator.pop(sheetContext, edition),
-                      ),
-                    ListRow(
-                      title: 'Bahasa lain…',
-                      subtitle: 'Cari dan unduh dari QuranEnc',
-                      chevron: true,
-                      onTap: () => Navigator.pop(sheetContext, 'more'),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                  child: Text(
-                    'Maksimal dua terjemahan sekaligus. Teks tampil persis '
-                    'dari sumbernya beserta nama penerjemah.',
-                    style: SacredText.cardNote.copyWith(color: tokens.sec),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+  /// Layar Terjemahan (06): memilih Indonesia bawaan dan satu terjemahan
+  /// lain. Sepulangnya, pilihan dibaca ulang dari penyimpanan.
+  Future<void> _openTranslations() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const TranslationPicker(backLabel: 'Kartu'),
       ),
     );
-    if (!mounted || picked == null) return;
-    if (picked == 'more') {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const TranslationPicker()),
-      );
-      if (mounted) await _openLanguageSheet();
-      return;
-    }
-    await _setSecond(picked is TranslationEdition ? picked : null);
+    if (!mounted) return;
+    setState(() {
+      _showTranslation = SharedPreferencesService.getShowIndonesian();
+      _second = readSecondTranslation();
+      _secondVerses = null;
+      _download = DownloadState.idle;
+    });
+    await _loadSecond();
   }
-
-  static Widget _check(SacredTokens tokens) =>
-      LineIcon(SacredIcons.checkCircle, color: tokens.primaryText, size: 22);
 
   Future<_ReaderContent> _load() async {
     final arabic = await QuranTextRepository.instance.versesForSurah(
@@ -544,6 +446,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       onChanged: (value) {
                         setSheetState(() {});
                         setState(() => _showTranslation = value);
+                        unawaited(
+                          SharedPreferencesService.setShowIndonesian(value),
+                        );
                       },
                     ),
                   ],
@@ -717,7 +622,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     ReaderChips(
                       languageLabel: _languageLabel,
                       tajweed: _tajweed,
-                      onLanguage: () => unawaited(_openLanguageSheet()),
+                      onLanguage: () => unawaited(_openTranslations()),
                       onTajweed: () => _toggleTajweed(content),
                     ),
                   Expanded(

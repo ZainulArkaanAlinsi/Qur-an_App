@@ -9,6 +9,8 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/online_translations.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/screens/translation_picker.dart';
+import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 http.Response _json(Object body, [int status = 200]) => http.Response.bytes(
   utf8.encode(jsonEncode(body)),
@@ -30,6 +32,8 @@ void main() {
 
   setUp(() async {
     temp = await Directory.systemTemp.createTemp('quran_picker_');
+    SharedPreferences.setMockInitialValues({});
+    await SharedPreferencesService.init();
   });
 
   tearDown(() async {
@@ -102,6 +106,17 @@ void main() {
 
     expect(find.text('Unduh'), findsNothing);
     expect(find.text('Umm Muhammad'), findsOneWidget);
-    expect(find.text('Semua terjemahan sudah tersimpan'), findsOneWidget);
+    // Diunduh untuk dibaca: langsung dipakai sebagai terjemahan kedua.
+    expect(readSecondTranslation()?.id, 'eng-ummmuhammad');
+    expect(
+      find.bySemanticsLabel(RegExp('^English, Umm Muhammad, dipakai')),
+      findsOneWidget,
+    );
+
+    // Ketuk lagi: berhenti dipakai, tetap tersimpan di perangkat.
+    await tester.tap(find.text('Umm Muhammad'));
+    await _settle(tester);
+    expect(readSecondTranslation(), isNull);
+    expect(find.text('Tersimpan'), findsOneWidget);
   });
 }
