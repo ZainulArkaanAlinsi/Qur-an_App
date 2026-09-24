@@ -12,6 +12,9 @@ class PrayerDay {
     this.timezone,
     this.sunrise,
     this.sunset,
+    this.hijriDay,
+    this.hijriMonthNumber,
+    this.hijriYear,
   });
 
   final DateTime gregorianDate;
@@ -22,6 +25,42 @@ class PrayerDay {
   final String hijriDate;
   final String hijriMonth;
   final Map<String, String> prayers;
+
+  /// Tanggal Hijriah dalam angka dari AlAdhan, supaya nama bulannya bisa
+  /// ditulis dalam bahasa Indonesia. Null bila responsnya tidak memuatnya.
+  final int? hijriDay;
+  final int? hijriMonthNumber;
+  final int? hijriYear;
+
+  /// Nama bulan Hijriah baku bahasa Indonesia (KBBI), Muharram = 1.
+  static const hijriMonthsId = [
+    'Muharram',
+    'Safar',
+    'Rabiulawal',
+    'Rabiulakhir',
+    'Jumadilawal',
+    'Jumadilakhir',
+    'Rajab',
+    'Syakban',
+    'Ramadan',
+    'Syawal',
+    'Zulkaidah',
+    'Zulhijah',
+  ];
+
+  /// "13 Rabiulakhir 1448 H". Bulan hanya ditulis sekali (dulu tampil dobel:
+  /// "…1448 Rabī' al-t…"). Kalau angka bulannya tidak ada, pakai teks asli.
+  String get hijriIndonesian {
+    final month = hijriMonthNumber;
+    if (hijriDay == null ||
+        hijriYear == null ||
+        month == null ||
+        month < 1 ||
+        month > 12) {
+      return hijriDate;
+    }
+    return '$hijriDay ${hijriMonthsId[month - 1]} $hijriYear H';
+  }
 
   /// Terbit dan terbenam menurut AlAdhan, dipakai sebagai keterangan di kartu
   /// salat berikutnya. Keduanya bisa null: kalau responsnya tidak memuatnya,
@@ -173,6 +212,9 @@ class PrayerService {
       gregorianDate: day,
       hijriDate: '${hijri['day']} ${month?['en'] ?? ''} ${hijri['year']}',
       hijriMonth: month?['en'] as String? ?? '',
+      hijriDay: int.tryParse('${hijri['day']}'),
+      hijriMonthNumber: int.tryParse('${month?['number']}'),
+      hijriYear: int.tryParse('${hijri['year']}'),
       prayers: prayers,
     );
   }

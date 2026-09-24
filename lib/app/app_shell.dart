@@ -99,6 +99,7 @@ class _AppShellState extends State<AppShell> {
       HomeScreen(
         onOpenQuran: () => setState(() => _index = 1),
         onOpenLearn: () => setState(() => _index = 2),
+        onOpenHafalan: () => setState(() => _index = 3),
       ),
       const QuranLibraryScreen(),
       const LearnScreen(),

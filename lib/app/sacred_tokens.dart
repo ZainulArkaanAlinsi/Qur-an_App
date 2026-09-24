@@ -389,17 +389,29 @@ enum SkyPeriod {
   final List<Color> colors;
 
   /// Periode dari jam setempat; dipakai bila jadwal salat belum dimuat.
+  /// Subuh hanya sampai jam 7; jam 9 pagi sudah langit siang, bukan fajar.
   static SkyPeriod fromHour(int hour) => switch (hour) {
-    >= 4 && < 11 => SkyPeriod.fajr,
-    >= 11 && < 15 => SkyPeriod.day,
+    >= 4 && < 7 => SkyPeriod.fajr,
+    >= 7 && < 15 => SkyPeriod.day,
     >= 15 && < 18 => SkyPeriod.dusk,
     _ => SkyPeriod.night,
   };
 
-  LinearGradient get gradient => LinearGradient(
+  /// Gradien empat warna memakai titik henti mockup (0, 44%, 76%, 100%).
+  LinearGradient get gradient => gradientFor(Brightness.light);
+
+  /// Di tema gelap langitnya diredupkan 45% supaya tidak menyilaukan
+  /// (V2-Beranda-Gelap: #06161A → #8C6A43).
+  LinearGradient gradientFor(Brightness brightness) => LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: colors,
+    colors: brightness == Brightness.dark
+        ? [
+            for (final color in colors)
+              Color.lerp(color, const Color(0xFF000000), .45)!,
+          ]
+        : colors,
+    stops: colors.length == 4 ? const [0, .44, .76, 1] : null,
   );
 }
 
@@ -582,6 +594,10 @@ abstract final class SacredText {
   static TextStyle get button => _font(ui, 15, 20, 800);
   static TextStyle get buttonSmall => _font(ui, 14, 18, 800);
 
+  /// Beranda v2: nama pengguna 38/44 dan judul surah kartu hero 30/34.
+  static TextStyle get homeName => _font(serif, 38, 44, 500);
+  static TextStyle get heroTitleV2 => _font(serif, 30, 34, 500);
+
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
 }
@@ -599,4 +615,26 @@ abstract final class SacredBadge {
 
   /// Glif di atas lencana.
   static const glyph = Color(0xFFFFFFFF);
+}
+
+/// Warna di atas kartu hero hijau dan strip langit. Latarnya selalu gelap di
+/// kedua tema, jadi nilainya tetap (Beranda v2, Hafalan v2).
+abstract final class SacredArt {
+  /// Judul putih dan keterangan 82%.
+  static const ink = Color(0xFFFFFFFF);
+  static const inkSoft = Color(0xD1FFFFFF);
+
+  /// Isi sampul mihrab kecil (hitam 22%).
+  static const plate = Color(0x38000000);
+
+  /// Tombol ikon kaca di atas kartu hero: isi 12%, garis 22%.
+  static const glass = Color(0x1FFFFFFF);
+  static const glassBorder = Color(0x38FFFFFF);
+
+  /// Strip salat: lingkaran ikon 16%, ikon matahari, pill hitung mundur 28%,
+  /// bayangan teks 30%.
+  static const skyIconBg = Color(0x29FFFFFF);
+  static const skyIcon = Color(0xFFFFF1C9);
+  static const skyPill = Color(0x47000000);
+  static const skyTextShadow = Color(0x4D000000);
 }
