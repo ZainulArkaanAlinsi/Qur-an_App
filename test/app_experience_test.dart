@@ -165,7 +165,7 @@ void main() {
 
     expect(find.text('Selesai'), findsOneWidget);
     expect(find.text('Huruf hijaiyah'), findsOneWidget);
-    expect(find.text('0 / 5'), findsOneWidget);
+    expect(find.text('0 / 3'), findsOneWidget);
   });
 
   testWidgets('ketuk chip status menyimpan hafalan surah', (tester) async {

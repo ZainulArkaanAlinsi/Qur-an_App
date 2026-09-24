@@ -15,11 +15,37 @@ sealed class LessonBlock {
   const LessonBlock();
 }
 
-/// Penjelasan biasa.
+/// Penjelasan biasa. Paragraf baru membuka bagian (halaman) baru di layar
+/// pelajaran; [heading] opsional menjadi judul halaman itu.
+///
+/// `**teks**` di dalam [text] ditebalkan.
 @immutable
 class LessonText extends LessonBlock {
-  const LessonText(this.text);
+  const LessonText(this.text, {this.heading});
   final String text;
+  final String? heading;
+}
+
+/// Kartu huruf: huruf Arab besar, namanya, dan cirinya
+/// (mis. ب · Ba · "1 titik di bawah"). Ditulis penyusun materi; aplikasi
+/// tidak menambah atau menebak ciri huruf.
+@immutable
+class LessonLetters extends LessonBlock {
+  const LessonLetters(this.items);
+  final List<LessonLetter> items;
+}
+
+@immutable
+class LessonLetter {
+  const LessonLetter({
+    required this.letter,
+    required this.name,
+    required this.note,
+  });
+
+  final String letter;
+  final String name;
+  final String note;
 }
 
 /// Catatan pendek yang perlu ditonjolkan.
@@ -152,11 +178,27 @@ class Lesson {
   /// Ada isinya yang bisa dibaca, bukan sekadar kerangka.
   bool get hasContent => blocks.isNotEmpty;
 
-  /// Banyaknya bagian yang dilalui satu per satu di layar pelajaran:
-  /// tiap blok bacaan, ditambah satu bagian latihan bila ada soal.
-  int get stepCount =>
-      blocks.where((block) => block is! LessonQuiz).length +
-      (quizzes.isEmpty ? 0 : 1);
+  /// Halaman bacaan: tiap paragraf membuka halaman baru, dan tip, contoh,
+  /// kartu huruf, serta audio ikut halaman paragraf sebelumnya.
+  List<List<LessonBlock>> get pages {
+    final pages = <List<LessonBlock>>[];
+    for (final block in blocks) {
+      if (block is LessonQuiz) continue;
+      final opensPage =
+          block is LessonText &&
+          (pages.isEmpty || pages.last.any((item) => item is LessonText));
+      if (pages.isEmpty || opensPage) {
+        pages.add([block]);
+      } else {
+        pages.last.add(block);
+      }
+    }
+    return pages;
+  }
+
+  /// Banyaknya bagian di layar pelajaran: halaman bacaan, ditambah satu
+  /// bagian latihan bila ada soal. Dipakai kartu tahap ("2 / 3").
+  int get stepCount => pages.length + (quizzes.isEmpty ? 0 : 1);
 
   List<LessonQuiz> get quizzes => [
     for (final block in blocks)

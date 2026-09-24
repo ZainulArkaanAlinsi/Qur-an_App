@@ -91,23 +91,27 @@ class SacredButton extends StatelessWidget {
       enabled: onTap != null,
       label: label,
       excludeSemantics: true,
-      child: Material(
-        color: bg,
-        borderRadius: radius,
-        child: InkWell(
-          onTap: onTap,
+      // Nonaktif harus terlihat nonaktif, bukan tombol yang tampak rusak.
+      child: Opacity(
+        opacity: onTap == null ? .4 : 1,
+        child: Material(
+          color: bg,
           borderRadius: radius,
-          child: Container(
-            constraints: BoxConstraints(minHeight: height),
-            padding: padding,
-            decoration: tone == ButtonTone.surface
-                ? BoxDecoration(
-                    borderRadius: radius,
-                    boxShadow: tokens.cardShadows,
-                  )
-                : null,
-            alignment: expand ? Alignment.center : null,
-            child: content,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: radius,
+            child: Container(
+              constraints: BoxConstraints(minHeight: height),
+              padding: padding,
+              decoration: tone == ButtonTone.surface
+                  ? BoxDecoration(
+                      borderRadius: radius,
+                      boxShadow: tokens.cardShadows,
+                    )
+                  : null,
+              alignment: expand ? Alignment.center : null,
+              child: content,
+            ),
           ),
         ),
       ),

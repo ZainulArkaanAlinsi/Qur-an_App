@@ -36,6 +36,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     required this.floatShadow,
     required this.floatShadowSoft,
     required this.segment,
+    required this.success,
+    required this.successSoft,
+    required this.danger,
+    required this.dangerSoft,
   });
 
   final Color bg;
@@ -84,6 +88,14 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
 
   /// Segmen aktif pada segmented control (putih di terang, #2C3A35 di gelap).
   final Color segment;
+
+  /// Jawaban benar (cincin + teks) dan latar lembutnya; juga "Lancar".
+  final Color success;
+  final Color successSoft;
+
+  /// Jawaban salah dan latar lembutnya; juga tombol "Salah" di sesi hafalan.
+  final Color danger;
+  final Color dangerSoft;
 
   /// Bayangan kartu v2: bayangan tipis + cincin 0.5 px.
   List<BoxShadow> get cardShadows => [
@@ -135,6 +147,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     floatShadow: Color(0x2100281C),
     floatShadowSoft: Color(0x1400281C),
     segment: Color(0xFFFFFFFF),
+    success: Color(0xFF1B7D3A),
+    successSoft: Color(0xFFE3F2E8),
+    danger: Color(0xFF9B1C1C),
+    dangerSoft: Color(0xFFFBE3E3),
   );
 
   static const dark = SacredTokens(
@@ -171,6 +187,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     floatShadow: Color(0x8C000000),
     floatShadowSoft: Color(0x66000000),
     segment: Color(0xFF2C3A35),
+    success: Color(0xFF6FD890),
+    successSoft: Color(0x1F6FD890),
+    danger: Color(0xFFFF9B9B),
+    dangerSoft: Color(0x1FFF7B7B),
   );
 
   /// Sepia memakai kaca dan aksen tema terang, sesuai spesifikasi.
@@ -208,6 +228,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     floatShadow: Color(0x213E3222),
     floatShadowSoft: Color(0x143E3222),
     segment: Color(0xFFFFFFFF),
+    success: Color(0xFF1B7D3A),
+    successSoft: Color(0xFFE3F2E8),
+    danger: Color(0xFF9B1C1C),
+    dangerSoft: Color(0xFFFBE3E3),
   );
 
   /// Kontras tinggi: hitam/putih penuh, aksen tetap dapat dibedakan.
@@ -245,6 +269,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     floatShadow: Color(0x33000000),
     floatShadowSoft: Color(0x1F000000),
     segment: Color(0xFFFFFFFF),
+    success: Color(0xFF0B5A26),
+    successSoft: Color(0xFFD9EFE0),
+    danger: Color(0xFF7A0F0F),
+    dangerSoft: Color(0xFFF7D6D6),
   );
 
   static const highContrastDark = SacredTokens(
@@ -281,6 +309,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     floatShadow: Color(0x8C000000),
     floatShadowSoft: Color(0x66000000),
     segment: Color(0xFF2B2B2B),
+    success: Color(0xFF8FF0AE),
+    successSoft: Color(0x338FF0AE),
+    danger: Color(0xFFFFB3B3),
+    dangerSoft: Color(0x33FFB3B3),
   );
 
   @override
@@ -313,6 +345,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     Color? floatShadow,
     Color? floatShadowSoft,
     Color? segment,
+    Color? success,
+    Color? successSoft,
+    Color? danger,
+    Color? dangerSoft,
   }) => SacredTokens(
     bg: bg ?? this.bg,
     surf: surf ?? this.surf,
@@ -342,6 +378,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     floatShadow: floatShadow ?? this.floatShadow,
     floatShadowSoft: floatShadowSoft ?? this.floatShadowSoft,
     segment: segment ?? this.segment,
+    success: success ?? this.success,
+    successSoft: successSoft ?? this.successSoft,
+    danger: danger ?? this.danger,
+    dangerSoft: dangerSoft ?? this.dangerSoft,
   );
 
   @override
@@ -380,6 +420,10 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       floatShadow: mix(floatShadow, other.floatShadow),
       floatShadowSoft: mix(floatShadowSoft, other.floatShadowSoft),
       segment: mix(segment, other.segment),
+      success: mix(success, other.success),
+      successSoft: mix(successSoft, other.successSoft),
+      danger: mix(danger, other.danger),
+      dangerSoft: mix(dangerSoft, other.dangerSoft),
     );
   }
 }
@@ -616,6 +660,17 @@ abstract final class SacredText {
   static TextStyle get nodeNumber => _font(ui, 15, 18, 800);
   static TextStyle get stageTitle => _font(ui, 17, 22, 800);
   static TextStyle get stageSummary => _font(ui, 13, 19, 500);
+
+  /// Pelajaran v2: penghitung "3/5", paragraf 15/22, kartu huruf, soal,
+  /// pilihan, umpan balik.
+  static TextStyle get stepCounter => _font(ui, 13, 17, 800);
+  static TextStyle get lessonBody => _font(ui, 15, 22, 500);
+  static TextStyle get letterName => _font(ui, 15, 19, 800);
+  static TextStyle get letterNote => _font(ui, 11.5, 15, 600);
+  static TextStyle get question => _font(ui, 17, 22, 800);
+  static TextStyle get option => _font(ui, 15, 20, 700);
+  static TextStyle get feedback => _font(ui, 13.5, 19, 700);
+  static TextStyle get dashedNote => _font(ui, 13.5, 18, 700);
 
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
