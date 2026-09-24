@@ -32,7 +32,8 @@ enum AudioProvider {
     'Al Quran Cloud',
     'Islamic Network CDN (alquran.cloud). Hak cipta rekaman milik qari.',
   ),
-  everyAyah('EveryAyah', 'everyayah.com. Hak cipta rekaman milik qari.'),
+  // EveryAyah sengaja tidak dipakai: lisensinya tidak jelas
+  // (API-Qur'an-gratis.md).
   quranFoundation(
     'Quran Foundation',
     'quran.foundation. Hak cipta rekaman milik qari.',

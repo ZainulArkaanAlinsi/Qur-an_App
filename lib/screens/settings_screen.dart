@@ -20,6 +20,8 @@ import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/screens/prayer_screen.dart';
 import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/reciter_picker.dart';
+import 'package:quran_app_2025/screens/sources_screen.dart';
+import 'package:quran_app_2025/screens/translation_picker.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
@@ -33,13 +35,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
 const _bottomInset = 132.0;
-
-/// Atribusi murottal yang mengikuti qari dan bitrate yang benar-benar dipakai.
-String _murottalAttribution() {
-  final reciter = SharedPreferencesService.getReciter();
-  return '${reciter.displayName}, per ayat ${reciter.bitrate ?? 128} kbps. '
-      '${reciter.attribution}';
-}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -299,6 +294,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: tokens.sep,
               ),
               SettingsRow(
+                icon: SacredIcons.translate,
+                chipColor: SacredBadge.blue,
+                title: 'Terjemahan',
+                value: 'Unduh bahasa lain',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const TranslationPicker(),
+                  ),
+                ),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
                 icon: SacredIcons.sun,
                 chipColor: SacredBadge.grey,
                 title: 'Tema',
@@ -357,38 +369,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         _Group(
           header: 'Sumber & lisensi',
-          child: Column(
-            children: [
-              _SourceRow(
-                icon: SacredIcons.checkCircle,
-                chipColor: SacredBadge.green,
-                title: 'Teks Arab offline',
-                body:
-                    'Tanzil Quran Text, Uthmani v1.0.2 (CC BY 3.0). Disimpan '
-                    'tanpa perubahan.',
-                url: 'https://tanzil.net/',
-              ),
-              _SourceRow(
-                icon: SacredIcons.translate,
-                chipColor: SacredBadge.blue,
-                title: 'Terjemahan Kemenag RI',
-                body:
-                    'Edisi “Bahasa Indonesia” dari Tanzil (pembaruan 4 Juni '
-                    '2010), penerjemah Kementerian Agama RI. Tersimpan offline '
-                    'tanpa perubahan; untuk penggunaan non-komersial.',
-                url: 'https://tanzil.net/trans/',
-              ),
-              // Dulu baris ini selalu menyebut "Alafasy, 128 kbps" apa pun
-              // qari yang dipilih, karena seluruh grupnya `const` sehingga
-              // mustahil membaca pilihan pengguna.
-              _SourceRow(
-                icon: SacredIcons.headphones,
-                chipColor: SacredBadge.gold,
-                title: 'Murottal',
-                body: _murottalAttribution(),
-                url: 'https://alquran.cloud/terms-and-conditions',
-              ),
-            ],
+          child: SettingsRow(
+            icon: SacredIcons.book,
+            chipColor: SacredBadge.gold,
+            title: 'Sumber & lisensi',
+            subtitle: 'Teks, terjemahan, audio, dan waktu salat',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SourcesScreen()),
+            ),
           ),
         ),
 
@@ -928,42 +916,6 @@ class _AboutCardState extends State<_AboutCard> {
       ),
     );
   }
-}
-
-/// Baris sumber teks/audio. Membuka tautan lisensinya di peramban.
-class _SourceRow extends StatelessWidget {
-  const _SourceRow({
-    required this.icon,
-    required this.chipColor,
-    required this.title,
-    required this.body,
-    required this.url,
-  });
-
-  final List<String> icon;
-  final Color chipColor;
-  final String title;
-  final String body;
-  final String url;
-
-  @override
-  Widget build(BuildContext context) => SettingsRow(
-    icon: icon,
-    chipColor: chipColor,
-    title: title,
-    subtitle: body,
-    onTap: () async {
-      final opened = await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      ).catchError((Object _) => false);
-      if (!opened && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tautan tidak dapat dibuka: $url')),
-        );
-      }
-    },
-  );
 }
 
 class _SyncCard extends StatefulWidget {

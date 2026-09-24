@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:quran_app_2025/data/audio_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
@@ -152,6 +153,10 @@ class QuranAudioService {
 
   /// Verse key (`surah:ayah`) the player is actually positioned on.
   final playingVerse = ValueNotifier<String?>(null);
+
+  /// Keterangan bila audio sedang diputar dari sumber cadangan, supaya orang
+  /// tahu kenapa suaranya bisa berbeda. Null = sumber utama.
+  final sourceNote = ValueNotifier<String?>(null);
   final isPlaying = ValueNotifier<bool>(false);
   final buffering = ValueNotifier<bool>(false);
   final repeat = ValueNotifier<AudioRepeat>(AudioRepeat.off);
@@ -217,28 +222,27 @@ class QuranAudioService {
 
   /// URL ayat pada qari pilihan. Bitrate berbeda antar qari, jadi memakai
   /// nilai yang sudah diperiksa saat qari dipilih.
-  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) {
-    final selected = reciter ?? SharedPreferencesService.getReciter();
-    final bitrate = selected.bitrate ?? 128;
-    return Uri.https(
-      'cdn.islamic.network',
-      '/quran/audio/$bitrate/${selected.identifier}/'
-          '${globalAyahNumber(surah, ayah)}.mp3',
-    );
-  }
+  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) =>
+      AudioRepository.islamicNetworkAyah(
+        reciter ?? SharedPreferencesService.getReciter(),
+        surah,
+        ayah,
+      );
 
-  /// Berkas lokal bila tersedia, kalau tidak URL CDN.
+  /// Berkas lokal bila tersedia, kalau tidak URL [remote] (bawaan: CDN
+  /// utama cdn.islamic.network).
   static Uri sourceFor(
     int surah,
     int ayah, {
     required Reciter reciter,
     required String? folder,
+    Uri Function(int surah, int ayah)? remote,
   }) {
     if (folder != null) {
       final file = File('$folder/${globalAyahNumber(surah, ayah)}.mp3');
       if (file.existsSync() && file.lengthSync() > 0) return file.uri;
     }
-    return urlFor(surah, ayah, reciter: reciter);
+    return remote?.call(surah, ayah) ?? urlFor(surah, ayah, reciter: reciter);
   }
 
   int? get _currentAyah {
@@ -459,15 +463,62 @@ class QuranAudioService {
       // internet; sisanya tetap di-stream.
       final reciter = SharedPreferencesService.getReciter();
       final folder = await AudioDownloadService().folderPath(reciter);
-      await _player
-          .setAudioSources([
-            for (var copy = 0; copy < copies; copy++)
-              for (var ayah = next.firstAyah; ayah <= next.lastAyah; ayah++)
-                AudioSource.uri(
-                  sourceFor(next.surah, ayah, reciter: reciter, folder: folder),
-                ),
-          ], initialPosition: position)
-          .timeout(_loadTimeout);
+      List<AudioSource> sources([Uri Function(int, int)? remote]) => [
+        for (var copy = 0; copy < copies; copy++)
+          for (var ayah = next.firstAyah; ayah <= next.lastAyah; ayah++)
+            AudioSource.uri(
+              sourceFor(
+                next.surah,
+                ayah,
+                reciter: reciter,
+                folder: folder,
+                remote: remote,
+              ),
+            ),
+      ];
+      sourceNote.value = null;
+      try {
+        // Utama: cdn.islamic.network (atau berkas yang sudah diunduh).
+        await _player
+            .setAudioSources(sources(), initialPosition: position)
+            .timeout(_loadTimeout);
+      } on Object {
+        if (generation != _generation) return;
+        // Cadangan per ayat: equran.id.
+        final qari = AudioRepository.equranQariFor(reciter);
+        try {
+          await _player
+              .setAudioSources(
+                sources((s, a) => AudioRepository.equranAyah(qari, s, a)),
+                initialPosition: position,
+              )
+              .timeout(_loadTimeout);
+          sourceNote.value = AudioRepository.equranIsSameReciter(reciter)
+              ? 'Diputar dari sumber cadangan equran.id.'
+              : 'Sumber utama tidak merespons; diputar dari equran.id '
+                    'dengan suara ${AudioRepository.equranQari[qari]!.replaceAll('-', ' ')}.';
+        } on Object {
+          if (generation != _generation) return;
+          // Terakhir: satu berkas per surah (MP3Quran, lalu equran.id),
+          // hanya bila yang diminta memang satu surah penuh.
+          final whole =
+              copies == 1 &&
+              next.firstAyah == 1 &&
+              next.lastAyah == surahCatalog[next.surah - 1].ayahCount;
+          if (!whole) rethrow;
+          final result = await AudioRepository().surahAudio(
+            reciter,
+            next.surah,
+          );
+          await _player
+              .setAudioSources([AudioSource.uri(result.value)])
+              .timeout(_loadTimeout);
+          sourceNote.value =
+              'Diputar per surah dari '
+              '${result.value.host.contains('equran') ? 'equran.id' : 'MP3Quran'}'
+              '; penanda ayat tidak mengikuti bacaan.';
+        }
+      }
       if (generation != _generation) return;
       _loading = false;
       _syncIndex(_player.currentIndex);

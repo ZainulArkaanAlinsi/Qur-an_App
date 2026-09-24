@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:quran_app_2025/data/online_translations.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
+
+export 'package:quran_app_2025/data/online_translations.dart';
 
 /// Indonesian translation bundled offline, stored verbatim from Tanzil.
 ///
@@ -12,6 +15,10 @@ class TranslationRepository {
   TranslationRepository._();
   static final instance = TranslationRepository._();
   static const asset = 'assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt';
+
+  /// Terjemahan lain yang diunduh: QuranEnc (utama), fawazahmed0 (cadangan),
+  /// tersimpan di perangkat. Terjemahan Kemenag di atas tetap bawaan offline.
+  final online = OnlineTranslations();
 
   List<List<String>>? _surahs;
   Future<List<List<String>>>? _loading;
