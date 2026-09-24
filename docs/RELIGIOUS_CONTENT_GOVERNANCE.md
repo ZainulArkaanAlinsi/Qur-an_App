@@ -37,6 +37,19 @@ Status: draf Fase 0 · 22 September 2026
 |---|---|---|
 | Nama Indonesia 17 hukum tajwid | `lib/features/tajweed/domain/tajweed_rule.dart` | Guru tajwid; khususnya pemetaan `madda_permissible` → "Mad Jaiz", `madda_obligatory` → "Mad Wajib", `slnt` → "Huruf tidak dibaca", `ham_wasl` → "Hamzah Washal" |
 | Palet warna tajwid "Pratinjau" | `lib/features/tajweed/presentation/tajweed_palette.dart` | Guru tajwid + uji buta warna (kontras sudah diuji otomatis) |
+| Pemetaan hukum cpfair → nama Indonesia | `lib/features/tajweed/data/tajweed_repository.dart` (`cpfairRules`) | Guru tajwid; khususnya `madd_246` (mad 'aridh/lin) → "Mad Jaiz" |
+| Contoh kata di layar Warna tajwid | `lib/features/tajweed/presentation/tajweed_legend_screen.dart` | Guru tajwid (teks diambil dari Tanzil, pilihan contohnya yang perlu diperiksa) |
+| Penjelasan cara membaca tiap hukum (untuk pembaca awam) | `assets/learn/tajweed_explanations.json` | **Masih kosong.** Diisi guru tajwid, minimal 2 reviewer; hanya `published` dengan ≥ 2 reviewer yang tampil di build rilis (dijaga `TajweedExplanation.publishable` dan diuji). |
+
+## Pengecualian dari pemilik
+
+**24 September 2026.** Pemilik mengizinkan **nama hukum tajwid dan palet
+warna** (berstatus draf) tampil di build rilis mulai versi 1.7.0, dengan label
+**DRAF — belum direview** yang jelas di layar Warna tajwid, lembar Tampilan
+baca, dan lembar penjelasan hukum. Pengecualian ini **tidak** berlaku untuk
+penjelasan cara membaca: teks itu tetap wajib ditulis dan disetujui guru
+tajwid sebelum tampil di rilis. Pengecualian dicabut begitu reviewer
+menyetujui nama dan palet.
 
 ## Materi belajar membaca
 

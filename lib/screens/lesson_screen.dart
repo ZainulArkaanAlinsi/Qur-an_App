@@ -6,6 +6,7 @@ import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
+import 'package:quran_app_2025/data/basmalah.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
@@ -589,9 +590,15 @@ class _Example extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             FutureBuilder<List<String>>(
-              future: QuranTextRepository.instance.versesForSurah(
-                example.surah,
-              ),
+              // Ayat 1 tanpa basmalah bawaan Tanzil (bukan bagian ayat).
+              future: () async {
+                final raw = await QuranTextRepository.instance.versesForSurah(
+                  example.surah,
+                );
+                final fatihah = await QuranTextRepository.instance
+                    .versesForSurah(1);
+                return splitBasmalah(example.surah, raw, fatihah.first).verses;
+              }(),
               builder: (context, snapshot) {
                 final verses = snapshot.data;
                 if (verses == null) {

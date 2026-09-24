@@ -554,6 +554,12 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_country', country.trim());
   }
 
+  /// Petunjuk "ketuk huruf berwarna" sudah dipahami (dicoba atau ditutup).
+  static bool getTajweedHintDone() =>
+      _prefs?.getBool('tajweed_hint_done') ?? false;
+  static Future<void> setTajweedHintDone() async =>
+      _prefs?.setBool('tajweed_hint_done', true);
+
   /// Warna tajwid di kartu ayat (bawaan menyala).
   static bool getReaderTajweed() => _prefs?.getBool('reader_tajweed') ?? true;
   static Future<void> setReaderTajweed(bool value) async =>

@@ -3,7 +3,7 @@ description: "A beautiful Quran app with complete features"
 
 publish_to: "none"
 
-version: 1.8.0+14
+version: 1.8.1+15
 
 environment:
   sdk: ">=3.9.2 <4.0.0"
@@ -85,6 +85,7 @@ flutter:
     # Materi tajwid ditulis manusia dan diisi di luar kode; lihat
     # docs/TAJWEED_CONTENT.md.
     - assets/learn/tajweed_lessons.json
+    - assets/learn/tajweed_explanations.json
     - assets/learn/curriculum.json
 
   fonts:

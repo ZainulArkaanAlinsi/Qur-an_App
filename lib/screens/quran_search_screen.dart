@@ -3,6 +3,7 @@ import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
+import 'package:quran_app_2025/data/basmalah.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
@@ -41,12 +42,20 @@ class _QuranSearchScreenState extends State<QuranSearchScreen> {
   late Future<_Corpus> _corpus = _load();
 
   Future<_Corpus> _load() async {
-    final arabic = await Future.wait(
+    final raw = await Future.wait(
       List.generate(
         surahCatalog.length,
         (index) => QuranTextRepository.instance.versesForSurah(index + 1),
       ),
     );
+    // Basmalah bawaan Tanzil di ayat 1 bukan bagian ayat: tanpa ini, mencari
+    // "بسم" memunculkan ayat 1 hampir semua surah. Basmalah yang memang ayat
+    // (1:1 dan di tengah 27:30) tetap bisa ditemukan.
+    final fatihahFirst = raw.first.first;
+    final arabic = [
+      for (var s = 0; s < raw.length; s++)
+        splitBasmalah(s + 1, raw[s], fatihahFirst).verses,
+    ];
     final translation = await Future.wait(
       List.generate(
         surahCatalog.length,

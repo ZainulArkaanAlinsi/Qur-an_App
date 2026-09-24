@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
@@ -112,6 +113,54 @@ void main() {
     await _settle(tester);
     expect(find.text('Indonesia'), findsOneWidget);
     expect(find.text('Unduh'), findsNothing);
+  });
+
+  testWidgets('huruf berwarna diketuk: penjelasan untuk orang awam', (
+    tester,
+  ) async {
+    await _prepare(tester);
+    await _pumpReader(tester);
+    await _settle(tester);
+    expect(
+      find.text('Ketuk huruf berwarna untuk melihat artinya.'),
+      findsOneWidget,
+    );
+
+    // Cari huruf berwarna pertama yang bisa diketuk lalu ketuk.
+    TapGestureRecognizer? tap;
+    for (final text in tester.widgetList<RichText>(find.byType(RichText))) {
+      text.text.visitChildren((span) {
+        if (tap == null &&
+            span is TextSpan &&
+            span.recognizer is TapGestureRecognizer) {
+          tap = span.recognizer! as TapGestureRecognizer;
+        }
+        return tap == null;
+      });
+      if (tap != null) break;
+    }
+    expect(tap, isNotNull, reason: 'huruf berwarna harus bisa diketuk');
+    tap!.onTap!();
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 60));
+    }
+
+    expect(
+      find.textContaining(RegExp(r'^DI (AYAT INI|BASMALAH)$')),
+      findsOneWidget,
+    );
+    expect(find.text('CARA MEMBACA'), findsOneWidget);
+    // Belum ada penjelasan dari guru tajwid: tidak dikarang, arahkan ke qari.
+    expect(
+      find.textContaining('sedang disiapkan bersama guru tajwid'),
+      findsOneWidget,
+    );
+    expect(find.text('Putar ayat ini'), findsOneWidget);
+    expect(SharedPreferencesService.getTajweedHintDone(), isTrue);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/05_kartu_hukum_tajwid.png'),
+    );
   });
 
   testWidgets('chip Tajwid mematikan dan menyimpan pilihan', (tester) async {

@@ -1,0 +1,141 @@
+{
+  "note": "Penjelasan cara membaca tiap hukum tajwid untuk orang awam. Diisi dan direview guru tajwid (docs/RELIGIOUS_CONTENT_GOVERNANCE.md): minimal 2 reviewer, hanya 'published' yang tampil di build rilis. Jangan diisi teks buatan AI.",
+  "rules": [
+    {
+      "rule": "hamzahWasl",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "lamSyamsiyah",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "silent",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "madThabii",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "madJaiz",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "madWajib",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "madLazim",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "qalqalah",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "ikhfaHaqiqi",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "ikhfaSyafawi",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "idghamBighunnah",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "idghamBilaghunnah",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "idghamMimi",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "idghamMutajanisain",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "idghamMutaqaribain",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "iqlab",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    },
+    {
+      "rule": "ghunnah",
+      "howToRead": null,
+      "source": null,
+      "reviewers": [],
+      "reviewStatus": "draft",
+      "reviewedAt": null
+    }
+  ]
+}

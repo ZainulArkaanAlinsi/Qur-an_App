@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app_2025/app/glass_surface.dart';
@@ -22,6 +23,8 @@ import 'package:quran_app_2025/features/reader/presentation/card_parts.dart';
 import 'package:quran_app_2025/features/reader/presentation/reading_mode_sheet.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
+import 'package:quran_app_2025/features/tajweed/domain/tajweed_rule.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/tajweed_rule_sheet.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/tajweed_legend_screen.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/tajweed_palette.dart';
 import 'package:quran_app_2025/screens/translation_picker.dart';
@@ -81,6 +84,39 @@ class _ReaderScreenState extends State<ReaderScreen> {
   ReaderPaper? _paper = ReaderPaper.byName(
     SharedPreferencesService.getReaderPaper(),
   );
+
+  /// Huruf berwarna diketuk: arti hukumnya untuk orang awam, huruf mana di
+  /// ayat ini, dan bacaan qari untuk ditirukan.
+  Future<void> _openRule(
+    _ReaderContent content,
+    int ayah,
+    TajweedRule rule, {
+    bool inBasmalah = false,
+  }) async {
+    final verse = content.tajweed?[ayah - 1];
+    if (verse == null) return;
+    if (!SharedPreferencesService.getTajweedHintDone()) {
+      unawaited(SharedPreferencesService.setTajweedHintDone());
+      setState(() {});
+    }
+    await showTajweedRuleSheet(
+      context,
+      verse: verse,
+      rule: rule,
+      palette: TajweedPalette.draftPreview,
+      // Huruf di basmalah: daftar kata dari basmalah saja; di ayat: dari
+      // ayat saja, tanpa basmalah bawaan.
+      from: inBasmalah || ayah != 1 ? 0 : content.basmalah,
+      to: inBasmalah ? content.basmalah - 1 : null,
+      area: inBasmalah ? 'Di basmalah' : 'Di ayat ini',
+      onPlay: () => unawaited(_playVerse(ayah)),
+      onLegend: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const TajweedLegendScreen(backLabel: 'Kartu'),
+        ),
+      ),
+    );
+  }
 
   /// Lembar "Tampilan baca": mode, tajwid, legenda, ukuran teks, kertas.
   Future<void> _openReadingMode(_ReaderContent content) async {
@@ -625,6 +661,18 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       onLanguage: () => unawaited(_openTranslations()),
                       onTajweed: () => _toggleTajweed(content),
                     ),
+                  if (!_focusMode &&
+                      _tajweed &&
+                      content.tajweed != null &&
+                      !SharedPreferencesService.getTajweedHintDone())
+                    TajweedHint(
+                      onClose: () {
+                        unawaited(
+                          SharedPreferencesService.setTajweedHintDone(),
+                        );
+                        setState(() {});
+                      },
+                    ),
                   Expanded(
                     child: Listener(
                       onPointerDown: (_) => _tracker.interact(),
@@ -657,6 +705,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               verses: verses,
                               first: (index - 1) * _focusChunk,
                               count: _focusChunk,
+                              basmalah: content.basmalah,
                               size: _arabicSize,
                               lineHeight: _lineHeight,
                             );
@@ -676,6 +725,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             verseNumber: number,
                             arabic: verses[number - 1],
                             basmalah: number == 1 ? content.basmalah : 0,
+                            onTajweedTap: (rule, inBasmalah) => _openRule(
+                              content,
+                              number,
+                              rule,
+                              inBasmalah: inBasmalah,
+                            ),
                             tajweed: _tajweed && content.tajweed != null
                                 ? content.tajweed![number - 1]
                                 : null,
@@ -1180,6 +1235,7 @@ class _FocusBlock extends StatelessWidget {
     required this.count,
     required this.size,
     required this.lineHeight,
+    this.basmalah = 0,
   });
 
   final List<String> verses;
@@ -1187,6 +1243,9 @@ class _FocusBlock extends StatelessWidget {
   final int count;
   final double size;
   final double lineHeight;
+
+  /// Panjang awalan basmalah pada ayat 1 (0 bila tidak ada).
+  final int basmalah;
 
   @override
   Widget build(BuildContext context) {
@@ -1198,7 +1257,14 @@ class _FocusBlock extends StatelessWidget {
         TextSpan(
           children: [
             for (var i = first; i < last; i++) ...[
-              TextSpan(text: verses[i]),
+              // Basmalah bawaan Tanzil di ayat 1 tampil di barisnya sendiri,
+              // terpisah dari ayat; teksnya hanya dipotong.
+              if (i == 0 && basmalah > 0) ...[
+                TextSpan(text: verses[0].substring(0, basmalah - 1)),
+                const TextSpan(text: '\n'),
+                TextSpan(text: verses[0].substring(basmalah)),
+              ] else
+                TextSpan(text: verses[i]),
               const WidgetSpan(child: SizedBox(width: 4)),
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,
@@ -1405,6 +1471,7 @@ class _VerseCard extends StatefulWidget {
     required this.onPlay,
     this.basmalah = 0,
     this.tajweed,
+    this.onTajweedTap,
     this.secondCode,
     this.secondText,
     this.secondRtl = false,
@@ -1423,6 +1490,10 @@ class _VerseCard extends StatefulWidget {
 
   /// Rentang tajwid ayat ini; null = teks polos.
   final TajweedVerse? tajweed;
+
+  /// Huruf berwarna diketuk: tampilkan penjelasan hukumnya.
+  /// [inBasmalah]: huruf yang diketuk ada di baris basmalah, bukan ayat.
+  final void Function(TajweedRule rule, bool inBasmalah)? onTajweedTap;
   final String? secondCode;
   final String? secondText;
   final bool secondRtl;
@@ -1436,6 +1507,22 @@ class _VerseCard extends StatefulWidget {
 
 class _VerseCardState extends State<_VerseCard> {
   late bool bookmarked;
+
+  /// Recognizer ketukan huruf berwarna; dibuat ulang setiap build.
+  final _recognizers = <TapGestureRecognizer>[];
+
+  void _disposeRecognizers() {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    _recognizers.clear();
+  }
+
+  @override
+  void dispose() {
+    _disposeRecognizers();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -1507,6 +1594,7 @@ class _VerseCardState extends State<_VerseCard> {
     final translationSize = SharedPreferencesService.getTranslationFontSize();
     final verseKey = '${widget.surahNumber}:${widget.verseNumber}';
     final tajweed = widget.tajweed;
+    _disposeRecognizers();
     return RepaintBoundary(
       child: ValueListenableBuilder<String?>(
         valueListenable: QuranAudioService.instance.playingVerse,
@@ -1553,6 +1641,10 @@ class _VerseCardState extends State<_VerseCard> {
                         : tajweedSpans(
                             tajweed,
                             palette: TajweedPalette.draftPreview,
+                            onTap: widget.onTajweedTap == null
+                                ? null
+                                : (rule) => widget.onTajweedTap!(rule, true),
+                            recognizers: _recognizers,
                             brightness: brightness,
                             base: tokens.ink,
                             to: widget.basmalah - 1,
@@ -1582,6 +1674,10 @@ class _VerseCardState extends State<_VerseCard> {
                       : tajweedSpans(
                           tajweed,
                           palette: TajweedPalette.draftPreview,
+                          onTap: widget.onTajweedTap == null
+                              ? null
+                              : (rule) => widget.onTajweedTap!(rule, false),
+                          recognizers: _recognizers,
                           brightness: brightness,
                           base: tokens.ink,
                           from: widget.basmalah,
