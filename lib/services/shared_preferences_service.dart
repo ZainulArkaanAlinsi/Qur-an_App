@@ -386,6 +386,15 @@ class SharedPreferencesService {
     return next;
   }
 
+  /// Target ziyadah: berapa ayat baru per hari (bawaan 5).
+  static int getHafalanDailyAyat() =>
+      _prefs?.getInt('hafalan_ayat_harian') ?? 5;
+
+  static Future<void> setHafalanDailyAyat(int value) async {
+    await _prefs?.setInt('hafalan_ayat_harian', value.clamp(1, 20));
+    memorizationRevision.value++;
+  }
+
   /// Catatan hafalan per ayat untuk satu surah.
   ///
   /// Status per surah (`hafalan_status_*`) tetap ada sebagai ringkasan; yang

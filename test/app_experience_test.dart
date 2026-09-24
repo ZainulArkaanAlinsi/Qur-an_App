@@ -6,7 +6,6 @@ import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/screens/learn_screen.dart';
 import 'package:quran_app_2025/screens/memorization_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
-import 'package:quran_app_2025/widgets/memorization_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Menggulir daftar sampai [finder] terbangun; ListView membangun anaknya
@@ -23,6 +22,17 @@ Future<void> _scrollTo(WidgetTester tester, Finder finder) async {
 Future<void> _pumpLearn(WidgetTester tester) async {
   await tester.pumpWidget(_host(const LearnScreen(includeDrafts: false)));
   for (var i = 0; i < 6; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump();
+  }
+}
+
+/// Tab Hafalan dengan nama Arab surah yang sudah terbaca.
+Future<void> _pumpHafalan(WidgetTester tester) async {
+  await tester.pumpWidget(_host(const MemorizationScreen()));
+  for (var i = 0; i < 4; i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
@@ -168,38 +178,74 @@ void main() {
     expect(find.text('0 / 3'), findsOneWidget);
   });
 
-  testWidgets('ketuk chip status menyimpan hafalan surah', (tester) async {
-    await tester.pumpWidget(_host(const MemorizationTile(surah: 78)));
-    await tester.pumpAndSettle();
+  testWidgets('pill status membuka pilihan dan menyimpan status surah', (
+    tester,
+  ) async {
+    await SharedPreferencesService.setMemorizationStatus(
+      78,
+      MemorizationStatus.learning,
+    );
+    await _pumpHafalan(tester);
 
-    await tester.tap(find.byTooltip('Ubah status hafalan').first);
+    await tester.tap(find.byTooltip('Ubah status hafalan'));
     await tester.pumpAndSettle();
-
+    await tester.tap(find.text('Hafal').last);
+    await tester.pumpAndSettle();
     expect(
       SharedPreferencesService.getMemorizationStatus(78),
-      MemorizationStatus.learning,
+      MemorizationStatus.memorized,
+    );
+
+    // Menghapus dari daftar tidak lagi terjadi diam-diam lewat putaran
+    // status; harus dipilih jelas.
+    await tester.tap(find.byTooltip('Ubah status hafalan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus dari daftar'));
+    await tester.pumpAndSettle();
+    expect(
+      SharedPreferencesService.getMemorizationStatus(78),
+      MemorizationStatus.notStarted,
     );
   });
 
-  testWidgets(
-    'tab Hafalan kosong memberi arahan, lalu menampilkan surah yang ditandai',
-    (tester) async {
-      await tester.pumpWidget(_host(const MemorizationScreen()));
-      await tester.pumpAndSettle();
-      expect(find.text('Belum ada surah yang ditandai.'), findsOneWidget);
+  testWidgets('tab Hafalan kosong mengajak memilih surah, tanpa FAB Material', (
+    tester,
+  ) async {
+    await _pumpHafalan(tester);
+    expect(find.text('Pilih surah pertama'), findsOneWidget);
+    expect(find.text('Tambah surah'), findsWidgets);
+    expect(find.byType(FloatingActionButton), findsNothing);
 
-      await SharedPreferencesService.setMemorizationStatus(
-        112,
-        MemorizationStatus.memorized,
-      );
-      // Widget bertipe sama dipasang ulang akan memakai State lama, jadi
-      // kosongkan pohon dulu supaya daftar benar-benar dibaca ulang.
-      await tester.pumpWidget(const SizedBox());
-      await tester.pumpWidget(_host(const MemorizationScreen()));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Tambah surah').last);
+    await tester.pumpAndSettle();
+    // Seperti orang mencari surah: ketik namanya di kolom cari.
+    await tester.enterText(find.byType(TextField), 'ikhlas');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Al-Ikhlas'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Al-Ikhlas'), findsOneWidget);
-      expect(find.text('Belum ada surah yang ditandai.'), findsNothing);
-    },
-  );
+    expect(
+      SharedPreferencesService.getMemorizationStatus(112),
+      MemorizationStatus.learning,
+    );
+    // Ziyadah hari ini langsung terisi dari surah yang baru ditambah.
+    expect(find.text('Al-Ikhlas 1–4'), findsOneWidget);
+  });
+
+  testWidgets('nama surah panjang tetap satu baris di samping pill', (
+    tester,
+  ) async {
+    await SharedPreferencesService.setMemorizationStatus(
+      2,
+      MemorizationStatus.needsReview,
+    );
+    await tester.binding.setSurfaceSize(const Size(320, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await _pumpHafalan(tester);
+
+    final name = tester.renderObject<RenderBox>(find.text('Al-Baqarah'));
+    // Satu baris: tingginya satu baris teks, bukan huruf per huruf.
+    expect(name.size.height, lessThan(30));
+    expect(tester.takeException(), isNull);
+  });
 }

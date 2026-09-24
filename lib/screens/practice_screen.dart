@@ -13,9 +13,18 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 /// Mekanisme saja — aplikasi tidak menilai bacaan dan tidak memberi skor
 /// tajwid otomatis (docs/RELIGIOUS_CONTENT_GOVERNANCE.md).
 class PracticeScreen extends StatefulWidget {
-  const PracticeScreen({super.key, required this.surah});
+  const PracticeScreen({
+    super.key,
+    required this.surah,
+    this.fromAyah,
+    this.toAyah,
+  });
 
   final SurahMeta surah;
+
+  /// Rentang awal (mis. ziyadah hari ini 19–23); bawaan seluruh surah.
+  final int? fromAyah;
+  final int? toAyah;
 
   @override
   State<PracticeScreen> createState() => _PracticeScreenState();
@@ -30,8 +39,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
       SharedPreferencesService.getMemorizationStatus(widget.surah.number);
   int? _repeat = 3;
   bool _hideText = false;
-  int _from = 1;
-  late int _to = widget.surah.ayahCount;
+  late int _from = (widget.fromAyah ?? 1).clamp(1, widget.surah.ayahCount);
+  late int _to = (widget.toAyah ?? widget.surah.ayahCount).clamp(
+    _from,
+    widget.surah.ayahCount,
+  );
 
   Future<_PracticeContent> _load() async {
     final arabic = await QuranTextRepository.instance.versesForSurah(

@@ -672,6 +672,11 @@ abstract final class SacredText {
   static TextStyle get feedback => _font(ui, 13.5, 19, 700);
   static TextStyle get dashedNote => _font(ui, 13.5, 18, 700);
 
+  /// Hafalan v2: kartu tujuan (14/800, 11.5/15) dan "18/40 ayat" 12.5/700.
+  static TextStyle get goalTitle => _font(ui, 14, 18, 800);
+  static TextStyle get goalBody => _font(ui, 11.5, 15, 500);
+  static TextStyle get surahCount => _font(ui, 12.5, 16, 700);
+
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
 }
