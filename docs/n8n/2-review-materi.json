@@ -1,0 +1,326 @@
+{
+  "name": "Qur'an App — Review materi (2 reviewer)",
+  "nodes": [
+    {
+      "id": "229e6b75-aa72-46a3-9789-97dfe1b161b3",
+      "name": "Formulir review",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "182f281f-37a9-4739-9775-e4f67e40dd18",
+      "parameters": {
+        "formTitle": "Review materi Qur'an App",
+        "formDescription": "Untuk ustadz/pengajar yang meninjau materi berstatus draf.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "ID materi",
+              "requiredField": true,
+              "placeholder": "contoh huruf-hijaiyah"
+            },
+            {
+              "fieldLabel": "Nama reviewer",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Sanad/lembaga",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Keputusan",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Setuju"
+                  },
+                  {
+                    "option": "Perlu perbaikan"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Catatan",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "8728ee73-ad89-4de9-849e-284f2b6afa3d",
+      "name": "Susun baris review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "74cdd9a4-2ceb-4c09-b243-a416013d413a",
+              "name": "waktu",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "40f03ab2-219b-4485-83b3-0ea133da78fb",
+              "name": "materi",
+              "value": "={{ $json['ID materi'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f0913c3b-e4b5-433c-8f1c-0d6fffc15f2a",
+              "name": "reviewer",
+              "value": "={{ $json['Nama reviewer'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4083fd87-58b1-4484-ba67-934bb0930dec",
+              "name": "sanad",
+              "value": "={{ $json['Sanad/lembaga'] }}",
+              "type": "string"
+            },
+            {
+              "id": "648d460c-7a7f-4b2f-a042-04c07885d48e",
+              "name": "keputusan",
+              "value": "={{ $json['Keputusan'] }}",
+              "type": "string"
+            },
+            {
+              "id": "30479d0a-10d4-4dca-9b9a-79eeda908314",
+              "name": "catatan",
+              "value": "={{ $json['Catatan'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e35f6aa9-4205-497b-9364-b50316f93180",
+      "name": "Simpan ke sheet Review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "GANTI_DENGAN_URL_GOOGLE_SHEET"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Review"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "fa914fa9-0631-4a61-b04e-352265bb2501",
+      "name": "Baca semua review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "GANTI_DENGAN_URL_GOOGLE_SHEET"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Review"
+        },
+        "options": {}
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "a5f89a82-950d-4a3d-84bc-b08a33f4dd98",
+      "name": "Hitung keputusan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "jsCode": "\n// Hitung keputusan reviewer untuk materi yang barusan direview.\n// Aturan repo (RELIGIOUS_CONTENT_GOVERNANCE): minimal 2 reviewer menyetujui dan tidak ada penolakan.\nconst materi = $('Formulir review').first().json['ID materi'];\nconst rows = $input.all().map(i => i.json).filter(r => String(r.materi) === String(materi));\nconst setuju = new Set(rows.filter(r => r.keputusan === 'Setuju').map(r => r.reviewer.toLowerCase()));\nconst tolak  = rows.filter(r => r.keputusan === 'Perlu perbaikan');\nreturn [{ json: {\n  materi,\n  jumlah_setuju: setuju.size,\n  jumlah_perbaikan: tolak.length,\n  siap_terbit: setuju.size >= 2 && tolak.length === 0,\n  catatan: tolak.map(r => `- ${r.reviewer}: ${r.catatan}`).join('\\n'),\n}}];\n"
+      }
+    },
+    {
+      "id": "20540b01-2d8d-4d55-87a3-e406a933cec7",
+      "name": "Siap terbit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ae07df98-3721-416e-8d9b-403b5d49d54a",
+              "leftValue": "={{ $json.siap_terbit }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4af51fc8-f426-41ab-a076-998327e61744",
+      "name": "Issue: siap terbit",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        -100
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "owner": "ZainulArkaanAlinsi",
+        "repository": "Qur-an_App",
+        "title": "=Terbitkan materi {{ $json.materi }} ({{ $json.jumlah_setuju }} reviewer setuju)",
+        "body": "=Materi **{{ $json.materi }}** sudah disetujui {{ $json.jumlah_setuju }} reviewer tanpa catatan perbaikan.\n\nLangkah: ubah `review.status` menjadi `published`, isi `reviewedBy` & `reviewedAt` dari sheet Review, lalu buat PR. Jangan ubah isi materi di langkah ini.",
+        "labels": [
+          {
+            "label": "konten"
+          },
+          {
+            "label": "siap-terbit"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d3249bb1-a03f-42be-9f62-872840bde706",
+      "name": "Kabari penulis: perlu perbaikan",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        100
+      ],
+      "parameters": {
+        "chatId": "GANTI_DENGAN_CHAT_ID",
+        "text": "=📝 Materi {{ $json.materi }}: {{ $json.jumlah_setuju }} setuju, {{ $json.jumlah_perbaikan }} minta perbaikan.\n{{ $json.catatan || 'Menunggu reviewer berikutnya.' }}",
+        "additionalFields": {}
+      }
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Formulir review": {
+      "main": [
+        [
+          {
+            "node": "Susun baris review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Susun baris review": {
+      "main": [
+        [
+          {
+            "node": "Simpan ke sheet Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simpan ke sheet Review": {
+      "main": [
+        [
+          {
+            "node": "Baca semua review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca semua review": {
+      "main": [
+        [
+          {
+            "node": "Hitung keputusan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hitung keputusan": {
+      "main": [
+        [
+          {
+            "node": "Siap terbit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siap terbit?": {
+      "main": [
+        [
+          {
+            "node": "Issue: siap terbit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Kabari penulis: perlu perbaikan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

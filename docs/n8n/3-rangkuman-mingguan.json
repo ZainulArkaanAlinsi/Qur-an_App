@@ -1,0 +1,118 @@
+{
+  "name": "Qur'an App — Rangkuman mingguan",
+  "nodes": [
+    {
+      "id": "bc4ff81a-c278-4d25-bfaa-cd1596f6394a",
+      "name": "Setiap Senin 08.00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "f515f391-d652-45ef-a5f8-20bc2a1eb1e4",
+      "name": "Baca sheet Masukan",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "GANTI_DENGAN_URL_GOOGLE_SHEET"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Masukan"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "05050abd-5bde-4608-8521-507b7f31614a",
+      "name": "Ringkas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "jsCode": "\n// Ringkas masukan 7 hari terakhir: apa yang paling banyak diminta orang.\nconst seminggu = Date.now() - 7 * 24 * 3600 * 1000;\nconst rows = $input.all().map(i => i.json).filter(r => Date.parse(r.diterima) >= seminggu);\nconst hitung = (key) => Object.entries(rows.reduce((a, r) => (a[r[key] || '-'] = (a[r[key] || '-'] || 0) + 1, a), {}))\n  .sort((a, b) => b[1] - a[1]);\nconst kategori = hitung('kategori').map(([k, n]) => `• ${k}: ${n}`).join('\\n');\nconst layar = hitung('layar').slice(0, 5).map(([k, n]) => `• ${k}: ${n}`).join('\\n');\nconst p1 = rows.filter(r => r.prioritas === 'P1' && r.status !== 'selesai');\nconst permintaan = rows.filter(r => r.kategori === 'permintaan').slice(0, 8).map(r => `• ${r.pesan.slice(0, 120)}`).join('\\n');\nconst teks = [\n  `📊 Rangkuman masukan Qur'an App — 7 hari terakhir (${rows.length} masukan)`,\n  '', 'Per kategori:', kategori || '• belum ada',\n  '', 'Layar paling sering disebut:', layar || '• -',\n  '', `P1 belum selesai: ${p1.length}`, ...p1.slice(0, 5).map(r => `• ${r.id} ${r.pesan.slice(0, 80)}`),\n  '', 'Permintaan fitur terbaru:', permintaan || '• -',\n].join('\\n');\nreturn [{ json: { teks, total: rows.length } }];\n"
+      }
+    },
+    {
+      "id": "78937254-15af-438f-a9ad-c35377b4bc15",
+      "name": "Kirim ke Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "chatId": "GANTI_DENGAN_CHAT_ID",
+        "text": "={{ $json.teks }}",
+        "additionalFields": {}
+      }
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  },
+  "connections": {
+    "Setiap Senin 08.00": {
+      "main": [
+        [
+          {
+            "node": "Baca sheet Masukan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca sheet Masukan": {
+      "main": [
+        [
+          {
+            "node": "Ringkas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ringkas": {
+      "main": [
+        [
+          {
+            "node": "Kirim ke Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
