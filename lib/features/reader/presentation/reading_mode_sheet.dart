@@ -24,7 +24,13 @@ enum ReaderPaper {
       values.where((paper) => paper.name == name).firstOrNull;
 }
 
+/// Cara membaca: halaman mushaf (1 atau 2) atau kartu per ayat.
+enum ReadingMode { onePage, twoPages, cards }
+
 /// Lembar "Tampilan baca" (docs/design/v2/screens/02-mode-baca.md).
+///
+/// Mode halaman hanya bisa dipilih bila ada data tata letak mushaf yang
+/// sah; selain itu kartunya tampil "segera".
 Future<void> showReadingModeSheet(
   BuildContext context, {
   required bool tajweed,
@@ -33,6 +39,9 @@ Future<void> showReadingModeSheet(
   required ValueChanged<ReaderPaper> onPaper,
   required VoidCallback onLegend,
   required VoidCallback onTextSize,
+  ReadingMode mode = ReadingMode.cards,
+  Set<ReadingMode> available = const {ReadingMode.cards},
+  ValueChanged<ReadingMode>? onMode,
 }) {
   final tokens = Theme.of(context).extension<SacredTokens>()!;
   return showModalBottomSheet<void>(
@@ -43,13 +52,21 @@ Future<void> showReadingModeSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
-    builder: (_) => ReadingModeSheet(
+    builder: (sheetContext) => ReadingModeSheet(
       tajweed: tajweed,
       onTajweed: onTajweed,
       paper: paper,
       onPaper: onPaper,
       onLegend: onLegend,
       onTextSize: onTextSize,
+      mode: mode,
+      available: available,
+      onMode: onMode == null
+          ? null
+          : (picked) {
+              Navigator.pop(sheetContext);
+              onMode(picked);
+            },
     ),
   );
 }
@@ -63,7 +80,14 @@ class ReadingModeSheet extends StatefulWidget {
     required this.onPaper,
     required this.onLegend,
     required this.onTextSize,
+    this.mode = ReadingMode.cards,
+    this.available = const {ReadingMode.cards},
+    this.onMode,
   });
+
+  final ReadingMode mode;
+  final Set<ReadingMode> available;
+  final ValueChanged<ReadingMode>? onMode;
 
   final bool tajweed;
   final ValueChanged<bool> onTajweed;
@@ -84,25 +108,45 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final stacked = MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6;
-    const modes = [
-      // Tata letak halaman mushaf menunggu izin lisensi (layar 03/04).
-      _ModeCard(
-        icon: SacredIcons.pageSingle,
-        title: '1 Halaman',
-        subtitle: 'Persis mushaf · segera',
-        selected: false,
+    // Tata letak halaman mushaf menunggu izin lisensi (layar 03/04): tanpa
+    // data yang sah, kartunya tampil "segera".
+    _ModeCard card(
+      ReadingMode value,
+      List<String> icon,
+      String title,
+      String subtitle,
+    ) {
+      final open = widget.available.contains(value);
+      return _ModeCard(
+        icon: icon,
+        title: title,
+        subtitle: open ? subtitle : '$subtitle · segera',
+        selected: widget.mode == value,
+        available: open,
+        onTap: open && widget.mode != value && widget.onMode != null
+            ? () => widget.onMode!(value)
+            : null,
+      );
+    }
+
+    final modes = [
+      card(
+        ReadingMode.onePage,
+        SacredIcons.pageSingle,
+        '1 Halaman',
+        'Persis mushaf',
       ),
-      _ModeCard(
-        icon: SacredIcons.pageDouble,
-        title: '2 Halaman',
-        subtitle: 'Miringkan HP · segera',
-        selected: false,
+      card(
+        ReadingMode.twoPages,
+        SacredIcons.pageDouble,
+        '2 Halaman',
+        'Miringkan HP',
       ),
-      _ModeCard(
-        icon: SacredIcons.cards,
-        title: 'Kartu ayat',
-        subtitle: 'Dengan terjemahan',
-        selected: true,
+      card(
+        ReadingMode.cards,
+        SacredIcons.cards,
+        'Kartu ayat',
+        'Dengan terjemahan',
       ),
     ];
     return SafeArea(
@@ -248,6 +292,8 @@ class _ModeCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.selected,
+    this.available = false,
+    this.onTap,
   });
 
   final List<String> icon;
@@ -255,45 +301,56 @@ class _ModeCard extends StatelessWidget {
   final String subtitle;
   final bool selected;
 
+  /// Mode ini punya data dan bisa dipilih.
+  final bool available;
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    // Hanya Kartu ayat yang tersedia; mode halaman ditandai "segera".
-    final available = selected;
+    final open = available || selected;
     return Semantics(
       button: true,
       selected: selected,
-      enabled: available,
+      enabled: open,
       excludeSemantics: true,
-      label: available ? '$title, terpilih' : '$title, belum tersedia',
+      label: selected
+          ? '$title, terpilih'
+          : open
+          ? '$title, ketuk untuk memilih'
+          : '$title, belum tersedia',
       child: Opacity(
-        opacity: available ? 1 : .55,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(8, 14, 8, 14),
-          decoration: BoxDecoration(
-            color: selected ? tokens.surf : tokens.bg,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: selected ? tokens.cta : tokens.sep,
-              width: selected ? 2 : 1,
+        opacity: open ? 1 : .55,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(8, 14, 8, 14),
+            decoration: BoxDecoration(
+              color: selected ? tokens.surf : tokens.bg,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: selected ? tokens.cta : tokens.sep,
+                width: selected ? 2 : 1,
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              LineIcon(icon, color: tokens.primaryText, size: 26),
-              const SizedBox(height: 6),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: SacredText.buttonSmall.copyWith(color: tokens.ink),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: SacredText.cardNote.copyWith(color: tokens.sec),
-              ),
-            ],
+            child: Column(
+              children: [
+                LineIcon(icon, color: tokens.primaryText, size: 26),
+                const SizedBox(height: 6),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: SacredText.buttonSmall.copyWith(color: tokens.ink),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+                ),
+              ],
+            ),
           ),
         ),
       ),

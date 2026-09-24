@@ -96,4 +96,4 @@ Ruang Tilawah — https://github.com/ZainulArkaanAlinsi/Qur-an_App
 
 | Dikirim | Kanal | Tautan | Jawaban |
 |---|---|---|---|
-| (isi tanggalnya) | GitHub issue | | |
+| 24 September 2026 | GitHub issue | <https://github.com/TarteelAI/quranic-universal-library/issues/768> | Belum ada. Catatan: issue serupa #659 (V1, 18 Juli) dan #729 (V2, 19 Agustus) belum dijawab pengelola sama sekali. |
