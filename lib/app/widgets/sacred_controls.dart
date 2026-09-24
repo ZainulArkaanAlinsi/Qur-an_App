@@ -250,99 +250,96 @@ class IosToggle extends StatelessWidget {
   }
 }
 
-/// Satu tujuan pada [FloatingTabBar].
+/// Satu tujuan pada [FloatingTabBar]: ikon garis (path SVG mockup) + label.
 class SacredTab {
-  const SacredTab({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
+  const SacredTab({required this.icon, required this.label});
 
-  final IconData icon;
-  final IconData activeIcon;
+  final List<String> icon;
   final String label;
 }
 
-/// Tab bar kaca mengambang: kapsul 4 tab + tombol Cari bulat terpisah,
-/// dengan scrim gradien di belakangnya (DESIGN_SPEC §5).
+/// Tab bar v2 (DESIGN.md §3): kapsul kaca tinggi 64, 12 dari kiri/kanan dan
+/// 24 dari bawah, 5 tab sama lebar, ikon 22 + label 11, tab aktif berupa
+/// kapsul primarySoft. Scrim gradien setinggi 140 di belakangnya.
+///
+/// Tidak ada tombol cari terpisah lagi; cari ada di header Beranda & Qur'an.
+/// Dulu tombol itu membuat label terpotong ("Beran…", "Penga…").
 class FloatingTabBar extends StatelessWidget {
   const FloatingTabBar({
     super.key,
     required this.tabs,
     required this.currentIndex,
     required this.onSelected,
-    required this.onSearch,
-    this.searchTooltip = 'Cari',
   });
 
   final List<SacredTab> tabs;
   final int currentIndex;
   final ValueChanged<int> onSelected;
-  final VoidCallback onSearch;
-  final String searchTooltip;
+
+  /// Tinggi yang harus disisakan isi layar di bawahnya: 64 + 24 + jeda.
+  static const reservedHeight = 104.0;
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
         IgnorePointer(
           child: Container(
-            height: 150,
+            height: 140 + bottomInset,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [tokens.bg.withValues(alpha: 0), tokens.bg],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [tokens.bg, tokens.bg, tokens.bg.withValues(alpha: 0)],
+                stops: const [0, .36, 1],
               ),
             ),
           ),
         ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            // Label tab sangat kecil; batasi penskalaan agar tidak terpotong.
-            child: MediaQuery.withClampedTextScaling(
-              maxScaleFactor: 1.3,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GlassSurface(
-                      borderRadius: BorderRadius.circular(31),
-                      tint: tokens.glass,
-                      child: SizedBox(
-                        height: 62,
-                        child: Row(
-                          children: [
-                            for (var i = 0; i < tabs.length; i++)
-                              Expanded(
-                                child: _TabButton(
-                                  tab: tabs[i],
-                                  selected: i == currentIndex,
-                                  onTap: () => onSelected(i),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+        Padding(
+          // 24 dari bawah layar, atau di atas bilah gestur bila lebih tinggi.
+          padding: EdgeInsets.fromLTRB(
+            12,
+            0,
+            12,
+            bottomInset > 24 ? bottomInset : 24,
+          ),
+          // Label tab kecil; penskalaannya dibatasi seperti tab bar iOS.
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: tokens.floatShadows,
+              ),
+              child: GlassSurface(
+                borderRadius: BorderRadius.circular(32),
+                tint: tokens.glass,
+                borderColor: tokens.glassBorder,
+                shadowless: true,
+                child: SizedBox(
+                  height: 64,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < tabs.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 2),
+                          Expanded(
+                            child: _TabButton(
+                              tab: tabs[i],
+                              selected: i == currentIndex,
+                              onTap: () => onSelected(i),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  GlassSurface(
-                    borderRadius: BorderRadius.circular(31),
-                    tint: tokens.glass,
-                    child: SizedBox.square(
-                      dimension: 62,
-                      child: IconButton(
-                        tooltip: searchTooltip,
-                        onPressed: onSearch,
-                        icon: Icon(Icons.search_rounded, color: tokens.ink),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -366,7 +363,7 @@ class _TabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final color = selected ? tokens.primaryText : tokens.sec;
+    final color = selected ? tokens.primaryText : tokens.ink;
     return Semantics(
       selected: selected,
       button: true,
@@ -374,29 +371,38 @@ class _TabButton extends StatelessWidget {
       child: ExcludeSemantics(
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(27),
+          borderRadius: BorderRadius.circular(28),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            height: 56,
             decoration: selected
                 ? BoxDecoration(
                     color: tokens.primarySoft,
-                    borderRadius: BorderRadius.circular(27),
+                    borderRadius: BorderRadius.circular(28),
                   )
                 : null,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(selected ? tab.activeIcon : tab.icon, color: color),
-                const SizedBox(height: 2),
-                Flexible(
+                LineIcon(
+                  tab.icon,
+                  color: color,
+                  size: 22,
+                  strokeWidth: selected
+                      ? SacredIcons.strokeNavActive
+                      : SacredIcons.strokeNav,
+                ),
+                const SizedBox(height: 3),
+                // Label utuh, tidak pernah dielipsis; kalau sangat sempit ia
+                // diperkecil, bukan dipotong.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
                   child: Text(
                     tab.label,
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: SacredText.tabLabel.copyWith(
-                      color: color,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                    ),
+                    softWrap: false,
+                    style:
+                        (selected ? SacredText.tabActive : SacredText.tabIdle)
+                            .copyWith(color: color),
                   ),
                 ),
               ],

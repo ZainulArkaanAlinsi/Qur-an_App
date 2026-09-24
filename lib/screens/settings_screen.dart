@@ -4,14 +4,17 @@ import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/chip_palette.dart';
+import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/app/widgets/theme_preview.dart';
 import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/reciter_picker.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
@@ -73,13 +76,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: _bottomInset),
       children: [
-        const LargeTitle(
-          'Pengaturan',
-          subtitle: 'Atur ruang baca agar nyaman untukmu.',
-        ),
+        const ScreenHeader(title: 'Saya'),
+        const SizedBox(height: 14),
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
           child: _SyncCard(),
+        ),
+        // Progres pindah dari tab sendiri ke sini (12-saya.md).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: GroupedList(
+            children: [
+              ListRow(
+                leading: const IconBadge(
+                  icon: SacredIcons.chart,
+                  color: SacredBadge.green,
+                ),
+                title: 'Progres lengkap',
+                subtitle: 'Istiqamah, menit, khatam',
+                chevron: true,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ProgressScreen(),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
 
         _Group(

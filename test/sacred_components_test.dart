@@ -3,29 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
+import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
 
 const _tabs = [
-  SacredTab(
-    icon: Icons.home_outlined,
-    activeIcon: Icons.home_rounded,
-    label: 'Beranda',
-  ),
-  SacredTab(
-    icon: Icons.menu_book_outlined,
-    activeIcon: Icons.menu_book_rounded,
-    label: 'Qur’an',
-  ),
-  SacredTab(
-    icon: Icons.insights_outlined,
-    activeIcon: Icons.insights_rounded,
-    label: 'Progres',
-  ),
-  SacredTab(
-    icon: Icons.tune_outlined,
-    activeIcon: Icons.tune_rounded,
-    label: 'Pengaturan',
-  ),
+  SacredTab(icon: SacredIcons.home, label: 'Beranda'),
+  SacredTab(icon: SacredIcons.book, label: 'Qur’an'),
+  SacredTab(icon: SacredIcons.cap, label: 'Belajar'),
+  SacredTab(icon: SacredIcons.layers, label: 'Hafalan'),
+  SacredTab(icon: SacredIcons.user, label: 'Saya'),
 ];
 
 Future<void> _pump(
@@ -148,9 +134,8 @@ void main() {
   });
 
   group('tab bar mengambang', () {
-    testWidgets('empat tab dan tombol cari terpisah', (tester) async {
+    testWidgets('lima tab tanpa tombol cari terpisah', (tester) async {
       var selected = 0;
-      var searched = 0;
       await _pump(
         tester,
         Align(
@@ -160,22 +145,20 @@ void main() {
               tabs: _tabs,
               currentIndex: selected,
               onSelected: (index) => setState(() => selected = index),
-              onSearch: () => searched++,
             ),
           ),
         ),
       );
 
-      expect(find.text('Beranda'), findsOneWidget);
-      expect(find.text('Pengaturan'), findsOneWidget);
+      for (final label in ['Beranda', 'Qur’an', 'Belajar', 'Hafalan', 'Saya']) {
+        expect(find.text(label), findsOneWidget);
+      }
+      // Cari pindah ke header Beranda & Qur'an (CLAUDE.md).
+      expect(find.byTooltip('Cari'), findsNothing);
 
-      await tester.tap(find.text('Progres'));
+      await tester.tap(find.text('Hafalan'));
       await tester.pumpAndSettle();
-      expect(selected, 2);
-
-      await tester.tap(find.byTooltip('Cari'));
-      await tester.pumpAndSettle();
-      expect(searched, 1);
+      expect(selected, 3);
     });
 
     testWidgets('tidak meluber pada text scale 200% dan layar 320 dp', (
@@ -189,7 +172,6 @@ void main() {
             tabs: _tabs,
             currentIndex: 1,
             onSelected: (_) {},
-            onSearch: () {},
           ),
         ),
         textScale: 2,

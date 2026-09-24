@@ -162,4 +162,82 @@ abstract final class SacredIcons {
 
   static const previous = ['M19 19 10 12l9-7z', 'M5.5 5v14'];
   static const next = ['m5 5 9 7-9 7z', 'M18.5 5v14'];
+
+  // Ikon tambahan paket desain v2 (`docs/design/v2/html/`).
+
+  /// Toga: tab Belajar dan baris "Lanjutkan belajar".
+  static const cap = [
+    'M2.5 9 12 4.5 21.5 9 12 13.5z',
+    'M6.5 11v5c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-5',
+  ];
+
+  /// Tumpukan lapis: tab Hafalan dan murajaah.
+  static const layers = [
+    'M12 3.5 21 8l-9 4.5L3 8z',
+    'M3 12.5 12 17l9-4.5',
+    'M3 16.5 12 21l9-4.5',
+  ];
+
+  static const user = [
+    'M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
+    'M4.5 20.5a7.5 7.5 0 0 1 15 0',
+  ];
+
+  static const info = [
+    'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z',
+    'M12 11v5.5',
+    'M12 7.8h.01',
+  ];
+
+  static const plus = ['M12 5v14M5 12h14'];
+
+  static const mic = [
+    'M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z',
+    'M5.5 11a6.5 6.5 0 0 0 13 0',
+    'M12 17.5v3',
+  ];
+
+  static const calendar = [
+    'M6 5h12a2.5 2.5 0 0 1 2.5 2.5V18a2.5 2.5 0 0 1-2.5 2.5H6'
+        'A2.5 2.5 0 0 1 3.5 18V7.5A2.5 2.5 0 0 1 6 5z',
+    'M3.5 10h17M8 3v4M16 3v4',
+  ];
+
+  static const compass = [
+    'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z',
+    'm15.5 8.5-2 5-5 2 2-5z',
+  ];
+
+  static const eyeOff = [
+    'M3 3l18 18',
+    'M10.6 5.1A10 10 0 0 1 21 12a13 13 0 0 1-2.2 3.2M6.2 6.3A13 13 0 0 0 3 12'
+        's3.5 6.5 9 6.5a9 9 0 0 0 4-.9',
+    'M9.9 9.9a3 3 0 0 0 4.2 4.2',
+  ];
+
+  /// Mode baca: satu halaman, dua halaman, kartu ayat.
+  static const pageSingle = [
+    'M8 3.5h8a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-13'
+        'a2 2 0 0 1 2-2z',
+    'M9 8h6M9 11h6M9 14h6',
+  ];
+  static const pageDouble = [
+    'M4 5h6a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 10 19H4'
+        'a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 4 5z',
+    'M14 5h6a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 20 19h-6'
+        'a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 14 5z',
+  ];
+  static const cards = [
+    'M6 4h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+    'M6 13h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3'
+        'a2 2 0 0 1 2-2z',
+  ];
+
+  /// Putar HP ke mendatar (tombol "2 halaman" di mushaf).
+  static const rotate = [
+    'M3 12a9 9 0 0 1 15.5-6.2L21 8',
+    'M21 3.5V8h-4.5',
+    'M9.5 10h5a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-5'
+        'A1.5 1.5 0 0 1 8 19.5v-8A1.5 1.5 0 0 1 9.5 10z',
+  ];
 }

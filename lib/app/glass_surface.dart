@@ -11,12 +11,21 @@ class GlassSurface extends StatelessWidget {
     this.padding,
     this.borderRadius = const BorderRadius.all(Radius.circular(22)),
     this.tint,
+    this.borderColor,
+    this.shadowless = false,
   });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final BorderRadius borderRadius;
   final Color? tint;
+
+  /// Garis tepi; bawaannya `outlineVariant` tema.
+  final Color? borderColor;
+
+  /// Matikan bayangan bawaan bila pemanggil sudah memasang bayangannya sendiri
+  /// di luar klip (bayangan di dalam ClipRRect ikut terpotong).
+  final bool shadowless;
 
   @override
   Widget build(BuildContext context) {
@@ -32,18 +41,20 @@ class GlassSurface extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             borderRadius: borderRadius,
-            border: Border.all(color: scheme.outlineVariant),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.dark
-                      ? .16
-                      : .06,
-                ),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            border: Border.all(color: borderColor ?? scheme.outlineVariant),
+            boxShadow: shadowless
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: Theme.of(context).brightness == Brightness.dark
+                            ? .16
+                            : .06,
+                      ),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
           ),
           child: Padding(padding: padding ?? EdgeInsets.zero, child: child),
         ),

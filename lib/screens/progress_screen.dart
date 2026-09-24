@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_heatmap.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -87,76 +88,80 @@ class _ProgressScreenState extends State<ProgressScreen>
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final progress = ReadingProgressService.read();
 
-    // Layar ini juga dipakai tanpa Scaffold, sedangkan segmented control dan
-    // tombolnya memakai InkWell yang butuh Material.
-    return Material(
-      type: MaterialType.transparency,
-      child: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: _bottomInset),
-        children: [
-          const LargeTitle(
-            'Progres',
-            subtitle: 'Catatan kecil untuk menemani kebiasaan baikmu.',
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: SegmentedPill<_Span>(
-              segments: {for (final span in _Span.values) span: span.label},
-              value: _span,
-              onChanged: (value) => setState(() => _span = value),
+    // Dibuka dari tab Saya sebagai halaman turunan (12-saya.md).
+    return Scaffold(
+      backgroundColor: tokens.bg,
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: _bottomInset),
+          children: [
+            const ScreenHeader(
+              title: 'Progres',
+              subtitle: 'Catatan kecil untuk menemani kebiasaan baikmu.',
+              backLabel: 'Saya',
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _StreakCard(
-                  progress: progress,
-                  cells: _cells(),
-                  // Setahun penuh tidak muat pada tujuh kolom; pakai kolom
-                  // sebanyak minggunya supaya selnya tetap persegi.
-                  columns: _span == _Span.tahun ? 26 : 7,
-                ),
-                const SizedBox(height: 12),
-                _KhatamCard(
-                  data: _khatam,
-                  onRetry: () => setState(() => _khatam = _loadKhatam()),
-                  onOpenList: () => Navigator.of(context)
-                      .push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const KhatamPlanScreen(),
-                        ),
-                      )
-                      .then((_) {
-                        if (mounted) setState(() {});
-                      }),
-                  onOpenJuz: (boundary) => Navigator.of(context)
-                      .push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ReaderScreen(
-                            surah: surahCatalog[boundary.surah - 1],
-                            initialVerse: boundary.verse,
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: SegmentedPill<_Span>(
+                segments: {for (final span in _Span.values) span: span.label},
+                value: _span,
+                onChanged: (value) => setState(() => _span = value),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _StreakCard(
+                    progress: progress,
+                    cells: _cells(),
+                    // Setahun penuh tidak muat pada tujuh kolom; pakai kolom
+                    // sebanyak minggunya supaya selnya tetap persegi.
+                    columns: _span == _Span.tahun ? 26 : 7,
+                  ),
+                  const SizedBox(height: 12),
+                  _KhatamCard(
+                    data: _khatam,
+                    onRetry: () => setState(() => _khatam = _loadKhatam()),
+                    onOpenList: () => Navigator.of(context)
+                        .push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const KhatamPlanScreen(),
                           ),
-                        ),
-                      )
-                      .then((_) {
-                        if (mounted) setState(() {});
-                      }),
-                ),
-                // Belajar dan Hafalan sekarang punya tabnya sendiri, jadi
-                // pintasannya tidak lagi menumpang di layar ini.
-                const SizedBox(height: 12),
-                Text(
-                  'Waktu ini adalah perkiraan saat pembaca aktif di depan layar, '
-                  'bukan ukuran ibadah.',
-                  style: SacredText.cardNote.copyWith(color: tokens.sec),
-                ),
-              ],
+                        )
+                        .then((_) {
+                          if (mounted) setState(() {});
+                        }),
+                    onOpenJuz: (boundary) => Navigator.of(context)
+                        .push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => ReaderScreen(
+                              surah: surahCatalog[boundary.surah - 1],
+                              initialVerse: boundary.verse,
+                            ),
+                          ),
+                        )
+                        .then((_) {
+                          if (mounted) setState(() {});
+                        }),
+                  ),
+                  // Belajar dan Hafalan sekarang punya tabnya sendiri, jadi
+                  // pintasannya tidak lagi menumpang di layar ini.
+                  const SizedBox(height: 12),
+                  Text(
+                    'Waktu ini adalah perkiraan saat pembaca aktif di depan layar, '
+                    'bukan ukuran ibadah.',
+                    style: SacredText.cardNote.copyWith(color: tokens.sec),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

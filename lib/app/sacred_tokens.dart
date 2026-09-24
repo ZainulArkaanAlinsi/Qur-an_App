@@ -29,6 +29,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     required this.glass,
     required this.glassBorder,
     required this.heatmap,
+    required this.ring,
+    required this.tertiary,
+    required this.onGold,
+    required this.shadow,
+    required this.floatShadow,
+    required this.floatShadowSoft,
   });
 
   final Color bg;
@@ -59,6 +65,38 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   /// Empat tingkat heatmap istiqamah, dari kosong ke penuh.
   final List<Color> heatmap;
 
+  /// Garis 0.5 px di tepi kartu (v2: `0 0 0 .5px`).
+  final Color ring;
+
+  /// Abu ketiga untuk chevron dan ikon pasif.
+  final Color tertiary;
+
+  /// Tinta di atas tombol emas pada kartu hero; sama di kedua tema.
+  final Color onGold;
+
+  /// Bayangan kartu (`0 1px 2px`); transparan di tema gelap.
+  final Color shadow;
+
+  /// Dua lapis bayangan untuk elemen mengambang seperti tab bar.
+  final Color floatShadow;
+  final Color floatShadowSoft;
+
+  /// Bayangan kartu v2: bayangan tipis + cincin 0.5 px.
+  List<BoxShadow> get cardShadows => [
+    BoxShadow(color: shadow, blurRadius: 2, offset: const Offset(0, 1)),
+    BoxShadow(color: ring, spreadRadius: .5),
+  ];
+
+  /// Bayangan tab bar dan panel mengambang.
+  List<BoxShadow> get floatShadows => [
+    BoxShadow(color: floatShadow, blurRadius: 32, offset: const Offset(0, 12)),
+    BoxShadow(
+      color: floatShadowSoft,
+      blurRadius: 3,
+      offset: const Offset(0, 1),
+    ),
+  ];
+
   static const light = SacredTokens(
     bg: Color(0xFFF4F1EA),
     surf: Color(0xFFFCF9F8),
@@ -86,6 +124,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFFE7BE45),
       Color(0xFFA57E14),
     ],
+    ring: Color(0x0F00281C),
+    tertiary: Color(0xFF9A9D97),
+    onGold: Color(0xFF1F1A05),
+    shadow: Color(0x0F00281C),
+    floatShadow: Color(0x2100281C),
+    floatShadowSoft: Color(0x1400281C),
   );
 
   static const dark = SacredTokens(
@@ -107,7 +151,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF2F9E75),
     art: Color(0xFF0B3D2F),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC2142320),
+    glass: Color(0xC214201C),
     glassBorder: Color(0x17FFFFFF),
     heatmap: [
       Color(0xFF1A2823),
@@ -115,6 +159,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFF8A7424),
       Color(0xFFFED65B),
     ],
+    ring: Color(0x0FFFFFFF),
+    tertiary: Color(0xFF646D67),
+    onGold: Color(0xFF1F1A05),
+    shadow: Color(0x00000000),
+    floatShadow: Color(0x8C000000),
+    floatShadowSoft: Color(0x66000000),
   );
 
   /// Sepia memakai kaca dan aksen tema terang, sesuai spesifikasi.
@@ -145,6 +195,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFFE7BE45),
       Color(0xFFA57E14),
     ],
+    ring: Color(0x143E3222),
+    tertiary: Color(0xFF9A8E78),
+    onGold: Color(0xFF1F1A05),
+    shadow: Color(0x0F3E3222),
+    floatShadow: Color(0x213E3222),
+    floatShadowSoft: Color(0x143E3222),
   );
 
   /// Kontras tinggi: hitam/putih penuh, aksen tetap dapat dibedakan.
@@ -175,6 +231,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFF8A6B12),
       Color(0xFF3F3005),
     ],
+    ring: Color(0x663A3A3A),
+    tertiary: Color(0xFF2B2B2B),
+    onGold: Color(0xFF000000),
+    shadow: Color(0x00000000),
+    floatShadow: Color(0x33000000),
+    floatShadowSoft: Color(0x1F000000),
   );
 
   static const highContrastDark = SacredTokens(
@@ -204,6 +266,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       Color(0xFFB79B2C),
       Color(0xFFFFE27A),
     ],
+    ring: Color(0x669A9A9A),
+    tertiary: Color(0xFFD7D7D7),
+    onGold: Color(0xFF000000),
+    shadow: Color(0x00000000),
+    floatShadow: Color(0x8C000000),
+    floatShadowSoft: Color(0x66000000),
   );
 
   @override
@@ -229,6 +297,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     Color? glass,
     Color? glassBorder,
     List<Color>? heatmap,
+    Color? ring,
+    Color? tertiary,
+    Color? onGold,
+    Color? shadow,
+    Color? floatShadow,
+    Color? floatShadowSoft,
   }) => SacredTokens(
     bg: bg ?? this.bg,
     surf: surf ?? this.surf,
@@ -251,6 +325,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     glass: glass ?? this.glass,
     glassBorder: glassBorder ?? this.glassBorder,
     heatmap: heatmap ?? this.heatmap,
+    ring: ring ?? this.ring,
+    tertiary: tertiary ?? this.tertiary,
+    onGold: onGold ?? this.onGold,
+    shadow: shadow ?? this.shadow,
+    floatShadow: floatShadow ?? this.floatShadow,
+    floatShadowSoft: floatShadowSoft ?? this.floatShadowSoft,
   );
 
   @override
@@ -282,6 +362,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
         for (var i = 0; i < heatmap.length; i++)
           mix(heatmap[i], other.heatmap[i]),
       ],
+      ring: mix(ring, other.ring),
+      tertiary: mix(tertiary, other.tertiary),
+      onGold: mix(onGold, other.onGold),
+      shadow: mix(shadow, other.shadow),
+      floatShadow: mix(floatShadow, other.floatShadow),
+      floatShadowSoft: mix(floatShadowSoft, other.floatShadowSoft),
     );
   }
 }
@@ -478,4 +564,39 @@ abstract final class SacredText {
     22,
     800,
   ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+
+  // Gaya v2 (docs/design/v2/DESIGN.md §3).
+
+  /// Baris list: judul 16/700 dan subjudul 13/500.
+  static TextStyle get rowTitle => _font(ui, 16, 21, 700);
+  static TextStyle get rowSubtitle => _font(ui, 13, 17, 500);
+
+  /// Pill status 12/800, satu baris.
+  static TextStyle get pill => _font(ui, 12, 16, 800);
+
+  /// Label tab bar v2: 11, tebal 800 bila aktif dan 600 bila tidak.
+  static TextStyle get tabActive => _font(ui, 11, 14, 800);
+  static TextStyle get tabIdle => _font(ui, 11, 14, 600);
+
+  /// Label tombol utama dan tombol lunak.
+  static TextStyle get button => _font(ui, 15, 20, 800);
+  static TextStyle get buttonSmall => _font(ui, 14, 18, 800);
+
+  /// Judul serif layar turunan (Pelajaran: 32/36).
+  static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
+}
+
+/// Warna lencana ikon kotak (baris Saya, Mode baca, Salat, Sesi hafalan).
+///
+/// Mockup memakai nilai yang sama di tema terang dan gelap: lencananya selalu
+/// pekat dan glifnya putih, jadi kontrasnya tidak bergantung pada tema.
+abstract final class SacredBadge {
+  static const green = Color(0xFF0E6A4C);
+  static const gold = Color(0xFF9A7415);
+  static const blue = Color(0xFF2C6E8F);
+  static const grey = Color(0xFF56635C);
+  static const red = Color(0xFFB0533A);
+
+  /// Glif di atas lencana.
+  static const glyph = Color(0xFFFFFFFF);
 }
