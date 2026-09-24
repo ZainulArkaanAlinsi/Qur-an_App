@@ -214,7 +214,10 @@ class IosToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final enabled = onChanged != null;
+    // Node sendiri: pembaca layar bisa fokus ke sakelar tanpa ikut
+    // tergabung ke label baris di sekitarnya.
     return Semantics(
+      container: true,
       label: semanticsLabel,
       toggled: value,
       child: GestureDetector(

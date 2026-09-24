@@ -730,4 +730,22 @@ abstract final class SacredArt {
   static const skyIcon = Color(0xFFFFF1C9);
   static const skyPill = Color(0x47000000);
   static const skyTextShadow = Color(0x4D000000);
+
+  /// Kartu langit mihrab di layar Salat (V2-Salat.html). Latarnya gelap di
+  /// kedua tema; warnanya tidak mengklaim apa pun tentang langit sungguhan.
+  static const salatSky = [
+    Color(0xFF0B3F48),
+    Color(0xFF2E7078),
+    Color(0xFFB7A383),
+    Color(0xFFF2C98A),
+  ];
+  static const salatSkyStops = [0.0, .44, .76, 1.0];
+  static const salatEyebrow = Color(0xFFF6E3B4);
+  static const salatInfo = Color(0xEBFFFFFF);
+  static const salatOutline = Color(0x8CFFECC4);
+  static const salatArc = Color(0x73FFFFFF);
+  static const salatArcEnd = Color(0xB3FFFFFF);
+  static const salatPattern = Color(0x0DFFFFFF);
+  static const sunGlow = Color(0xFFFFE2A8);
+  static const sunCore = Color(0xFFFFF4D6);
 }

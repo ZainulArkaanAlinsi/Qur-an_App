@@ -554,6 +554,12 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_country', country.trim());
   }
 
+  /// Jadwal salat terakhir yang berhasil dimuat (JSON), untuk dipakai saat
+  /// luring.
+  static String? getPrayerCache() => _prefs?.getString('prayer_day_cache');
+  static Future<void> setPrayerCache(String value) async =>
+      _prefs?.setString('prayer_day_cache', value);
+
   static Set<String> getPrayerReminders() =>
       (_prefs?.getStringList('prayer_reminders') ?? const <String>[]).toSet();
   static Future<void> setPrayerReminders(Set<String> names) async =>
