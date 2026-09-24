@@ -26,6 +26,7 @@ import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/debug_reader_prototype_screen.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/debug_tajweed_preview_screen.dart';
+import 'package:quran_app_2025/features/tajweed/presentation/tajweed_legend_screen.dart';
 import 'package:quran_app_2025/services/auto_update_service.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
@@ -301,6 +302,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => const TranslationPicker(),
+                  ),
+                ),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.palette,
+                chipColor: SacredBadge.gold,
+                title: 'Warna tajwid',
+                value: 'Arti tiap warna',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        const TajweedLegendScreen(backLabel: 'Saya'),
                   ),
                 ),
               ),

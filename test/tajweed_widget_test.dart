@@ -225,8 +225,9 @@ void main() {
     );
     await tester.tap(find.byTooltip('Legend warna tajwid'));
     await tester.pumpAndSettle();
-    expect(find.text('Legend tajwid · Pratinjau'), findsOneWidget);
-    expect(find.text(TajweedRule.values.first.nameId), findsOneWidget);
+    // Legenda sekarang layar penuh "Warna tajwid" (desain v2 layar 07).
+    expect(find.text('Warna tajwid'), findsOneWidget);
+    expect(find.text(TajweedRule.idghamBilaghunnah.nameId), findsOneWidget);
   });
 
   test('setiap warna palet berkontras >= 4:1 terhadap permukaan kartu', () {
