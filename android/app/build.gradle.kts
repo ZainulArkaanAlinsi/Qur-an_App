@@ -30,6 +30,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["appLabel"] = "Ruang Tilawah"
 
         // Satu APK dibagikan lewat GitHub Releases, jadi isinya memuat kode
         // mesin tiap arsitektur. x86_64 praktis hanya dipakai emulator dan
@@ -61,6 +62,13 @@ android {
     }
 
     buildTypes {
+        // Build debug terpasang BERDAMPINGAN dengan aplikasi rilis di HP:
+        // ID dan nama berbeda, jadi debug (kunci debug) tidak menimpa atau
+        // memaksa mencopot aplikasi rilis beserta data lokalnya.
+        debug {
+            applicationIdSuffix = ".debug"
+            manifestPlaceholders["appLabel"] = "Ruang Tilawah Debug"
+        }
         release {
             if (!hasReleaseKey) {
                 logger.warn(
@@ -73,6 +81,13 @@ android {
             )
         }
     }
+}
+
+// google-services.json hanya mendaftarkan ID rilis. Build debug (.debug)
+// melewati langkah ini; Firebase tetap diinisialisasi dari
+// DefaultFirebaseOptions di Dart (gagalnya tidak menghentikan aplikasi).
+tasks.configureEach {
+    if (name == "processDebugGoogleServices") enabled = false
 }
 
 // Kotlin 2.3 removed kotlinOptions.jvmTarget; same JVM 11 target as Java.
