@@ -79,6 +79,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/quran/raw/tanzil_uthmani_v1.0.2.txt
+    - assets/quran/raw/tajweed_cpfair_tanzil_v1.0.2.json
     - assets/quran/raw/quran-data.xml
     - assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt
     # Materi tajwid ditulis manusia dan diisi di luar kode; lihat

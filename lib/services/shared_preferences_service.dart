@@ -554,6 +554,18 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_country', country.trim());
   }
 
+  /// Warna tajwid di kartu ayat (bawaan menyala).
+  static bool getReaderTajweed() => _prefs?.getBool('reader_tajweed') ?? true;
+  static Future<void> setReaderTajweed(bool value) async =>
+      _prefs?.setBool('reader_tajweed', value);
+
+  /// Terjemahan kedua di kartu ayat (JSON [TranslationEdition]), atau null.
+  static String? getSecondTranslation() =>
+      _prefs?.getString('reader_second_translation');
+  static Future<void> setSecondTranslation(String? json) async => json == null
+      ? _prefs?.remove('reader_second_translation')
+      : _prefs?.setString('reader_second_translation', json);
+
   /// Jadwal salat terakhir yang berhasil dimuat (JSON), untuk dipakai saat
   /// luring.
   static String? getPrayerCache() => _prefs?.getString('prayer_day_cache');
