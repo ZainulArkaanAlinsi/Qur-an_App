@@ -485,9 +485,9 @@ class SacredCircleButton extends StatelessWidget {
   }
 }
 
-/// Baris pengaturan gaya Pengaturan.html: lencana ikon 30 px berwarna, label,
-/// nilai di kanan, lalu chevron. Tinggi minimum 50 supaya tetap nyaman
-/// disentuh meski lencananya hanya 30 px.
+/// Baris pengaturan v2 (V2-Saya.png): lencana ikon 32 radius 10, judul
+/// 16/700, nilai 15/500 di kanan, chevron. Tinggi minimal 56. Judul selalu
+/// [Expanded] satu baris; nilai dan trailing tidak menjepitnya.
 class SettingsRow extends StatelessWidget {
   const SettingsRow({
     super.key,
@@ -510,7 +510,7 @@ class SettingsRow extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  /// 16 padding kiri + 30 lencana + 14 jarak: garis pemisah sejajar teks.
+  /// 16 padding kiri + 32 lencana + 12 jarak: garis pemisah sejajar teks.
   static const separatorInset = 60.0;
 
   @override
@@ -521,21 +521,20 @@ class SettingsRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: chipColor,
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(10),
             ),
-            // Lencananya selalu berwarna pekat, jadi glifnya putih di tema
-            // apa pun — bukan warna tinta tema yang bisa ikut menggelap.
-            child: LineIcon(icon, color: const Color(0xFFFFFFFF), size: 17),
+            // Lencananya selalu pekat, jadi glifnya putih di tema apa pun.
+            child: LineIcon(icon, color: SacredBadge.glyph, size: 18),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 9, 16, 9),
+              padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
               child: Row(
                 children: [
                   Expanded(
@@ -544,14 +543,18 @@ class SettingsRow extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: SacredText.settingTitle.copyWith(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: SacredText.rowTitle.copyWith(
                             color: tokens.ink,
                           ),
                         ),
                         if (subtitle != null)
                           Text(
                             subtitle!,
-                            style: SacredText.cardNote.copyWith(
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: SacredText.rowSubtitle.copyWith(
                               color: tokens.sec,
                             ),
                           ),
@@ -559,8 +562,11 @@ class SettingsRow extends StatelessWidget {
                     ),
                   ),
                   if (value != null) ...[
-                    const SizedBox(width: 8),
-                    Flexible(
+                    const SizedBox(width: 10),
+                    // Lebar nilai dibatasi, bukan dibagi rata dengan judul,
+                    // supaya nilai tetap rata kanan seperti mockup.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 160),
                       child: Text(
                         value!,
                         maxLines: 1,
@@ -579,7 +585,7 @@ class SettingsRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     LineIcon(
                       SacredIcons.chevronRight,
-                      color: tokens.sec,
+                      color: tokens.tertiary,
                       size: 17,
                       strokeWidth: 2.2,
                     ),
@@ -593,7 +599,7 @@ class SettingsRow extends StatelessWidget {
     );
 
     final content = ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 50),
+      constraints: const BoxConstraints(minHeight: 56),
       child: row,
     );
     if (onTap == null) {

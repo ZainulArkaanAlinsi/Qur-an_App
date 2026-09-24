@@ -687,6 +687,10 @@ abstract final class SacredText {
   static TextStyle get stepperSign => _font(ui, 18, 22, 500);
   static TextStyle get stepperValue => _font(ui, 15, 20, 800);
 
+  /// Saya v2: inisial avatar (serif 26) dan nama profil 18/800.
+  static TextStyle get profileInitial => _font(serif, 26, 30, 500);
+  static TextStyle get profileName => _font(ui, 18, 23, 800);
+
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
 }
