@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
@@ -325,34 +325,25 @@ class FloatingTabBar extends StatelessWidget {
           // Label tab kecil; penskalaannya dibatasi seperti tab bar iOS.
           child: MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1.3,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: tokens.floatShadows,
-              ),
-              child: GlassSurface(
-                borderRadius: BorderRadius.circular(32),
-                tint: tokens.glass,
-                borderColor: tokens.glassBorder,
-                shadowless: true,
-                child: SizedBox(
-                  height: 64,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < tabs.length; i++) ...[
-                          if (i > 0) const SizedBox(width: 2),
-                          Expanded(
-                            child: _TabButton(
-                              tab: tabs[i],
-                              selected: i == currentIndex,
-                              onTap: () => onSelected(i),
-                            ),
+            child: LiquidGlass(
+              borderRadius: const BorderRadius.all(Radius.circular(32)),
+              child: SizedBox(
+                height: 64,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < tabs.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 2),
+                        Expanded(
+                          child: _TabButton(
+                            tab: tabs[i],
+                            selected: i == currentIndex,
+                            onTap: () => onSelected(i),
                           ),
-                        ],
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),

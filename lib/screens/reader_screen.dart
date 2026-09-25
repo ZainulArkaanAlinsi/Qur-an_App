@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -708,171 +708,176 @@ class _ReaderScreenState extends State<ReaderScreen> {
               ? (verses.length / _focusChunk).ceil() + 1
               : verses.length + 1;
 
-          return Stack(
-            children: [
-              if (_focusMode)
-                Positioned.fill(
-                  child: GeometricPattern(
-                    tile: 56,
-                    opacity: .05,
-                    color: tokens.gold,
+          // Satu BackdropGroup per rute: semua kaca di pembaca berbagi satu
+          // tangkapan backdrop (LIQUID_GLASS.md §7).
+          return BackdropGroup(
+            child: Stack(
+              children: [
+                if (_focusMode)
+                  Positioned.fill(
+                    child: GeometricPattern(
+                      tile: 56,
+                      opacity: .05,
+                      color: tokens.gold,
+                    ),
                   ),
-                ),
-              Column(
-                children: [
-                  if (_focusMode)
-                    _FocusHeader(
-                      onClose: () => setState(() => _focusMode = false),
-                      onDisplay: _openDisplaySheet,
-                    )
-                  else
-                    _ReaderNav(
-                      surah: widget.surah,
-                      verse: _verse,
-                      content: content,
-                      onBack: () => Navigator.of(context).maybePop(),
-                      onJump: _jumpToVerse,
-                      onDisplay: () => unawaited(_openReadingMode(content)),
-                      onFocus: () => setState(() => _focusMode = true),
-                    ),
-                  if (!_focusMode)
-                    ReaderChips(
-                      languageLabel: _languageLabel,
-                      tajweed: _tajweed,
-                      onLanguage: () => unawaited(_openTranslations()),
-                      onTajweed: () => _toggleTajweed(content),
-                    ),
-                  if (!_focusMode &&
-                      _tajweed &&
-                      content.tajweed != null &&
-                      !SharedPreferencesService.getTajweedHintDone())
-                    TajweedHint(
-                      onClose: () {
-                        unawaited(
-                          SharedPreferencesService.setTajweedHintDone(),
-                        );
-                        setState(() {});
-                      },
-                    ),
-                  Expanded(
-                    child: Listener(
-                      onPointerDown: (_) => _tracker.interact(),
-                      child: ScrollablePositionedList.builder(
-                        itemScrollController: _scroll,
-                        itemPositionsListener: _positions,
-                        initialScrollIndex: _currentVerse == 1
-                            ? 0
-                            : _indexForVerse(_currentVerse),
-                        physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(
-                          _focusMode ? 22 : 10,
-                          8,
-                          _focusMode ? 22 : 10,
-                          _focusMode ? 20 : 28,
-                        ),
-                        itemCount: itemCount,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return _SurahPlate(
-                              surah: widget.surah,
-                              arabicName: content.arabicName,
-                              timerText: _timerText,
-                              tracker: _tracker,
-                              compact: _focusMode,
-                            );
-                          }
-                          if (_focusMode) {
-                            return _FocusBlock(
-                              verses: verses,
-                              first: (index - 1) * _focusChunk,
-                              count: _focusChunk,
-                              basmalah: content.basmalah,
-                              size: _arabicSize,
-                              lineHeight: _lineHeight,
-                            );
-                          }
-                          final number = index;
-                          final translation = content.translation;
-                          final second = _second;
-                          final secondVerses = _secondVerses;
-                          // Bahasa kedua yang belum tersimpan ditawarkan
-                          // sekali, di kartu pertama yang dibuka.
-                          final offerDownload =
-                              second != null &&
-                              secondVerses == null &&
-                              number == _firstCard;
-                          return _VerseCard(
-                            key: ValueKey('${widget.surah.number}:$number'),
-                            verseNumber: number,
-                            arabic: verses[number - 1],
-                            basmalah: number == 1 ? content.basmalah : 0,
-                            onTajweedTap: (rule, inBasmalah) => _openRule(
-                              content,
-                              number,
-                              rule,
-                              inBasmalah: inBasmalah,
-                            ),
-                            tajweed: _tajweed && content.tajweed != null
-                                ? content.tajweed![number - 1]
-                                : null,
-                            translation: _showTranslation && translation != null
-                                ? translation[number - 1]
-                                : null,
-                            secondCode: second == null
-                                ? null
-                                : translationCode(second),
-                            secondText: secondVerses?[number - 1],
-                            secondRtl: second?.direction == 'rtl',
-                            extra: offerDownload
-                                ? TranslationDownloadRow(
-                                    edition: second,
-                                    state: _download,
-                                    onDownload: () =>
-                                        unawaited(_downloadSecond()),
-                                  )
-                                : null,
-                            surahNumber: widget.surah.number,
-                            arabicSize: _arabicSize,
-                            lineHeight: _lineHeight,
-                            onPlay: _playVerse,
+                Column(
+                  children: [
+                    if (_focusMode)
+                      _FocusHeader(
+                        onClose: () => setState(() => _focusMode = false),
+                        onDisplay: _openDisplaySheet,
+                      )
+                    else
+                      _ReaderNav(
+                        surah: widget.surah,
+                        verse: _verse,
+                        content: content,
+                        onBack: () => Navigator.of(context).maybePop(),
+                        onJump: _jumpToVerse,
+                        onDisplay: () => unawaited(_openReadingMode(content)),
+                        onFocus: () => setState(() => _focusMode = true),
+                      ),
+                    if (!_focusMode)
+                      ReaderChips(
+                        languageLabel: _languageLabel,
+                        tajweed: _tajweed,
+                        onLanguage: () => unawaited(_openTranslations()),
+                        onTajweed: () => _toggleTajweed(content),
+                      ),
+                    if (!_focusMode &&
+                        _tajweed &&
+                        content.tajweed != null &&
+                        !SharedPreferencesService.getTajweedHintDone())
+                      TajweedHint(
+                        onClose: () {
+                          unawaited(
+                            SharedPreferencesService.setTajweedHintDone(),
                           );
+                          setState(() {});
                         },
                       ),
+                    Expanded(
+                      child: Listener(
+                        onPointerDown: (_) => _tracker.interact(),
+                        child: ScrollablePositionedList.builder(
+                          itemScrollController: _scroll,
+                          itemPositionsListener: _positions,
+                          initialScrollIndex: _currentVerse == 1
+                              ? 0
+                              : _indexForVerse(_currentVerse),
+                          physics: const BouncingScrollPhysics(),
+                          padding: EdgeInsets.fromLTRB(
+                            _focusMode ? 22 : 10,
+                            8,
+                            _focusMode ? 22 : 10,
+                            _focusMode ? 20 : 28,
+                          ),
+                          itemCount: itemCount,
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return _SurahPlate(
+                                surah: widget.surah,
+                                arabicName: content.arabicName,
+                                timerText: _timerText,
+                                tracker: _tracker,
+                                compact: _focusMode,
+                              );
+                            }
+                            if (_focusMode) {
+                              return _FocusBlock(
+                                verses: verses,
+                                first: (index - 1) * _focusChunk,
+                                count: _focusChunk,
+                                basmalah: content.basmalah,
+                                size: _arabicSize,
+                                lineHeight: _lineHeight,
+                              );
+                            }
+                            final number = index;
+                            final translation = content.translation;
+                            final second = _second;
+                            final secondVerses = _secondVerses;
+                            // Bahasa kedua yang belum tersimpan ditawarkan
+                            // sekali, di kartu pertama yang dibuka.
+                            final offerDownload =
+                                second != null &&
+                                secondVerses == null &&
+                                number == _firstCard;
+                            return _VerseCard(
+                              key: ValueKey('${widget.surah.number}:$number'),
+                              verseNumber: number,
+                              arabic: verses[number - 1],
+                              basmalah: number == 1 ? content.basmalah : 0,
+                              onTajweedTap: (rule, inBasmalah) => _openRule(
+                                content,
+                                number,
+                                rule,
+                                inBasmalah: inBasmalah,
+                              ),
+                              tajweed: _tajweed && content.tajweed != null
+                                  ? content.tajweed![number - 1]
+                                  : null,
+                              translation:
+                                  _showTranslation && translation != null
+                                  ? translation[number - 1]
+                                  : null,
+                              secondCode: second == null
+                                  ? null
+                                  : translationCode(second),
+                              secondText: secondVerses?[number - 1],
+                              secondRtl: second?.direction == 'rtl',
+                              extra: offerDownload
+                                  ? TranslationDownloadRow(
+                                      edition: second,
+                                      state: _download,
+                                      onDownload: () =>
+                                          unawaited(_downloadSecond()),
+                                    )
+                                  : null,
+                              surahNumber: widget.surah.number,
+                              arabicSize: _arabicSize,
+                              lineHeight: _lineHeight,
+                              onPlay: _playVerse,
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                  if (_focusMode)
-                    _FocusBar(
-                      tracker: _tracker,
-                      onMurottal: () => unawaited(_openMurottal(content)),
-                      onTranslation: () => setState(() {
-                        _focusMode = false;
-                        _showTranslation = true;
-                      }),
+                    if (_focusMode)
+                      _FocusBar(
+                        tracker: _tracker,
+                        onMurottal: () => unawaited(_openMurottal(content)),
+                        onTranslation: () => setState(() {
+                          _focusMode = false;
+                          _showTranslation = true;
+                        }),
+                      ),
+                    SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                        child: _audioError == null
+                            ? AudioMiniPlayer(
+                                onOpen: (_, __) =>
+                                    unawaited(_openMurottal(content)),
+                              )
+                            : _AudioUnavailable(
+                                message: _audioError!,
+                                onRetry: () {
+                                  final ayah = _audioErrorVerse;
+                                  setState(() => _audioError = null);
+                                  if (ayah != null) unawaited(_playVerse(ayah));
+                                },
+                                onDismiss: () =>
+                                    setState(() => _audioError = null),
+                              ),
+                      ),
                     ),
-                  SafeArea(
-                    top: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                      child: _audioError == null
-                          ? AudioMiniPlayer(
-                              onOpen: (_, __) =>
-                                  unawaited(_openMurottal(content)),
-                            )
-                          : _AudioUnavailable(
-                              message: _audioError!,
-                              onRetry: () {
-                                final ayah = _audioErrorVerse;
-                                setState(() => _audioError = null);
-                                if (ayah != null) unawaited(_playVerse(ayah));
-                              },
-                              onDismiss: () =>
-                                  setState(() => _audioError = null),
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -909,9 +914,10 @@ class _ReaderNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return GlassSurface(
+    // Bilah menempel di tepi atas layar, jadi tanpa bayangan L0.
+    return LiquidGlass(
       borderRadius: BorderRadius.zero,
-      tint: tokens.glass,
+      shadow: false,
       child: SafeArea(
         bottom: false,
         child: Container(

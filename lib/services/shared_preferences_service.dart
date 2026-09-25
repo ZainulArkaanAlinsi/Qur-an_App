@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
@@ -274,6 +275,32 @@ class SharedPreferencesService {
 
   static Future<void> setPalette(AppPalette palette) async {
     await _prefs?.setString('palette', palette.name);
+  }
+
+  /// Pilihan Saya → Tampilan → Efek kaca; bawaannya Otomatis.
+  static GlassPreference getGlassPreference() {
+    final value = _prefs?.getString('glass_preference');
+    return GlassPreference.values.firstWhere(
+      (preference) => preference.name == value,
+      orElse: () => GlassPreference.auto,
+    );
+  }
+
+  static Future<void> setGlassPreference(GlassPreference preference) async {
+    await _prefs?.setString('glass_preference', preference.name);
+  }
+
+  /// Tingkat kaca yang diturunkan pengawas frame untuk mode Otomatis.
+  static GlassTier getGlassAutoTier() {
+    final value = _prefs?.getString('glass_tier_auto');
+    return GlassTier.values.firstWhere(
+      (tier) => tier.name == value,
+      orElse: () => GlassTier.full,
+    );
+  }
+
+  static Future<void> setGlassAutoTier(GlassTier tier) async {
+    await _prefs?.setString('glass_tier_auto', tier.name);
   }
 
   /// Tinggi baris teks Arab di Reader.

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/app_entry.dart';
 import 'package:quran_app_2025/app/distribution.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
@@ -86,8 +87,13 @@ class QuranApp extends StatelessWidget {
       // AppScope harus berada di atas Navigator, bukan di dalam `home`:
       // halaman yang dibuka lewat Navigator.push adalah route lain dan tidak
       // akan menemukannya bila dipasang di dalam home.
-      builder: (context, child) =>
-          AppScope(controller: controller, child: child ?? const SizedBox()),
+      builder: (context, child) => GlassScope(
+        controller: controller.glass,
+        child: AppScope(
+          controller: controller,
+          child: child ?? const SizedBox(),
+        ),
+      ),
       home: AppEntry(ready: ready),
     ),
   );

@@ -58,3 +58,25 @@ C5 CEK    5 pemakaian kaca: glass_surface.dart:8 (definisi), sacred_controls.dar
 
 Urutan perbaikan (mengikuti rubrik): G8 → G1/G2 → G6/G7 → G4 → G3 → G9 → G5/G10, lewat
 Prompt 1–5.
+
+## Prompt 1 — fondasi (25 September 2026)
+
+`lib/app/glass/`: `GlassTokens` (ThemeExtension, dipasang `SacredTheme.themeFor`),
+`GlassTier`/`GlassPreference`/`GlassScope`, dan `LiquidGlass` enam lapis. `BackdropGroup`
+di `AppShell` dan `ReaderScreen`. `GlassSurface` tinggal pembungkus `@Deprecated`.
+
+### Angka yang menyimpang dari §4
+
+| Token | §4 | Dipakai | Alasan |
+| --- | --- | --- | --- |
+| tint sepia | `surf` @ 42% | `surf` @ 48% (`0x7B`) | Dengan token sepia asli (`surf` #FBF4E4, `sec` #6E5D44), 42% memberi `sec` **4.41** di atas latar hitam (< 4.5). 48% memberi 8.94 / 4.55 / 6.72, sama dengan angka sepia di tabel §5. |
+| tint gelap | `surf` @ 42% | `0x6C` (42.35%) | Pembulatan byte ke atas. Angka §5 gelap (9.98 / 4.67 / 7.43) dihitung dengan warna kaca lama #14201C; dengan `surf` #111C18 hasilnya 10.28 / 4.80 / 7.65. |
+
+Model tes: latar polos → vibrancy (matriks yang sama dengan `LiquidGlass`) → tint. Hasil
+terang cocok persis dengan §5 (12.62 / 4.57 / 6.92). Semua palet × tingkat × ukuran lolos
+ambang ink 7, sec 4.5, primaryText 4.5 di 9 latar uji (`test/glass_contrast_test.dart`).
+
+### Audit setelah Prompt 1
+
+`bash tool/glass_audit.sh`: **5 GAGAL** (dari 12). Target Prompt 1 lulus: A1, A2, B1, B4,
+C1, C2. Sisa: A3, B2, B3 (Prompt 2), C3, C4 (Prompt 4).
