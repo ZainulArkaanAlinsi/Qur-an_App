@@ -139,9 +139,14 @@ Teks ditulis persis seperti ini.
 | # | Judul (EB Garamond 500, 33/38) | Subjudul (15/23, `sec`) | Ilustrasi |
 | --- | --- | --- | --- |
 | 1 | Selamat datang di *MyQuran* ("MyQuran" miring) | Membaca, belajar, dan menghafal Al-Qur'an dalam satu aplikasi yang tenang. Tetap bisa dibuka tanpa internet. | Logo utama 236 dp di atas glow + bintang 316 dp |
-| 2 | Baca seperti mushaf aslinya | Pilih 1 halaman, 2 halaman, atau kartu per ayat dengan terjemahan. Warna tajwid menempel langsung di hurufnya. | 3 kartu (lihat bawah) + chip "1 halaman · 2 halaman · Kartu" |
+| 2 | Baca ayat demi ayat | Kartu per ayat dengan teks Utsmani dan terjemahan. Warna tajwid menempel langsung di hurufnya. | 3 kartu (lihat bawah) + chip "Kartu ayat · Terjemahan · Tajwid" |
 | 3 | Belajar dari nol, lalu menghafal | Jalur bertahap dari mengenal huruf sampai tajwid, lalu hafalan dengan ziyadah dan murajaah yang terjadwal. | Kartu jalur belajar + kartu hafalan |
 | 4 | Mulai dari mana? (36/40, rata kiri, eyebrow "LANGKAH TERAKHIR") | Supaya materi pertama pas dengan kemampuanmu sekarang. | 3 kartu pilihan (radio) |
+
+Halaman 2 diubah di 1.9.2 (dulu "Baca seperti mushaf aslinya" / "Pilih 1 halaman, 2 halaman,
+atau kartu per ayat…" dengan chip "1 halaman · 2 halaman · Kartu"). Mode mushaf belum
+dirilis sampai izin tata letak Mushaf Madinah keluar, jadi onboarding tidak boleh
+menjanjikannya. Kembalikan teks lama setelah mode itu aktif.
 
 **Detail ilustrasi:**
 

@@ -42,10 +42,9 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 
 ## Yang perlu diperhatikan
 
-- **Onboarding halaman 2** menyebut "Pilih 1 halaman, 2 halaman, atau kartu per ayat",
-  padahal mode mushaf masih "segera" di rilis. Teks ini dari paket desain v3 (ditulis
-  persis). Sebaiknya diubah sampai lisensi keluar, atau pastikan listing toko tidak
-  menjanjikannya. Listing di `docs/play-store/listing/` sudah **tidak** menyebut mode mushaf.
+- **Onboarding halaman 2** sudah diubah di 1.9.2 menjadi "Baca ayat demi ayat" (kartu ayat,
+  terjemahan, tajwid). Onboarding dan listing toko tidak lagi menjanjikan mode mushaf
+  sebelum izin tata letak keluar.
 - Jangan menambah iklan, langganan, atau fitur berbayar sebelum izin Kemenag dan penyedia
   audio keluar.
 - Kalau ada pihak yang menolak atau meminta berhenti, hapus sumbernya paling lambat

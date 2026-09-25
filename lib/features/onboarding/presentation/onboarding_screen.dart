@@ -527,10 +527,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'Membaca, belajar, dan menghafal Al-Qur\'an dalam satu aplikasi yang '
           'tenang. Tetap bisa dibuka tanpa internet.',
     ),
+    // Mode mushaf 1/2 halaman belum dirilis (menunggu izin tata letak), jadi
+    // halaman ini hanya menyebut kartu ayat (docs/lisensi/STATUS_HAK_CIPTA.md).
     (
-      const TextSpan(text: 'Baca seperti mushaf aslinya'),
-      'Pilih 1 halaman, 2 halaman, atau kartu per ayat dengan terjemahan. '
-          'Warna tajwid menempel langsung di hurufnya.',
+      const TextSpan(text: 'Baca ayat demi ayat'),
+      'Kartu per ayat dengan teks Utsmani dan terjemahan. Warna tajwid '
+          'menempel langsung di hurufnya.',
     ),
     (
       const TextSpan(text: 'Belajar dari nol, lalu menghafal'),
@@ -1060,15 +1062,15 @@ class _ReadArt extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _ModeChip(icon: SacredIcons.pageSingle, label: '1 halaman'),
-                SizedBox(width: 6),
-                _ModeChip(icon: SacredIcons.pageDouble, label: '2 halaman'),
-                SizedBox(width: 6),
                 _ModeChip(
                   icon: SacredIcons.cards,
-                  label: 'Kartu',
+                  label: 'Kartu ayat',
                   active: true,
                 ),
+                SizedBox(width: 6),
+                _ModeChip(icon: SacredIcons.translate, label: 'Terjemahan'),
+                SizedBox(width: 6),
+                _ModeChip(icon: SacredIcons.palette, label: 'Tajwid'),
               ],
             ),
           ),
