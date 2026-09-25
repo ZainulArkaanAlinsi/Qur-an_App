@@ -157,7 +157,10 @@ void main() {
 
     await tester.tap(find.text('Mahir'));
     await tester.pumpAndSettle();
-    expect(find.text('Materi sedang ditinjau'), findsNWidgets(3));
+    // Tiga tahap terkunci + judul kartu "Materi sedang ditinjau" (v3) yang
+    // menawarkan tahap terbit berikutnya.
+    expect(find.text('Materi sedang ditinjau'), findsNWidgets(4));
+    expect(find.text('Lanjutkan'), findsOneWidget);
 
     await tester.tap(find.text('Makharij dan sifat'));
     await tester.pump();

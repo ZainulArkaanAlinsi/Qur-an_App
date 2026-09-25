@@ -49,10 +49,13 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    ```
 3. Build dan verifikasi tanda tangan:
    ```powershell
-   flutter build apk --release
+   flutter build apk --release --dart-define=DISTRIBUTION=github
    & "$env:LOCALAPPDATA\Android\Sdk\build-tools\<versi>\apksigner.bat" verify --print-certs build\app\outputs\flutter-apk\app-release.apk
    ```
-   SHA-256 sertifikat harus sama dengan di atas.
+   SHA-256 sertifikat harus sama dengan di atas. `DISTRIBUTION=github` wajib
+   untuk APK GitHub (pengunduh pembaruan + izin pasang APK); build Google Play
+   memakai `flutter build appbundle --release` tanpa flag itu
+   (docs/PLAY_STORE_RELEASE.md).
 4. Buat rilis di GitHub dengan tag `v<versi>` (mis. `v1.2.0`), lampirkan APK
    dengan nama `ruang-tilawah-<versi>.apk`, dan cantumkan SHA-256 berkasnya.
    Tag harus diawali `v` dan berupa angka bertitik agar pemeriksa pembaruan

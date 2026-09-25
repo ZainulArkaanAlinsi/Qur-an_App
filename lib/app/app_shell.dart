@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -26,22 +27,29 @@ const _tabs = [
 ];
 
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({super.key, this.initialIndex = 0});
+
+  /// Tab pertama yang terbuka, mis. Belajar/Hafalan sesuai pilihan
+  /// onboarding.
+  final int initialIndex;
 
   @override
   State<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<AppShell> {
-  int _index = 0;
+  late int _index = widget.initialIndex.clamp(0, _tabs.length - 1);
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _announceUpdate());
+    // Build Google Play diperbarui lewat Play (lib/app/distribution.dart).
+    if (isGithubBuild) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _announceUpdate());
+    }
   }
 
-  /// APK diedarkan di luar Play Store. Pembaruan diperiksa dan diunduh sendiri
+  /// Build GitHub Releases: pembaruan diperiksa dan diunduh sendiri
   /// (maksimal sekali sehari), lalu pemasang sistem dibuka. Android tetap
   /// meminta konfirmasi, dan izin "pasang aplikasi tak dikenal" hanya diminta
   /// sekali lewat tombol di bawah.

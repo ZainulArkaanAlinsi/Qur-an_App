@@ -1,0 +1,18 @@
+<!-- Hanya untuk build GitHub Releases (dart-define DISTRIBUTION=github,
+     lihat android/app/build.gradle.kts). Aplikasi mengunduh APK rilis terbaru
+     lalu membuka pemasang sistem; Android tetap meminta konfirmasi pengguna
+     setiap pemasangan. Build Google Play tidak memuat berkas ini. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <application>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
+    </application>
+</manifest>

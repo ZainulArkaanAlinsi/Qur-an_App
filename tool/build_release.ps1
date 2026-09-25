@@ -27,8 +27,11 @@ if (Test-Path $outDir) {
 # sebagian Chromebook, dan menambah ~20 MB pada unduhan setiap pengguna.
 # Filter abiFilters di Gradle diabaikan Flutter untuk APK gabungan, jadi
 # pembatasannya harus lewat --target-platform.
-Write-Host "Build rilis versi $version (arm + arm64)"
-flutter build apk --release --target-platform android-arm,android-arm64
+# DISTRIBUTION=github: APK ini untuk GitHub Releases, jadi pengunduh pembaruan
+# dan izin pasang APK ikut. Build Google Play (appbundle) tidak memakainya;
+# lihat lib/app/distribution.dart dan docs/PLAY_STORE_RELEASE.md.
+Write-Host "Build rilis GitHub versi $version (arm + arm64)"
+flutter build apk --release --target-platform android-arm,android-arm64 --dart-define=DISTRIBUTION=github
 if ($LASTEXITCODE -ne 0) { throw 'flutter build apk gagal' }
 
 $built = Join-Path $outDir 'app-release.apk'

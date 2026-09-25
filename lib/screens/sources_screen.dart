@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
+import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
+import 'package:quran_app_2025/features/onboarding/presentation/brand_art.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -38,7 +40,9 @@ abstract final class DataSources {
     ),
     DataSource(
       name: 'cpfair/quran-tajweed',
-      use: 'Anotasi warna tajwid, sinkron dengan Tanzil',
+      use:
+          'Anotasi warna tajwid, sinkron dengan Tanzil; alat bantu memilih '
+          'contoh ayat materi tajwid',
       license: 'CC BY 4.0 · wajib atribusi',
       url: 'https://github.com/cpfair/quran-tajweed',
     ),
@@ -138,6 +142,16 @@ class SourcesScreen extends StatelessWidget {
     }
   }
 
+  void _licenses(BuildContext context) => showLicensePage(
+    context: context,
+    applicationName: 'MyQuran',
+    applicationVersion: appVersion,
+    applicationIcon: Padding(
+      padding: const EdgeInsets.all(8),
+      child: Image.asset(BrandAssets.secondary, width: 56, height: 56),
+    ),
+  );
+
   Widget _group(BuildContext context, String label, List<DataSource> items) =>
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
@@ -176,6 +190,7 @@ class SourcesScreen extends StatelessWidget {
               subtitle: 'Teks ayat dan terjemahan tampil tanpa diubah',
               backLabel: 'Saya',
             ),
+            const _BrandNote(),
             _group(context, 'Teks & tajwid', DataSources.text),
             _group(context, 'Terjemahan', DataSources.translation),
             FutureBuilder<List<SavedTranslation>>(
@@ -213,6 +228,30 @@ class SourcesScreen extends StatelessWidget {
               ...DataSources.audio,
             ]),
             _group(context, 'Waktu salat', DataSources.prayer),
+            // Teks lisensi SIL OFL 1.1 keempat font ikut dibundel dan
+            // tampil di halaman lisensi (docs/design/v3/LISENSI_ASET.md §2).
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+              child: GroupedList(
+                label: 'Font & perangkat lunak',
+                children: [
+                  ListRow(
+                    title: 'Font aplikasi',
+                    subtitle:
+                        'Plus Jakarta Sans, EB Garamond, Amiri, Amiri Quran · '
+                        'SIL OFL 1.1',
+                    chevron: true,
+                    onTap: () => _licenses(context),
+                  ),
+                  ListRow(
+                    title: 'Lisensi perangkat lunak',
+                    subtitle: 'Flutter dan paket sumber terbuka yang dipakai',
+                    chevron: true,
+                    onTap: () => _licenses(context),
+                  ),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 14, 32, 0),
               child: Text(
@@ -223,6 +262,37 @@ class SourcesScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Logo sekunder dan asal tulisan Arab di logo (docs/design/v3/DESIGN.md §2).
+class _BrandNote extends StatelessWidget {
+  const _BrandNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+      child: Row(
+        children: [
+          Image.asset(
+            BrandAssets.secondary,
+            width: 48,
+            height: 48,
+            semanticLabel: 'Logo MyQuran',
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Logo MyQuran milik pemilik aplikasi. Tulisan Arab di logo '
+              'dirender dengan font Amiri (SIL OFL 1.1).',
+              style: SacredText.cardNote.copyWith(color: tokens.sec),
+            ),
+          ),
+        ],
       ),
     );
   }

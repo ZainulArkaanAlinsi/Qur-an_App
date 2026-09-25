@@ -554,6 +554,22 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_country', country.trim());
   }
 
+  /// Onboarding v3 sudah dilewati dengan tombol Mulai; tampil sekali saja
+  /// (docs/design/v3/DESIGN.md §5a).
+  static bool getOnboardingDone() =>
+      _prefs?.getBool('onboarding.selesai.v1') ?? false;
+  static Future<void> setOnboardingDone() async =>
+      _prefs?.setBool('onboarding.selesai.v1', true);
+
+  /// Titik mulai belajar pilihan onboarding ("nol", "tajwid", "hafalan"),
+  /// atau null bila belum pernah memilih.
+  static String? getStartPoint() => _prefs?.getString('belajar.titikMulai');
+  static Future<void> setStartPoint(String id) async {
+    await _prefs?.setString('belajar.titikMulai', id);
+    // Peta jalur Belajar menyesuaikan tahap sekarang dengan pilihan ini.
+    learnRevision.value++;
+  }
+
   /// Petunjuk "ketuk huruf berwarna" sudah dipahami (dicoba atau ditutup).
   static bool getTajweedHintDone() =>
       _prefs?.getBool('tajweed_hint_done') ?? false;

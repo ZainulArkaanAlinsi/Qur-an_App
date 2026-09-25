@@ -589,54 +589,931 @@
       "level": 6,
       "order": 1,
       "title": "Mad asli",
-      "summary": "Alif, wau, dan ya sebagai pemanjang dua harakat.",
-      "objectives": ["Mengenali mad asli dan panjang bacaannya"],
+      "summary": "Alif, wau, dan ya sebagai pemanjang dua harakat — cara mengenali, mengukur, dan melatihnya.",
+      "objectives": [
+        "Menyebut tiga huruf mad dan syaratnya",
+        "Membaca mad asli tepat dua harakat, tidak lebih dan tidak kurang",
+        "Mengenali alif kecil sebagai tanda mad",
+        "Membedakan huruf mad dari wau dan ya yang berharakat"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Tuhfatul Athfal, bab mad); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "madda_normal",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Apa itu mad",
+          "text": "**Mad** artinya memanjangkan suara. Dalam Al-Qur'an ada bunyi pendek (a, i, u) dan bunyi panjang (aa, ii, uu). Salah panjang-pendek bisa mengubah arti kata, jadi ini dasar yang wajib benar."
+        },
+        {
+          "type": "tip",
+          "text": "Satuan panjang disebut **harakat**. Satu harakat kira-kira selama melipat satu jari dengan tempo tenang. Mad asli = **dua harakat**: dua lipatan jari."
+        },
+        {
+          "type": "text",
+          "heading": "Tiga huruf mad",
+          "text": "Hanya tiga huruf yang bisa menjadi pemanjang: **alif**, **wau**, dan **ya**. Syaratnya, huruf itu mati (tidak berharakat) dan huruf sebelumnya memakai harakat yang cocok."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ا",
+              "name": "Alif",
+              "note": "Sebelumnya fathah → aa"
+            },
+            {
+              "letter": "و",
+              "name": "Wau",
+              "note": "Sukun, sebelumnya dhammah → uu"
+            },
+            {
+              "letter": "ي",
+              "name": "Ya",
+              "note": "Sukun, sebelumnya kasrah → ii"
+            }
+          ]
+        },
+        {
+          "type": "tip",
+          "text": "Rumus mudah: **fathah + alif**, **dhammah + wau mati**, **kasrah + ya mati**. Pasangan harakat dan hurufnya harus sejenis."
+        },
+        {
+          "type": "text",
+          "heading": "Alif setelah fathah",
+          "text": "Huruf berfathah yang diikuti alif dibaca panjang \"aa\" selama dua harakat. Alif itu sendiri tidak diberi harakat."
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 1,
+          "note": "Kata terakhir, an-nās: nun berfathah diikuti alif → \"naa\" dua harakat saat disambung. Saat berhenti di akhir ayat menjadi mad 'aridh lissukun (tahap 12).",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 4,
+          "note": "Kata pertama, māliki: alif kecil di atas mim → \"maa\" dua harakat.",
+          "words": [1, 1]
+        },
+        {
+          "type": "text",
+          "heading": "Wau mati setelah dhammah",
+          "text": "Huruf berdhammah yang diikuti wau mati dibaca panjang \"uu\" selama dua harakat. Bibir membulat dan tetap membulat sampai panjangnya selesai."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 3,
+          "note": "Kata terakhir, yūlad: ya berdhammah diikuti wau mati → \"yuu\" dua harakat.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 5,
+          "note": "Kata kedua, yuwaswisu: di sini wau berharakat fathah, jadi BUKAN mad. Dibaca pendek \"yu-was\".",
+          "words": [2, 2]
+        },
+        {
+          "type": "text",
+          "heading": "Ya mati setelah kasrah",
+          "text": "Huruf berkasrah yang diikuti ya mati dibaca panjang \"ii\" selama dua harakat. Mulut melebar ke samping, jangan berubah menjadi \"e\"."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 4,
+          "note": "Kata terakhir, ad-dīn: dal berkasrah diikuti ya mati → \"dii\".",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 2,
+          "note": "Kata ketiga, lafī: fa berkasrah diikuti ya → \"fii\" dua harakat.",
+          "words": [3, 3]
+        },
+        {
+          "type": "text",
+          "heading": "Alif kecil (alif khanjariyah)",
+          "text": "Di mushaf ada alif kecil tegak di atas huruf. Bacanya sama dengan alif biasa: panjang **dua harakat** — kecuali bila ada tanda mad (ٓ) di atasnya, seperti pada \"al-malā'ikah\", yang dibaca 4–5 harakat. Tanda ini sering terlewat oleh pemula."
+        },
+        {
+          "type": "example",
+          "surah": 108,
+          "ayah": 1,
+          "note": "Kata kedua, a'ṭaināka: alif kecil di atas nun → \"naa\" dua harakat.",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 2,
+          "note": "Kata terakhir, al-'ālamīn: alif kecil di atas 'ain → \"'aa\", lalu \"mii\" dengan ya mati.",
+          "words": [4, 4]
+        },
+        {
+          "type": "text",
+          "heading": "Wau dan ya kecil",
+          "text": "Wau kecil atau ya kecil sesudah kata ganti \"hu\"/\"hi\" juga dibaca dua harakat bila diapit dua huruf berharakat. Ini disebut **mad shilah qashirah** dan dibahas lagi di tahap 12."
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 3,
+          "note": "Kata kelima, innahū: wau kecil sesudah ha → \"huu\" dua harakat, karena kata sesudahnya dimulai huruf berharakat.",
+          "words": [5, 5]
+        },
+        {
+          "type": "text",
+          "heading": "Yang BUKAN mad",
+          "text": "Wau atau ya yang berharakat bukan huruf mad; bacalah sesuai harakatnya. Wau atau ya mati yang didahului fathah juga bukan mad asli, melainkan **huruf lin** (au, ai) yang dibaca pendek saat bacaan bersambung."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 4,
+          "note": "Kata kedua, yaumi: wau mati setelah fathah → \"yau\", pendek, bukan \"yuu\".",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 106,
+          "ayah": 1,
+          "note": "Kata terakhir, quraisy: ya mati setelah fathah → \"rai\", huruf lin.",
+          "words": [2, 2]
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Pertama, baca kata pelan sambil melipat dua jari untuk setiap mad. Kedua, ulangi tanpa jari dan rekam suaramu. Ketiga, dengarkan: apakah semua mad sama panjang? Konsisten lebih penting daripada cepat."
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum:** (1) memanjangkan huruf yang tidak punya mad, misalnya \"Aallāh\" atau \"lam yaalid\"; (2) memanjangkan mad asli lebih dari dua harakat, misalnya \"Allaaahu\"; (3) memendekkan mad karena terburu-buru; (4) panjang mad berubah-ubah dalam satu ayat."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh mad asli dua harakat: aa, ii, uu",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-1",
+          "question": "Berapa panjang mad asli?",
+          "options": [
+            "Dua harakat",
+            "Satu harakat",
+            "Empat harakat",
+            "Enam harakat"
+          ],
+          "answer": 0,
+          "explanation": "Mad asli selalu dua harakat, kira-kira dua lipatan jari."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-2",
+          "question": "Huruf mad ada berapa?",
+          "options": [
+            "Dua: alif dan ya",
+            "Empat: alif, wau, ya, hamzah",
+            "Tiga: alif, wau, ya",
+            "Lima"
+          ],
+          "answer": 2,
+          "explanation": "Hanya alif, wau, dan ya yang bisa menjadi huruf mad."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-3",
+          "question": "Wau menjadi huruf mad bila…",
+          "options": [
+            "Wau berfathah",
+            "Wau mati dan huruf sebelumnya berdhammah",
+            "Wau bertasydid",
+            "Wau mati dan sebelumnya berfathah"
+          ],
+          "answer": 1,
+          "explanation": "Pasangan wau adalah dhammah. Wau mati setelah fathah adalah huruf lin, bukan mad asli."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-4",
+          "question": "Alif kecil tegak di atas huruf (tanpa tanda mad) dibaca…",
+          "options": [
+            "Tidak dibaca",
+            "Pendek",
+            "Panjang enam harakat",
+            "Panjang dua harakat"
+          ],
+          "answer": 3,
+          "explanation": "Alif kecil sama dengan alif biasa: panjang dua harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-5",
+          "question": "Pada kata yaumi (يَوْمِ), bunyi \"yau\" dibaca…",
+          "options": [
+            "Panjang dua harakat",
+            "Pendek, karena wau mati setelah fathah",
+            "Panjang empat harakat",
+            "Dengan dengung"
+          ],
+          "answer": 1,
+          "explanation": "Wau mati setelah fathah adalah huruf lin; saat bersambung dibaca pendek."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-6",
+          "question": "Ya menjadi huruf mad bila…",
+          "options": [
+            "Ya berkasrah",
+            "Ya bertasydid",
+            "Ya di awal kata",
+            "Ya mati dan huruf sebelumnya berkasrah"
+          ],
+          "answer": 3,
+          "explanation": "Pasangan ya adalah kasrah."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-7",
+          "question": "Mengapa mad harus konsisten panjangnya?",
+          "options": [
+            "Agar bacaan rapi dan tidak mengubah panjang yang sudah ditetapkan",
+            "Supaya cepat selesai",
+            "Karena mad boleh sesuka hati",
+            "Tidak perlu konsisten"
+          ],
+          "answer": 0,
+          "explanation": "Panjang mad asli ditetapkan dua harakat, jadi semuanya harus sama."
+        },
+        {
+          "type": "quiz",
+          "id": "mad-asli-8",
+          "question": "Manakah yang BUKAN syarat mad asli?",
+          "options": [
+            "Huruf mad harus mati",
+            "Harakat sebelumnya harus sejenis",
+            "Huruf sesudahnya harus hamzah",
+            "Hurufnya alif, wau, atau ya"
+          ],
+          "answer": 2,
+          "explanation": "Kalau sesudah huruf mad ada hamzah atau sukun, itu sudah menjadi mad far'i (tahap 12)."
+        }
+      ]
     },
     {
       "id": "alif-lam",
       "level": 7,
       "order": 1,
       "title": "Alif lam",
-      "summary": "Qamariyah, syamsiyah, dan lafzul jalalah.",
-      "objectives": ["Membedakan alif lam qamariyah dan syamsiyah"],
+      "summary": "Alif lam qamariyah dan syamsiyah dengan contoh untuk ke-28 hurufnya, plus lam pada lafaz Allah.",
+      "objectives": [
+        "Membedakan alif lam qamariyah dan syamsiyah dari huruf sesudahnya",
+        "Membaca hamzah washal pada alif lam dengan benar",
+        "Membaca lam pada lafaz Allah tebal atau tipis sesuai harakat sebelumnya"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Tuhfatul Athfal, bab lam al dan lam fi'il); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "laam_shamsiyah",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Apa itu alif lam",
+          "text": "**Alif lam** (ال) adalah awalan kata benda, mirip \"the\" dalam bahasa Inggris. Cara membaca lamnya bergantung pada **huruf sesudahnya**: kadang lam dibaca jelas, kadang lam lebur ke huruf berikutnya."
+        },
+        {
+          "type": "tip",
+          "text": "Alif di depannya adalah **hamzah washal**. Kalau kamu mulai membaca dari kata itu, bacalah \"a\": al-. Kalau kata itu disambung dengan kata sebelumnya, alifnya dilewati."
+        },
+        {
+          "type": "text",
+          "heading": "Alif lam qamariyah (lam dibaca jelas)",
+          "text": "Bila alif lam bertemu salah satu dari **14 huruf qamariyah**, lamnya dibaca mati dengan jelas: \"al-\". Di mushaf, lam ini diberi tanda sukun."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ء",
+              "name": "Hamzah",
+              "note": ""
+            },
+            {
+              "letter": "ب",
+              "name": "Ba",
+              "note": ""
+            },
+            {
+              "letter": "غ",
+              "name": "Ghain",
+              "note": ""
+            },
+            {
+              "letter": "ح",
+              "name": "Ḥa",
+              "note": ""
+            },
+            {
+              "letter": "ج",
+              "name": "Jim",
+              "note": ""
+            },
+            {
+              "letter": "ك",
+              "name": "Kaf",
+              "note": ""
+            },
+            {
+              "letter": "و",
+              "name": "Wau",
+              "note": ""
+            },
+            {
+              "letter": "خ",
+              "name": "Kha",
+              "note": ""
+            },
+            {
+              "letter": "ف",
+              "name": "Fa",
+              "note": ""
+            },
+            {
+              "letter": "ع",
+              "name": "'ain",
+              "note": ""
+            },
+            {
+              "letter": "ق",
+              "name": "Qaf",
+              "note": ""
+            },
+            {
+              "letter": "ي",
+              "name": "Ya",
+              "note": ""
+            },
+            {
+              "letter": "م",
+              "name": "Mim",
+              "note": ""
+            },
+            {
+              "letter": "ه",
+              "name": "Ha",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "type": "tip",
+          "text": "Hafalan populer untuk huruf qamariyah: ibghi ḥajjaka wa khaf 'aqīmah — huruf-huruf pada kalimat itu adalah huruf qamariyah."
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 2,
+          "words": [3, 3],
+          "note": "Kata ketiga: alif lam bertemu hamzah (ء) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 81,
+          "ayah": 6,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu ba (ب) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 85,
+          "ayah": 14,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu ghain (غ) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 92,
+          "ayah": 6,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu ḥa (ح) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 102,
+          "ayah": 6,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu jim (ج) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 82,
+          "ayah": 2,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu kaf (ك) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 3,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu wau (و) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 4,
+          "words": [4, 4],
+          "note": "Kata keempat: alif lam bertemu kha (خ) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 113,
+          "ayah": 1,
+          "words": [4, 4],
+          "note": "Kata keempat: alif lam bertemu fa (ف) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu 'ain (ع) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 101,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu qaf (ق) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 93,
+          "ayah": 9,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu ya (ي) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 100,
+          "ayah": 2,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu mim (م) — lam dibaca jelas."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 14,
+          "words": [3, 3],
+          "note": "Kata ketiga: alif lam bertemu ha (ه) — lam dibaca jelas."
+        },
+        {
+          "type": "text",
+          "heading": "Alif lam syamsiyah (lam lebur)",
+          "text": "Bila alif lam bertemu salah satu dari **14 huruf syamsiyah**, lamnya tidak dibaca; suaranya langsung masuk ke huruf berikutnya yang dibaca ganda (bertasydid). \"Al-syams\" dibaca \"asy-syams\"."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ت",
+              "name": "Ta",
+              "note": ""
+            },
+            {
+              "letter": "ث",
+              "name": "Tsa",
+              "note": ""
+            },
+            {
+              "letter": "د",
+              "name": "Dal",
+              "note": ""
+            },
+            {
+              "letter": "ذ",
+              "name": "Dzal",
+              "note": ""
+            },
+            {
+              "letter": "ر",
+              "name": "Ra",
+              "note": ""
+            },
+            {
+              "letter": "ز",
+              "name": "Zai",
+              "note": ""
+            },
+            {
+              "letter": "س",
+              "name": "Sin",
+              "note": ""
+            },
+            {
+              "letter": "ش",
+              "name": "Syin",
+              "note": ""
+            },
+            {
+              "letter": "ص",
+              "name": "Shad",
+              "note": ""
+            },
+            {
+              "letter": "ض",
+              "name": "Dhad",
+              "note": ""
+            },
+            {
+              "letter": "ط",
+              "name": "Tha",
+              "note": ""
+            },
+            {
+              "letter": "ظ",
+              "name": "Zha",
+              "note": ""
+            },
+            {
+              "letter": "ل",
+              "name": "Lam",
+              "note": ""
+            },
+            {
+              "letter": "ن",
+              "name": "Nun",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "type": "tip",
+          "text": "Tanda di mushaf: pada syamsiyah, lam **tidak** diberi harakat atau sukun, dan huruf sesudahnya diberi **tasydid**. Kalau melihat pola ini, jangan bunyikan lamnya."
+        },
+        {
+          "type": "example",
+          "surah": 95,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu ta (ت) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 3,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu tsa (ث) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 82,
+          "ayah": 15,
+          "words": [3, 3],
+          "note": "Kata ketiga: alif lam bertemu dal (د) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 87,
+          "ayah": 9,
+          "words": [4, 4],
+          "note": "Kata keempat: alif lam bertemu dzal (ذ) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 79,
+          "ayah": 7,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu ra (ر) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 96,
+          "ayah": 18,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu zai (ز) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 20,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu sin (س) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 3,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu syin (ش) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu shad (ص) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 93,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu dhad (ض) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 52,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: alif lam bertemu tha (ط) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 35,
+          "ayah": 21,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu zha (ظ) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 2,
+          "words": [2, 2],
+          "note": "Kata kedua: alif lam bertemu nun (ن) — lam tidak dibaca, huruf sesudahnya ditasydid."
+        },
+        {
+          "type": "example",
+          "surah": 67,
+          "ayah": 14,
+          "note": "Kata al-laṭīf: alif lam bertemu lam (ل) — lam pertama tidak dibaca, lam kedua ditasydid.",
+          "words": [6, 6]
+        },
+        {
+          "type": "text",
+          "heading": "Mengapa namanya qamariyah dan syamsiyah?",
+          "text": "Namanya diambil dari dua kata contoh: al-qamar (bulan), yang lamnya jelas, dan asy-syams (matahari), yang lamnya lebur. Cukup ingat dua kata itu untuk mengingat kedua kelompok."
+        },
+        {
+          "type": "text",
+          "heading": "Lam pada lafaz Allah",
+          "text": "Lam pada lafaz **Allah** dibaca **tebal** (tafkhim) bila didahului fathah atau dhammah, atau bila kamu memulai bacaan dari lafaz itu. Lam dibaca **tipis** (tarqiq) bila didahului kasrah."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata ketiga: sebelumnya \"huwa\" berakhir fathah, jadi lam lafaz Allah dibaca tebal — \"huwallāhu\".",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 1,
+          "note": "Kata ke-3 dan ke-4: \"naṣru\" berakhir dhammah, jadi lam dibaca tebal — \"naṣrullāhi\".",
+          "words": [3, 4]
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "note": "Kata pertama: bila memulai bacaan dari sini, bacalah \"Allāhu\" dengan lam tebal.",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 1,
+          "note": "Kata ke-1 dan ke-2: \"bismi\" berakhir kasrah, jadi lam dibaca tipis — \"bismillāhi\".",
+          "words": [1, 2]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 2,
+          "note": "Kata kedua, lillāhi: lam didahului kasrah, jadi dibaca tipis.",
+          "words": [2, 2]
+        },
+        {
+          "type": "tip",
+          "text": "**Tebal** artinya pangkal lidah terangkat sehingga suara penuh di rongga mulut; bibir tidak dimonyongkan dan fathah tidak berubah menjadi \"o\". **Tipis** artinya suara ringan, seperti \"la\" pada \"lalu\". Dalam riwayat Hafs, hanya lam pada lafaz Allah yang punya dua cara ini; lam lain selalu tipis."
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Ambil satu halaman, lalu lingkari setiap alif lam. Tentukan dulu qamariyah atau syamsiyah dari huruf sesudahnya, baru baca. Untuk lafaz Allah, lihat harakat huruf tepat sebelumnya."
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum:** (1) membunyikan lam pada syamsiyah, misalnya \"al-rahmān\"; (2) lupa menasydid huruf sesudah lam syamsiyah; (3) membaca lafaz Allah selalu tebal meskipun didahului kasrah."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh alif lam qamariyah, syamsiyah, dan lafaz Allah",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-1",
+          "question": "Alif lam bertemu huruf ب dibaca…",
+          "options": [
+            "Qamariyah: lam dibaca jelas",
+            "Syamsiyah: lam lebur",
+            "Lam dibaca panjang",
+            "Lam dibaca berdengung"
+          ],
+          "answer": 0,
+          "explanation": "ب termasuk 14 huruf qamariyah."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-2",
+          "question": "Alif lam bertemu huruf ر dibaca…",
+          "options": [
+            "Qamariyah: lam jelas",
+            "Lam dibaca tebal",
+            "Syamsiyah: lam lebur ke ra",
+            "Lam dibaca panjang"
+          ],
+          "answer": 2,
+          "explanation": "ر huruf syamsiyah, jadi \"ar-raḥmān\", bukan \"al-raḥmān\"."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-3",
+          "question": "Tanda di mushaf untuk alif lam syamsiyah adalah…",
+          "options": [
+            "Lam bersukun",
+            "Lam tanpa tanda, huruf sesudahnya bertasydid",
+            "Lam bertasydid",
+            "Alif kecil di atas lam"
+          ],
+          "answer": 1,
+          "explanation": "Lam yang lebur tidak diberi tanda, dan huruf sesudahnya bertasydid."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-4",
+          "question": "Jumlah huruf qamariyah ada…",
+          "options": ["7", "15", "28", "14"],
+          "answer": 3,
+          "explanation": "14 qamariyah dan 14 syamsiyah, total 28 huruf hijaiyah."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-5",
+          "question": "\"Bismillāh\": lam pada lafaz Allah dibaca…",
+          "options": [
+            "Tebal, karena selalu tebal",
+            "Tipis, karena didahului kasrah",
+            "Tipis, karena di awal",
+            "Tidak dibaca"
+          ],
+          "answer": 1,
+          "explanation": "Kasrah pada mim \"bismi\" membuat lam lafaz Allah tipis."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-6",
+          "question": "\"Qul huwallāhu\": lam pada lafaz Allah dibaca…",
+          "options": [
+            "Tipis",
+            "Tidak dibaca",
+            "Dengan dengung",
+            "Tebal, karena didahului fathah"
+          ],
+          "answer": 3,
+          "explanation": "\"Huwa\" berakhir fathah, jadi lam dibaca tebal."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-7",
+          "question": "Alif lam bertemu huruf ق dibaca…",
+          "options": ["Qamariyah", "Syamsiyah", "Idgham", "Ikhfa"],
+          "answer": 0,
+          "explanation": "Namanya saja diambil dari al-qamar."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-8",
+          "question": "Saat memulai bacaan dari kata berawalan alif lam, alifnya dibaca…",
+          "options": [
+            "Dengan kasrah: \"i\"",
+            "Tidak dibaca",
+            "Dengan fathah: \"a\"",
+            "Dengan dhammah: \"u\""
+          ],
+          "answer": 2,
+          "explanation": "Hamzah washal pada alif lam selalu dibaca fathah saat memulai."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-9",
+          "question": "Manakah yang termasuk huruf syamsiyah?",
+          "options": ["م", "ي", "ه", "ن"],
+          "answer": 3,
+          "explanation": "ن termasuk 14 huruf syamsiyah; م, ي, dan ه qamariyah."
+        },
+        {
+          "type": "quiz",
+          "id": "alif-lam-10",
+          "question": "Lam selain lafaz Allah dibaca…",
+          "options": [
+            "Selalu tebal",
+            "Selalu tipis",
+            "Tebal bila didahului fathah",
+            "Tebal bila di awal ayat"
+          ],
+          "answer": 1,
+          "explanation": "Dalam riwayat Hafs, tafkhim-tarqiq lam hanya berlaku pada lafaz Allah."
+        }
+      ]
     },
     {
       "id": "tanda-mushaf",
       "level": 8,
       "order": 1,
       "title": "Tanda di mushaf",
-      "summary": "Hamzah washal, tanda waqaf, sajdah, dan penanda juz.",
+      "summary": "Hamzah washal, tanda-tanda kecil pembantu bacaan, enam tanda waqaf beserta contohnya, sajdah, dan penanda juz.",
       "objectives": [
         "Mengenali hamzah washal dan kapan ia dibaca",
-        "Menyebut arti tanda-tanda waqaf yang umum",
+        "Membaca tanda-tanda kecil: sukun, alif kecil, wau/ya kecil, tanda mad, huruf yang tidak dibaca, mim kecil",
+        "Menyebut arti enam tanda waqaf dan menemukannya di ayat",
         "Mengenali penanda sajdah, hizb, dan juz"
       ],
       "review": "draft",
-      "provenance": "Draf disusun asisten AI, BELUM ditinjau guru bersanad dan BELUM diterbitkan. Bagian tanda waqaf memuat penilaian ulama tentang tempat berhenti, jadi tahap ini menunggu peninjau — tidak seperti tahap 1–5 yang hanya membaca tanda.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI, BELUM ditinjau guru bersanad dan BELUM diterbitkan. Bagian tanda waqaf memuat penilaian ulama tentang tempat berhenti, jadi tahap ini menunggu peninjau — tidak seperti tahap 1–5 yang hanya membaca tanda. Diperluas oleh asisten AI atas permintaan pemilik pada 25 September 2026: tanda-tanda kecil, contoh enam tanda waqaf, dan soal tambahan; contoh ayat berupa rujukan + posisi kata dari teks Tanzil.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "ham_wasl",
       "blocks": [
         {
           "type": "text",
-          "text": "Selain huruf dan harakat, mushaf memuat tanda-tanda kecil lain. Sebagian mengatur cara membaca, sebagian lagi hanya penunjuk tempat."
+          "text": "Selain huruf dan harakat, mushaf memuat tanda-tanda kecil lain. Sebagian mengatur cara membaca, sebagian lagi hanya penunjuk tempat.",
+          "heading": "Tanda-tanda di mushaf"
         },
         {
           "type": "text",
-          "text": "Hamzah washal adalah alif di awal kata yang membawa tanda kecil menyerupai huruf shad di atasnya. Alif ini dibaca kalau kamu memulai bacaan dari kata itu, dan dilewati kalau kata itu disambung dengan kata sebelumnya."
+          "text": "Hamzah washal adalah alif di awal kata yang membawa tanda kecil menyerupai huruf shad di atasnya. Alif ini dibaca kalau kamu memulai bacaan dari kata itu, dan dilewati kalau kata itu disambung dengan kata sebelumnya.",
+          "heading": "Hamzah washal"
         },
         {
           "type": "text",
-          "text": "Tanda waqaf memberi tahu tempat berhenti. Yang umum: mim berarti sebaiknya berhenti; lam-alif berarti jangan berhenti di situ; jim berarti boleh berhenti boleh lanjut; shad-lam-ya berarti lanjut lebih baik; qaf-lam-ya berarti berhenti lebih baik; dan tiga titik yang muncul dua kali berarti pilih salah satu tempat saja, jangan berhenti di keduanya."
+          "text": "Tanda waqaf memberi tahu tempat berhenti. Yang umum: mim berarti harus berhenti (waqaf lazim); lam-alif berarti jangan berhenti di situ; jim berarti boleh berhenti boleh lanjut; shad-lam-ya berarti lanjut lebih baik; qaf-lam-ya berarti berhenti lebih baik; dan tiga titik yang muncul dua kali berarti pilih salah satu tempat saja, jangan berhenti di keduanya.",
+          "heading": "Tanda waqaf"
         },
         {
           "type": "tip",
@@ -644,7 +1521,8 @@
         },
         {
           "type": "text",
-          "text": "Tanda sajdah menandai ayat yang dianjurkan sujud tilawah setelah membacanya. Dalam mushaf ini ada lima belas tempat. Tata cara sujudnya tanyakan kepada guru; aplikasi ini hanya menunjukkan letaknya."
+          "text": "Tanda sajdah menandai ayat yang dianjurkan sujud tilawah setelah membacanya. Mushaf Madinah menandai lima belas tempat; jumlahnya diperselisihkan para fuqaha. Tata cara sujudnya tanyakan kepada guru; aplikasi ini hanya menunjukkan letaknya.",
+          "heading": "Tanda sajdah"
         },
         {
           "type": "example",
@@ -654,7 +1532,140 @@
         },
         {
           "type": "text",
-          "text": "Di tepi halaman ada penanda juz, hizb, dan rubu' hizb. Ketiganya hanya membagi mushaf menjadi bagian-bagian yang seimbang untuk memudahkan membaca rutin. Tidak ada aturan bacaan yang melekat padanya."
+          "text": "Di tepi halaman ada penanda juz, hizb, dan rubu' hizb. Ketiganya hanya membagi mushaf menjadi bagian-bagian yang seimbang untuk memudahkan membaca rutin. Tidak ada aturan bacaan yang melekat padanya.",
+          "heading": "Juz, hizb, dan rubu'"
+        },
+        {
+          "type": "text",
+          "heading": "Tanda-tanda kecil pembantu bacaan",
+          "text": "Teks di aplikasi ini memakai rasm Utsmani gaya mushaf Madinah. Selain harakat, ada tanda-tanda kecil yang memberi tahu cara membaca. Mengenalinya membuat tajwid jauh lebih mudah."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ْ",
+              "name": "Sukun",
+              "note": "Huruf mati, dibaca jelas"
+            },
+            {
+              "letter": "ٰ",
+              "name": "Alif kecil",
+              "note": "Panjang 2 harakat"
+            },
+            {
+              "letter": "ٓ",
+              "name": "Tanda mad",
+              "note": "Panjang lebih dari 2 harakat"
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 7,
+          "note": "Kata ketiga: nun dan mim diberi sukun, artinya keduanya dibaca mati dan jelas.",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 108,
+          "ayah": 1,
+          "note": "Kata pertama, innā: tanda mad di atas alif menandakan bacaan lebih panjang dari biasa (mad far'i, tahap 12).",
+          "words": [1, 1]
+        },
+        {
+          "type": "text",
+          "heading": "Huruf yang ditulis tetapi tidak dibaca",
+          "text": "Bulatan kecil (۟) di atas huruf berarti huruf itu **tidak dibaca sama sekali**, baik saat bersambung maupun berhenti. Contoh paling sering adalah alif sesudah wau jamak."
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 3,
+          "note": "Kata ketiga, āmanū: alif di ujung kata diberi bulatan kecil, jadi tidak dibaca.",
+          "words": [3, 3]
+        },
+        {
+          "type": "tip",
+          "text": "Bedakan dengan **bulatan lonjong tegak** (۠) di atas alif: alif itu tidak dibaca saat bersambung, tetapi **dibaca saat berhenti**. Contoh paling sering: \"anā\"."
+        },
+        {
+          "type": "example",
+          "surah": 79,
+          "ayah": 24,
+          "note": "Kata kedua, anā: saat disambung dibaca \"ana rabbukum\" (pendek); saat berhenti di kata ini dibaca \"anā\".",
+          "words": [2, 2]
+        },
+        {
+          "type": "text",
+          "heading": "Wau kecil, ya kecil, dan mim kecil",
+          "text": "Wau kecil (ۥ) dan ya kecil (ۦ) sesudah kata ganti \"hu/hi\" berarti dibaca panjang (mad shilah). Mim kecil (ۢ) di atas nun atau sesudah tanwin berarti bunyi nun diganti mim (iqlab, tahap 10)."
+        },
+        {
+          "type": "example",
+          "surah": 104,
+          "ayah": 3,
+          "note": "Kata ketiga, mālahū: wau kecil sesudah ha berarti \"huu\" dibaca panjang; karena diikuti hamzah, panjangnya 4–5 harakat (shilah thawilah).",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 90,
+          "ayah": 2,
+          "note": "Kata kedua, ḥillum bihādzā: mim kecil sesudah tanwin menandakan iqlab — tanwin dibaca mim karena bertemu ba.",
+          "words": [2, 2]
+        },
+        {
+          "type": "text",
+          "heading": "Enam tanda waqaf di mushaf ini",
+          "text": "Tanda waqaf diletakkan di atas akhir kata. Berikut enam tanda beserta contohnya. Kata yang ditandai adalah kata tepat sebelum tanda."
+        },
+        {
+          "type": "example",
+          "surah": 36,
+          "ayah": 76,
+          "note": "Tanda mim (ۘ) sesudah kata ketiga: waqaf lazim — harus berhenti. Kalau disambung, kalimat sesudahnya seolah-olah ucapan mereka.",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 16,
+          "ayah": 32,
+          "note": "Tanda lam-alif (ۙ) sesudah kata keempat: jangan berhenti di sini lalu memulai dari kata sesudahnya.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 3,
+          "note": "Tanda jim (ۚ) sesudah kata keempat: boleh berhenti atau lanjut, sama baiknya.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 104,
+          "ayah": 4,
+          "note": "Tanda shad-lam-ya (ۖ) sesudah kata pertama: boleh berhenti, tetapi melanjutkan lebih utama.",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 16,
+          "ayah": 17,
+          "note": "Tanda qaf-lam-ya (ۗ) sesudah kata kelima: boleh lanjut, tetapi berhenti lebih utama.",
+          "words": [5, 5]
+        },
+        {
+          "type": "example",
+          "surah": 2,
+          "ayah": 2,
+          "note": "Tanda tiga titik (ۛ) muncul dua kali, sesudah kata ke-4 dan ke-5: berhentilah di salah satunya saja, jangan di keduanya.",
+          "words": [4, 5]
+        },
+        {
+          "type": "tip",
+          "text": "Kalau ragu, berhentilah di akhir ayat. Itu tempat berhenti yang paling aman bagi pemula. Jangan pernah berhenti di tengah kata."
         },
         {
           "type": "audio",
@@ -686,6 +1697,110 @@
           ],
           "answer": 0,
           "explanation": "Ketiganya penunjuk tempat, bukan aturan bacaan."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-3",
+          "question": "Bulatan kecil (۟) di atas huruf berarti…",
+          "options": [
+            "Huruf itu dibaca panjang",
+            "Huruf itu tidak dibaca",
+            "Huruf itu dibaca berdengung",
+            "Berhenti di situ"
+          ],
+          "answer": 1,
+          "explanation": "Huruf dengan tanda ini ditulis tetapi tidak dibunyikan."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-4",
+          "question": "Alif kecil tegak di atas huruf (tanpa tanda mad) dibaca…",
+          "options": [
+            "Tidak dibaca",
+            "Panjang enam harakat",
+            "Dengan dengung",
+            "Panjang dua harakat"
+          ],
+          "answer": 3,
+          "explanation": "Alif kecil sama dengan alif biasa: mad asli dua harakat. Kalau ada tanda mad (ٓ) di atasnya, panjangnya ikut mad far'i."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-5",
+          "question": "Tanda mim (ۘ) di atas kata berarti…",
+          "options": [
+            "Jangan berhenti",
+            "Harus berhenti (waqaf lazim)",
+            "Bebas berhenti atau lanjut",
+            "Lanjut lebih utama"
+          ],
+          "answer": 1,
+          "explanation": "Mim menandakan waqaf lazim: bila disambung, maknanya bisa berubah."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-6",
+          "question": "Tanda lam-alif (ۙ) berarti…",
+          "options": [
+            "Wajib berhenti",
+            "Berhenti lebih utama",
+            "Pilih salah satu",
+            "Jangan berhenti di situ"
+          ],
+          "answer": 3,
+          "explanation": "Lam-alif menandakan jangan berhenti lalu memulai dari sesudahnya."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-7",
+          "question": "Tanda tiga titik yang muncul dua kali berarti…",
+          "options": [
+            "Berhenti di salah satunya saja",
+            "Berhenti di keduanya",
+            "Wajib berhenti di tanda pertama",
+            "Baca lebih panjang"
+          ],
+          "answer": 0,
+          "explanation": "Disebut waqaf mu'anaqah: pilih satu tempat."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-8",
+          "question": "Tanda qaf-lam-ya (ۗ) berarti…",
+          "options": [
+            "Lanjut lebih utama",
+            "Jangan berhenti",
+            "Berhenti lebih utama",
+            "Wajib berhenti"
+          ],
+          "answer": 2,
+          "explanation": "Qaf-lam-ya: boleh lanjut, berhenti lebih utama."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-9",
+          "question": "Tanda shad-lam-ya (ۖ) berarti…",
+          "options": [
+            "Berhenti lebih utama",
+            "Wajib berhenti",
+            "Tidak boleh lanjut",
+            "Lanjut lebih utama"
+          ],
+          "answer": 3,
+          "explanation": "Shad-lam-ya: boleh berhenti, lanjut lebih utama."
+        },
+        {
+          "type": "quiz",
+          "id": "tanda-10",
+          "question": "Mim kecil (ۢ) di atas nun menandakan…",
+          "options": [
+            "Nun tidak dibaca",
+            "Iqlab: nun dibaca mim",
+            "Nun dibaca panjang",
+            "Tanda sajdah"
+          ],
+          "answer": 1,
+          "explanation": "Mim kecil adalah tanda iqlab."
         }
       ]
     },
@@ -694,100 +1809,3316 @@
       "level": 9,
       "order": 1,
       "title": "Membaca ayat pendek",
-      "summary": "Al-Fatihah dan surah-surah Juz 'Amma.",
-      "objectives": ["Membaca ayat pendek dengan tempo tenang"],
+      "summary": "Latihan membaca Al-Fatihah, Al-Ikhlas, Al-Kautsar, dan Al-'Ashr ayat demi ayat, dengan penanda hukum di tiap kata.",
+      "objectives": [
+        "Membaca ayat pendek dengan tempo tenang dan panjang mad yang konsisten",
+        "Menemukan sendiri hukum tajwid yang sudah dipelajari di dalam ayat",
+        "Tahu cara berlatih yang efektif: dengar, tiru, rekam, bandingkan"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
-      "blocks": []
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (penerapan bab-bab dalam Tuhfatul Athfal); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Cara berlatih yang efektif",
+          "text": "Pertama, **dengar** satu ayat dari qari. Kedua, **tiru** pelan-pelan, satu kata demi satu kata. Ketiga, **rekam** suaramu, lalu bandingkan dengan qari. Ulangi satu ayat sampai benar, baru pindah ke ayat berikutnya."
+        },
+        {
+          "type": "tip",
+          "text": "Tempo yang dianjurkan untuk belajar adalah **tahqiq**: pelan dan jelas. Kecepatan datang sendiri setelah makhraj dan panjang mad benar."
+        },
+        {
+          "type": "text",
+          "heading": "Al-Fatihah ayat 1–4",
+          "text": "Perhatikan lafaz Allah yang tipis, alif lam syamsiyah pada \"ar-raḥmān\" dan \"ar-raḥīm\", serta mad di akhir ayat saat berhenti."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 1,
+          "note": "Kata ke-2: lam lafaz Allah tipis (didahului kasrah \"bismi\"). Kata ke-3 dan ke-4: alif lam syamsiyah — ar-raḥmān, ar-raḥīm. Kata ke-4 saat berhenti: mad 'aridh lissukun (2, 4, atau 6 harakat)."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 2,
+          "note": "Kata ke-1: alif lam qamariyah (al-ḥamdu). Kata ke-2: lam lafaz Allah tipis (lillāhi). Kata ke-4: alif lam qamariyah, alif kecil dibaca panjang, lalu mad 'aridh saat berhenti."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 3,
+          "note": "Dua alif lam syamsiyah. Alif kecil pada \"raḥmān\" dua harakat. Akhir ayat: mad 'aridh."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 4,
+          "note": "Kata ke-1: alif kecil — dibaca \"māliki\". Kata ke-2: \"yaumi\" dengan huruf lin, pendek. Kata ke-3: alif lam syamsiyah (ad-dīn), lalu mad 'aridh saat berhenti."
+        },
+        {
+          "type": "text",
+          "heading": "Al-Fatihah ayat 5–7",
+          "text": "Di sini ada qalqalah sughra, hamzah washal di awal ayat, izhar, dan satu-satunya mad lazim di Al-Fatihah."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 5,
+          "note": "Kata ke-2: ba mati pada \"na'budu\" dibaca memantul (qalqalah sughra). Kata terakhir: mad 'aridh saat berhenti."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 6,
+          "note": "Kata ke-1: memulai dengan hamzah washal dibaca \"ihdinā\" (kasrah, karena huruf ketiganya berkasrah). Kata ke-2: alif lam syamsiyah (aṣ-ṣirāṭ). Kata ke-3: alif lam qamariyah (al-mustaqīm)."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 7,
+          "note": "Kata ke-3: izhar halqi (an'amta). Kata ke-4 dan ke-5: mim mati bertemu ghain — izhar syafawi, mim dibaca jelas. Kata terakhir: mad lazim kalimi mutsaqqal, panjang 6 harakat (aḍ-ḍāāāllīn)."
+        },
+        {
+          "type": "tip",
+          "text": "Jangan memberi jeda di antara \"ghairil\" dan \"maghḍūbi\" — ini satu rangkaian. Tarik napas di akhir ayat."
+        },
+        {
+          "type": "text",
+          "heading": "Al-Ikhlas",
+          "text": "Surah ini pendek tetapi lengkap: lafaz Allah tebal, qalqalah sughra dan kubra, izhar syafawi, idgham bilaghunnah, mad shilah, dan izhar halqi."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata ke-3: lam lafaz Allah tebal (huwallāhu). Kata ke-4 saat berhenti: \"aḥad\" dengan qalqalah kubra pada dal."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "note": "Kalau memulai dari sini: \"Allāhu\" dengan lam tebal. Kata ke-2: alif lam syamsiyah (aṣ-ṣamad). Akhir ayat: qalqalah kubra."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 3,
+          "note": "Kata ke-1 dan ke-3: \"lam\" — mim mati bertemu ya, izhar syafawi. Kata ke-2: qalqalah sughra pada dal (yalid). Kata ke-4: mad asli \"yuu\", lalu qalqalah kubra saat berhenti."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 4,
+          "note": "Kata ke-1 dan ke-2: mim mati bertemu ya — izhar syafawi (walam yakun). Kata ke-2 dan ke-3: \"yakun lahū\" — nun mati bertemu lam, idgham bilaghunnah (yakul-lahū). Kata ke-3: wau kecil, mad shilah qashirah dua harakat. Kata ke-4 dan ke-5: tanwin bertemu hamzah, izhar halqi (kufuwan aḥad)."
+        },
+        {
+          "type": "text",
+          "heading": "Al-Kautsar dan Al-'Ashr",
+          "text": "Dua surah ini melatih ghunnah, mad jaiz munfasil, izhar, ikhfa dalam satu kata, dan mad badal."
+        },
+        {
+          "type": "example",
+          "surah": 108,
+          "ayah": 1,
+          "note": "Kata ke-1: nun bertasydid, ghunnah dua harakat. Kata ke-1 dan ke-2: mad jaiz munfasil (innā a'ṭainā). Kata ke-2: alif kecil dua harakat. Kata ke-3: alif lam qamariyah."
+        },
+        {
+          "type": "example",
+          "surah": 108,
+          "ayah": 2,
+          "note": "Kata ke-1: lam bertasydid pada \"faṣalli\" dibaca ditekan. Kata ke-3: nun mati bertemu ḥa (wanḥar) — izhar halqi."
+        },
+        {
+          "type": "example",
+          "surah": 108,
+          "ayah": 3,
+          "note": "Kata ke-1: ghunnah pada nun bertasydid. Kata terakhir: alif lam qamariyah dan qalqalah sughra pada ba (al-abtar)."
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 2,
+          "note": "Kata ke-2: nun mati bertemu sin dalam satu kata (al-insān) — ikhfa haqiqi. Kata ke-3: mad asli \"fii\"."
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 3,
+          "note": "Kata ke-3: hamzah diikuti alif — mad badal, dua harakat; alif terakhirnya tidak dibaca. Kata terakhir: alif lam syamsiyah dan qalqalah sughra pada ba (aṣ-ṣabr)."
+        },
+        {
+          "type": "text",
+          "heading": "Cara menguji diri",
+          "text": "Tutup keterangan di atas, lalu baca satu ayat dan sebutkan sendiri hukum di tiap kata. Setelah itu buka keterangannya dan cocokkan. Cara ini melatih mata sekaligus lidah."
+        },
+        {
+          "type": "tip",
+          "text": "Latihan terbaik tetap di depan guru. Aplikasi membantu mengulang dan mengingat; koreksi bacaan yang sebenarnya datang dari guru yang mendengar langsung."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh bacaan pelan Al-Fatihah dan Al-Ikhlas",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-1",
+          "question": "Pada \"bismillāh\", lam lafaz Allah dibaca…",
+          "options": ["Tipis", "Tebal", "Tidak dibaca", "Berdengung"],
+          "answer": 0,
+          "explanation": "Didahului kasrah pada \"bismi\"."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-2",
+          "question": "\"Aḍ-ḍāllīn\" di akhir Al-Fatihah dibaca panjang…",
+          "options": [
+            "2 harakat",
+            "4 harakat",
+            "6 harakat (mad lazim)",
+            "Tidak panjang"
+          ],
+          "answer": 2,
+          "explanation": "Huruf mad bertemu huruf bertasydid dalam satu kata: mad lazim kalimi mutsaqqal."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-3",
+          "question": "\"Wanḥar\" pada Al-Kautsar mengandung hukum…",
+          "options": ["Ikhfa", "Izhar halqi", "Idgham", "Iqlab"],
+          "answer": 1,
+          "explanation": "Nun mati bertemu ḥa, salah satu huruf tenggorokan."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-4",
+          "question": "\"Yakun lahū\" pada Al-Ikhlas dibaca…",
+          "options": [
+            "Yakun-lahū dengan jelas",
+            "Yakung-lahū berdengung",
+            "Yakum-lahū",
+            "Yakul-lahū (idgham bilaghunnah)"
+          ],
+          "answer": 3,
+          "explanation": "Nun mati bertemu lam dilebur tanpa dengung."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-5",
+          "question": "Saat memulai \"ihdinā\" (Al-Fatihah ayat 6), hamzah washal dibaca…",
+          "options": [
+            "Fathah",
+            "Kasrah, karena huruf ketiganya berkasrah",
+            "Dhammah",
+            "Tidak dibaca"
+          ],
+          "answer": 1,
+          "explanation": "Pada kata kerja, hamzah washal dibaca kasrah bila huruf ketiganya fathah atau kasrah."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-6",
+          "question": "Dal di akhir \"aḥad\" saat berhenti dibaca…",
+          "options": [
+            "Mati biasa tanpa pantulan",
+            "Dengan dengung",
+            "Panjang",
+            "Memantul kuat (qalqalah kubra)"
+          ],
+          "answer": 3,
+          "explanation": "Huruf qalqalah yang mati karena waqaf dipantulkan lebih kuat."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-7",
+          "question": "Langkah berlatih yang dianjurkan adalah…",
+          "options": [
+            "Dengar, tiru, rekam, bandingkan",
+            "Baca cepat sebanyak-banyaknya",
+            "Hafal dulu baru dengar",
+            "Hanya membaca dalam hati"
+          ],
+          "answer": 0,
+          "explanation": "Mendengar contoh yang benar lalu membandingkan rekaman sendiri mempercepat perbaikan."
+        },
+        {
+          "type": "quiz",
+          "id": "pendek-8",
+          "question": "\"Āmanū\" (Al-'Ashr ayat 3) diawali mad…",
+          "options": ["Wajib muttasil", "Lazim", "Badal", "'Iwadh"],
+          "answer": 2,
+          "explanation": "Hamzah yang diikuti huruf mad adalah mad badal, dua harakat."
+        }
+      ]
     },
     {
       "id": "nun-sukun-tanwin",
       "level": 10,
       "order": 1,
       "title": "Nun sukun dan tanwin",
-      "summary": "Izhhar, idgham, iqlab, dan ikhfa'.",
-      "objectives": ["Menemukan hukum nun sukun di dalam ayat"],
+      "summary": "Lima cara membaca nun sukun dan tanwin — izhar halqi, idgham bighunnah (plus izhar mutlak), idgham bilaghunnah, iqlab, ikhfa haqiqi — dengan contoh untuk setiap hurufnya.",
+      "objectives": [
+        "Menyebut lima hukum nun sukun dan tanwin beserta semua hurufnya",
+        "Mengenali empat kata izhar mutlak",
+        "Mengenali tanda-tanda hukum ini di mushaf",
+        "Membaca dengung dua harakat dengan tepat dan menahannya pada izhar"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Tuhfatul Athfal, bab hukum nun sukun dan tanwin); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "ikhafa",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Apa itu nun sukun dan tanwin",
+          "text": "**Nun sukun** adalah nun mati (نْ). **Tanwin** adalah bunyi \"n\" mati di akhir kata (an, in, un) yang tidak ditulis sebagai huruf. Karena bunyinya sama, hukum keduanya sama dan ditentukan oleh **huruf sesudahnya**."
+        },
+        {
+          "type": "tip",
+          "text": "Ada lima cara: **izhar halqi** (jelas), **idgham bighunnah** (masuk + dengung), **idgham bilaghunnah** (masuk tanpa dengung), **iqlab** (jadi mim), dan **ikhfa haqiqi** (samar + dengung). Dengung selalu **dua harakat**."
+        },
+        {
+          "type": "text",
+          "heading": "Membaca tandanya di mushaf",
+          "text": "Di mushaf Madinah, nun yang dibaca jelas diberi **sukun**. Nun yang di-idgham atau di-ikhfa **tidak diberi tanda apa pun**. Nun yang di-iqlab diberi **mim kecil**. Jadi tandanya sudah memberi petunjuk sebelum kamu melihat huruf sesudahnya."
+        },
+        {
+          "type": "text",
+          "heading": "1. Izhar halqi",
+          "text": "**Izhar** artinya jelas. Bila bertemu salah satu dari **enam huruf tenggorokan**, nun dibaca jelas dan bersih: lidah menempel sebentar, **tanpa dengung**, lalu langsung pindah ke huruf berikutnya."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ء",
+              "name": "Hamzah",
+              "note": "Tenggorokan paling dalam"
+            },
+            {
+              "letter": "ه",
+              "name": "Ha",
+              "note": "Tenggorokan paling dalam"
+            },
+            {
+              "letter": "ع",
+              "name": "'Ain",
+              "note": "Tenggorokan tengah"
+            },
+            {
+              "letter": "ح",
+              "name": "Ḥa",
+              "note": "Tenggorokan tengah"
+            },
+            {
+              "letter": "غ",
+              "name": "Ghain",
+              "note": "Tenggorokan paling luar"
+            },
+            {
+              "letter": "خ",
+              "name": "Kha",
+              "note": "Tenggorokan paling luar"
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 18,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: nun sukun bertemu hamzah (أ) — dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 97,
+          "ayah": 5,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu ha (ه) — dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 88,
+          "ayah": 5,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: nun sukun bertemu 'ain (ع) — dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 101,
+          "ayah": 11,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu ḥa (ح) — dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 41,
+          "ayah": 32,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: nun sukun bertemu ghain (غ) — dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 96,
+          "ayah": 16,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: tanwin bertemu kha (خ) — dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum pada izhar:** menambahkan dengung (\"anng-'amta\"), memantulkan nun seperti qalqalah, atau berhenti terlalu lama di nun. Nun cukup disentuh lalu dilepas."
+        },
+        {
+          "type": "text",
+          "heading": "2. Idgham bighunnah",
+          "text": "**Idgham** artinya memasukkan. Bila nun sukun atau tanwin bertemu **ya, nun, mim, atau wau** (hafalan: *yanmu*) di **kata berikutnya**, bunyi nun dimasukkan ke huruf itu **dengan dengung dua harakat**."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ي",
+              "name": "Ya",
+              "note": ""
+            },
+            {
+              "letter": "ن",
+              "name": "Nun",
+              "note": ""
+            },
+            {
+              "letter": "م",
+              "name": "Mim",
+              "note": ""
+            },
+            {
+              "letter": "و",
+              "name": "Wau",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 87,
+          "ayah": 10,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: nun sukun bertemu ya (ي) — dimasukkan dengan dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 88,
+          "ayah": 3,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu nun (ن) — dimasukkan dengan dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 6,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: nun sukun bertemu mim (م) — dimasukkan dengan dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 78,
+          "ayah": 26,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu wau (و) — dimasukkan dengan dengung dua harakat."
+        },
+        {
+          "type": "tip",
+          "text": "Ke nun dan mim, idghamnya **sempurna**: huruf sesudahnya bertasydid dan nun hilang seluruhnya. Ke ya dan wau, idghamnya **tidak sempurna**: dengung nun masih tersisa sedikit, dan huruf sesudahnya tidak bertasydid di mushaf."
+        },
+        {
+          "type": "text",
+          "heading": "Pengecualian: izhar mutlak",
+          "text": "Bila nun sukun bertemu **ya atau wau di dalam satu kata**, nun tidak di-idgham-kan tetapi dibaca **jelas**. Di seluruh Al-Qur'an hanya ada empat kata seperti ini: **ad-dunyā, bunyān, shinwān, qinwān**."
+        },
+        {
+          "type": "example",
+          "surah": 2,
+          "ayah": 85,
+          "note": "Kata ad-dunyā menjelang akhir ayat: nun sukun bertemu ya dalam satu kata — dibaca jelas, bukan \"ad-duyyā\".",
+          "words": [38, 38]
+        },
+        {
+          "type": "example",
+          "surah": 61,
+          "ayah": 4,
+          "note": "Bunyānun: nun sukun bertemu ya dalam satu kata — dibaca jelas.",
+          "words": [10, 10]
+        },
+        {
+          "type": "example",
+          "surah": 13,
+          "ayah": 4,
+          "note": "Shinwānun: nun sukun bertemu wau dalam satu kata — dibaca jelas.",
+          "words": [10, 10]
+        },
+        {
+          "type": "example",
+          "surah": 6,
+          "ayah": 99,
+          "note": "Qinwānun: nun sukun bertemu wau dalam satu kata — dibaca jelas.",
+          "words": [23, 23]
+        },
+        {
+          "type": "tip",
+          "text": "Alasannya: kalau di-idgham-kan, kata-kata itu akan terdengar seperti kata lain (ad-duyyā, buyyān) sehingga maknanya kabur. Karena itu nun dipertahankan jelas."
+        },
+        {
+          "type": "text",
+          "heading": "3. Idgham bilaghunnah",
+          "text": "Bila nun sukun atau tanwin bertemu **lam** atau **ra**, nun dimasukkan **sepenuhnya tanpa dengung**. Yang terdengar hanya lam atau ra yang ditasydid: \"min rabbihim\" dibaca \"mir-rabbihim\"."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ل",
+              "name": "Lam",
+              "note": ""
+            },
+            {
+              "letter": "ر",
+              "name": "Ra",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 84,
+          "ayah": 14,
+          "words": [3, 4],
+          "note": "Kata ke-3 dan ke-4: nun sukun bertemu lam (ل) — dimasukkan tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 101,
+          "ayah": 7,
+          "words": [3, 4],
+          "note": "Kata ke-3 dan ke-4: tanwin bertemu ra (ر) — dimasukkan tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 4,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: nun sukun bertemu lam (ل) — dimasukkan tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 81,
+          "ayah": 25,
+          "words": [4, 5],
+          "note": "Kata ke-4 dan ke-5: tanwin bertemu ra (ر) — dimasukkan tanpa dengung."
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum:** tetap mendengungkan nun (\"minng-rabbihim\"). Pada hukum ini, lidah langsung membentuk lam atau ra tanpa berhenti di nun."
+        },
+        {
+          "type": "text",
+          "heading": "4. Iqlab",
+          "text": "**Iqlab** artinya mengganti. Bila nun sukun atau tanwin bertemu **ba**, bunyi nun diganti menjadi **mim** yang disamarkan dengan dengung dua harakat, lalu ba dibaca."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ب",
+              "name": "Ba",
+              "note": "Satu-satunya huruf iqlab"
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 81,
+          "ayah": 9,
+          "words": [2, 2],
+          "note": "Kata kedua: nun sukun bertemu ba (ب) dalam satu kata — bunyi nun berubah menjadi mim dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 16,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu ba (ب) — bunyi nun berubah menjadi mim dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 91,
+          "ayah": 12,
+          "words": [2, 2],
+          "note": "Kata kedua: nun sukun bertemu ba (ب) dalam satu kata — bunyi nun berubah menjadi mim dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 90,
+          "ayah": 2,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: tanwin bertemu ba (ب) — bunyi nun berubah menjadi mim dengan dengung."
+        },
+        {
+          "type": "tip",
+          "text": "Bibir jangan ditekan kuat sampai bunyinya menjadi \"mb\" yang keras. Sebagian guru merapatkan bibir dengan ringan, sebagian memberi sedikit celah; ikuti cara guru bersanadmu. Tanda di mushaf: **mim kecil** di atas nun atau sesudah tanwin."
+        },
+        {
+          "type": "text",
+          "heading": "5. Ikhfa haqiqi",
+          "text": "**Ikhfa** artinya menyamarkan. Bila nun sukun atau tanwin bertemu salah satu dari **15 huruf** di bawah, nun dibaca **samar** — di antara jelas dan masuk — dengan dengung dua harakat, sementara lidah sudah bersiap ke tempat keluar huruf berikutnya."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ت",
+              "name": "Ta",
+              "note": ""
+            },
+            {
+              "letter": "ث",
+              "name": "Tsa",
+              "note": ""
+            },
+            {
+              "letter": "ج",
+              "name": "Jim",
+              "note": ""
+            },
+            {
+              "letter": "د",
+              "name": "Dal",
+              "note": ""
+            },
+            {
+              "letter": "ذ",
+              "name": "Dzal",
+              "note": ""
+            },
+            {
+              "letter": "ز",
+              "name": "Zai",
+              "note": ""
+            },
+            {
+              "letter": "س",
+              "name": "Sin",
+              "note": ""
+            },
+            {
+              "letter": "ش",
+              "name": "Syin",
+              "note": ""
+            },
+            {
+              "letter": "ص",
+              "name": "Shad",
+              "note": ""
+            },
+            {
+              "letter": "ض",
+              "name": "Dhad",
+              "note": ""
+            },
+            {
+              "letter": "ط",
+              "name": "Tha",
+              "note": ""
+            },
+            {
+              "letter": "ظ",
+              "name": "Zha",
+              "note": ""
+            },
+            {
+              "letter": "ف",
+              "name": "Fa",
+              "note": ""
+            },
+            {
+              "letter": "ق",
+              "name": "Qaf",
+              "note": ""
+            },
+            {
+              "letter": "ك",
+              "name": "Kaf",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 6,
+          "words": [1, 1],
+          "note": "Kata pertama: nun sukun bertemu ta (ت) dalam satu kata — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 81,
+          "ayah": 21,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu tsa (ث) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 88,
+          "ayah": 7,
+          "words": [5, 6],
+          "note": "Kata ke-5 dan ke-6: nun sukun bertemu jim (ج) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 78,
+          "ayah": 34,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: tanwin bertemu dal (د) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 79,
+          "ayah": 43,
+          "words": [3, 4],
+          "note": "Kata ke-3 dan ke-4: nun sukun bertemu dzal (ذ) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 55,
+          "ayah": 52,
+          "words": [4, 5],
+          "note": "Kata ke-4 dan ke-5: tanwin bertemu zai (ز) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 87,
+          "ayah": 6,
+          "words": [3, 3],
+          "note": "Kata ketiga: nun sukun bertemu sin (س) dalam satu kata — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 99,
+          "ayah": 8,
+          "words": [4, 5],
+          "note": "Kata ke-4 dan ke-5: tanwin bertemu syin (ش) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 94,
+          "ayah": 7,
+          "words": [3, 3],
+          "note": "Kata ketiga: nun sukun bertemu shad (ص) dalam satu kata — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 53,
+          "ayah": 22,
+          "words": [3, 4],
+          "note": "Kata ke-3 dan ke-4: tanwin bertemu dhad (ض) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 84,
+          "ayah": 19,
+          "words": [3, 4],
+          "note": "Kata ke-3 dan ke-4: nun sukun bertemu tha (ط) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 43,
+          "ayah": 17,
+          "words": [7, 8],
+          "note": "Kata ke-7 dan ke-8: tanwin bertemu zha (ظ) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 82,
+          "ayah": 1,
+          "words": [3, 3],
+          "note": "Kata ketiga: nun sukun bertemu fa (ف) dalam satu kata — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 98,
+          "ayah": 3,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: tanwin bertemu qaf (ق) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 96,
+          "ayah": 13,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: nun sukun bertemu kaf (ك) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "tip",
+          "text": "Dengung ikhfa ikut **warna** huruf sesudahnya. Sebelum huruf tebal (ṣ, ḍ, ṭ, ẓ, q) dengungnya tebal; sebelum huruf tipis dengungnya tipis. Ujung lidah tidak menempel di langit-langit seperti saat membaca nun jelas."
+        },
+        {
+          "type": "tip",
+          "text": "Cara mudah mengingat huruf ikhfa: semua huruf hijaiyah **selain** 6 huruf izhar, 6 huruf idgham (ya, nun, mim, wau, lam, ra), dan 1 huruf iqlab. Sisanya 15 huruf."
+        },
+        {
+          "type": "text",
+          "heading": "Catatan riwayat Hafs",
+          "text": "Dalam riwayat Hafs, nun pada huruf pembuka **yā sīn** dan **nūn** tetap dibaca **jelas** walaupun bertemu wau sesudahnya. Pola ini khusus dan akan muncul lagi di tahap bacaan gharib."
+        },
+        {
+          "type": "example",
+          "surah": 68,
+          "ayah": 1,
+          "note": "Huruf pembuka \"nūn\" lalu \"wal-qalam\": nun dibaca jelas (izhar), tidak di-idgham-kan ke wau."
+        },
+        {
+          "type": "text",
+          "heading": "Ringkasan",
+          "text": "Tenggorokan → **izhar halqi**. Ya, nun, mim, wau di kata lain → **idgham bighunnah**; di kata yang sama → **izhar mutlak**. Lam, ra → **idgham bilaghunnah**. Ba → **iqlab**. Sisanya (15 huruf) → **ikhfa haqiqi**."
+        },
+        {
+          "type": "tip",
+          "text": "Di mode tajwid berwarna, idgham bighunnah, idgham bilaghunnah, iqlab, dan ikhfa masing-masing punya warna sendiri. Izhar tidak diwarnai. Buka Legenda warna untuk mencocokkan."
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Pilih satu halaman. Tandai setiap nun sukun dan tanwin, lalu tulis huruf sesudahnya dan hukumnya. Baca pelan dengan mengetuk dua jari untuk setiap dengung. Setelah lancar, baca lagi dengan tempo biasa."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh bunyi lima hukum nun sukun dan tanwin",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "nun-1",
+          "question": "Nun sukun bertemu 'ain dibaca dengan hukum apa?",
+          "options": [
+            "Izhar halqi",
+            "Ikhfa haqiqi",
+            "Iqlab",
+            "Idgham bighunnah"
+          ],
+          "answer": 0,
+          "explanation": "'Ain termasuk enam huruf tenggorokan."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-2",
+          "question": "Huruf idgham bighunnah adalah…",
+          "options": [
+            "Lam dan ra",
+            "Ba saja",
+            "Ya, nun, mim, wau",
+            "Hamzah dan ha"
+          ],
+          "answer": 2,
+          "explanation": "Disingkat yanmu."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-3",
+          "question": "Mengapa nun pada ad-dunyā tidak di-idgham-kan?",
+          "options": [
+            "Karena ya huruf tenggorokan",
+            "Karena nun dan ya ada dalam satu kata",
+            "Karena ada tanda waqaf",
+            "Karena nun bertasydid"
+          ],
+          "answer": 1,
+          "explanation": "Idgham hanya bila nun dan hurufnya ada di dua kata berbeda."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-4",
+          "question": "Manakah yang BUKAN kata izhar mutlak?",
+          "options": ["Bunyān", "Shinwān", "Qinwān", "Unzila"],
+          "answer": 3,
+          "explanation": "Unzila memang punya nun sukun dalam satu kata, tetapi bertemu zai, jadi hukumnya ikhfa."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-5",
+          "question": "Tanwin bertemu lam dibaca…",
+          "options": [
+            "Masuk dengan dengung",
+            "Masuk tanpa dengung",
+            "Jelas tanpa dengung",
+            "Berubah jadi mim"
+          ],
+          "answer": 1,
+          "explanation": "Lam dan ra adalah huruf idgham bilaghunnah."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-6",
+          "question": "Nun sukun bertemu ba, bunyinya berubah menjadi…",
+          "options": ["Lam", "Nun bertasydid", "Ba bertasydid", "Mim"],
+          "answer": 3,
+          "explanation": "Itulah iqlab."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-7",
+          "question": "Tanda iqlab di mushaf berupa…",
+          "options": ["Mim kecil", "Sukun", "Tasydid", "Alif kecil"],
+          "answer": 0,
+          "explanation": "Mim kecil di atas nun atau sesudah tanwin."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-8",
+          "question": "Berapa jumlah huruf ikhfa haqiqi?",
+          "options": ["6", "4", "15", "2"],
+          "answer": 2,
+          "explanation": "Sisa huruf hijaiyah setelah huruf izhar, idgham, dan iqlab."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-9",
+          "question": "Nun sukun bertemu qaf (min qabli) dibaca…",
+          "options": [
+            "Jelas tanpa dengung",
+            "Masuk tanpa dengung",
+            "Berubah jadi mim",
+            "Samar dengan dengung tebal"
+          ],
+          "answer": 3,
+          "explanation": "Qaf huruf ikhfa dan huruf tebal, jadi dengungnya ikut tebal."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-10",
+          "question": "Hukum mana yang dibaca TANPA dengung?",
+          "options": [
+            "Iqlab dan ikhfa",
+            "Izhar halqi dan idgham bilaghunnah",
+            "Idgham bighunnah dan iqlab",
+            "Semua berdengung"
+          ],
+          "answer": 1,
+          "explanation": "Tiga hukum lainnya berdengung dua harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-11",
+          "question": "Di mushaf Madinah, nun yang dibaca izhar ditandai…",
+          "options": [
+            "Tanpa tanda",
+            "Mim kecil",
+            "Sukun di atas nun",
+            "Tasydid pada huruf sesudahnya"
+          ],
+          "answer": 2,
+          "explanation": "Nun tanpa tanda berarti tidak dibaca jelas (idgham atau ikhfa)."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-12",
+          "question": "Idgham ke huruf nun dan mim disebut sempurna karena…",
+          "options": [
+            "Nun hilang seluruhnya dan huruf sesudahnya bertasydid",
+            "Tidak ada dengung",
+            "Nun dibaca jelas",
+            "Nun berubah jadi ba"
+          ],
+          "answer": 0,
+          "explanation": "Ke ya dan wau, idghamnya tidak sempurna."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-13",
+          "question": "Panjang dengung pada idgham bighunnah, iqlab, dan ikhfa adalah…",
+          "options": [
+            "Satu harakat",
+            "Dua harakat",
+            "Empat harakat",
+            "Enam harakat"
+          ],
+          "answer": 1,
+          "explanation": "Dengung (ghunnah) selalu dua harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "nun-14",
+          "question": "Dalam riwayat Hafs, \"nūn wal-qalam\" dibaca…",
+          "options": [
+            "Nun di-idgham ke wau",
+            "Nun di-ikhfa",
+            "Nun di-iqlab",
+            "Nun jelas (izhar)"
+          ],
+          "answer": 3,
+          "explanation": "Ini bacaan Hafs jalur Syatibiyyah; sebagian qari lain membacanya dengan idgham."
+        }
+      ]
     },
     {
       "id": "mim-sukun",
       "level": 11,
       "order": 1,
       "title": "Mim sukun dan ghunnah",
-      "summary": "Ikhfa' syafawi, idgham mimi, izhhar syafawi.",
-      "objectives": ["Membedakan tiga hukum mim sukun"],
+      "summary": "Tiga hukum mim sukun (ikhfa syafawi, idgham mimi, izhar syafawi) dan ghunnah pada nun & mim bertasydid, dengan contoh per huruf.",
+      "objectives": [
+        "Membedakan tiga hukum mim sukun dari huruf sesudahnya",
+        "Menjaga mim tetap jelas sebelum wau dan fa",
+        "Membaca nun dan mim bertasydid dengan dengung dua harakat"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Tuhfatul Athfal, bab mim sukun dan bab nun-mim musyaddadah); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "ikhafa_shafawi",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Apa itu mim sukun",
+          "text": "**Mim sukun** adalah mim mati (مْ). Hukumnya lebih sederhana daripada nun sukun: hanya tiga, dan semuanya berkaitan dengan **bibir** (syafawi = bibir)."
+        },
+        {
+          "type": "tip",
+          "text": "Hafalan cepat: sesudah mim ada **ba** → ikhfa syafawi; ada **mim** → idgham mimi; **selain keduanya** → izhar syafawi."
+        },
+        {
+          "type": "text",
+          "heading": "1. Ikhfa syafawi",
+          "text": "Bila mim sukun bertemu **ba**, mim dibaca **samar** dengan **dengung dua harakat**, lalu ba dibaca. Di mushaf Madinah, mim ini tidak diberi sukun."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ب",
+              "name": "Ba",
+              "note": "Satu-satunya huruf ikhfa syafawi"
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 79,
+          "ayah": 14,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: mim sukun bertemu ba (ب) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 81,
+          "ayah": 22,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: mim sukun bertemu ba (ب) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 84,
+          "ayah": 24,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: mim sukun bertemu ba (ب) — dibaca samar dengan dengung."
+        },
+        {
+          "type": "tip",
+          "text": "Jangan menekan bibir keras-keras; dengungnya keluar dari hidung. Soal bibir dirapatkan ringan atau diberi sedikit celah, para guru berbeda cara — ikuti guru bersanadmu."
+        },
+        {
+          "type": "text",
+          "heading": "2. Idgham mimi (mitslain)",
+          "text": "Bila mim sukun bertemu **mim**, keduanya dilebur menjadi satu mim bertasydid dengan **dengung dua harakat**. Contohnya \"lahum mā\" dibaca \"lahum-mā\"."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "م",
+              "name": "Mim",
+              "note": "Satu-satunya huruf idgham mimi"
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "surah": 104,
+          "ayah": 8,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: mim sukun bertemu mim (م) — dilebur menjadi satu mim bertasydid dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 85,
+          "ayah": 20,
+          "words": [3, 4],
+          "note": "Kata ke-3 dan ke-4: mim sukun bertemu mim (م) — dilebur menjadi satu mim bertasydid dengan dengung."
+        },
+        {
+          "type": "example",
+          "surah": 83,
+          "ayah": 4,
+          "words": [4, 5],
+          "note": "Kata ke-4 dan ke-5: mim sukun bertemu mim (م) — dilebur menjadi satu mim bertasydid dengan dengung."
+        },
+        {
+          "type": "text",
+          "heading": "3. Izhar syafawi",
+          "text": "Bila mim sukun bertemu **huruf selain ba dan mim**, mim dibaca **jelas** tanpa dengung. Di mushaf, mim ini diberi sukun. Bibir menutup sebentar, lalu langsung dibuka."
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 6,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: mim sukun bertemu ta (ت) — mim dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 100,
+          "ayah": 5,
+          "words": [3, 3],
+          "note": "Kata ketiga: mim sukun bertemu 'ain (ع) dalam satu kata — mim dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 107,
+          "ayah": 6,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: mim sukun bertemu ya (ي) — mim dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 17,
+          "words": [3, 3],
+          "note": "Kata ketiga: mim sukun bertemu ha (ه) dalam satu kata — mim dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 78,
+          "ayah": 3,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: mim sukun bertemu fa (ف) — mim dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "example",
+          "surah": 109,
+          "ayah": 6,
+          "words": [2, 3],
+          "note": "Kata ke-2 dan ke-3: mim sukun bertemu wau (و) — mim dibaca jelas tanpa dengung."
+        },
+        {
+          "type": "tip",
+          "text": "Hati-hati ketika mim bertemu **wau** dan **fa**. Makhrajnya berdekatan dengan mim, sehingga lidah dan bibir cenderung menyamarkannya. Justru di sini mim harus paling jelas."
+        },
+        {
+          "type": "text",
+          "heading": "Ghunnah: nun dan mim bertasydid",
+          "text": "Setiap **nun bertasydid** (نّ) dan **mim bertasydid** (مّ) wajib dibaca dengan **dengung dua harakat**. Dengung ini paling sempurna di antara semua dengung."
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 2,
+          "words": [2, 2],
+          "note": "Kata kedua: nun bertasydid — dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 30,
+          "words": [2, 2],
+          "note": "Kata kedua: nun bertasydid — dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 3,
+          "words": [1, 1],
+          "note": "Kata pertama: nun bertasydid — dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 79,
+          "ayah": 37,
+          "words": [1, 1],
+          "note": "Kata pertama: mim bertasydid — dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 35,
+          "words": [1, 1],
+          "note": "Kata pertama: mim bertasydid — dengung dua harakat."
+        },
+        {
+          "type": "example",
+          "surah": 101,
+          "ayah": 9,
+          "words": [1, 1],
+          "note": "Kata pertama: mim bertasydid — dengung dua harakat."
+        },
+        {
+          "type": "tip",
+          "text": "Latihan: ucapkan \"in-na\" pelan. Tahan bunyi dengung di hidung selama dua ketukan sebelum melepas \"na\". Tutup hidung sebentar: kalau suaranya berhenti, berarti dengungnya sudah benar keluar dari hidung."
+        },
+        {
+          "type": "text",
+          "heading": "Membedakan dengan nun sukun",
+          "text": "Hukum mim sukun hanya tiga karena mim keluar dari bibir. Jangan tertukar: **ba** sesudah nun sukun → iqlab (nun jadi mim); **ba** sesudah mim sukun → ikhfa syafawi (mim tetap mim, disamarkan). Bunyinya mirip, namanya berbeda."
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Cari semua mim mati di satu halaman. Lingkari yang bertemu ba (samar), garis bawahi yang bertemu mim (lebur), dan biarkan yang lain (jelas). Setelah itu baca dengan mengetuk dua jari pada setiap dengung."
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum:** (1) mendengungkan mim pada izhar syafawi; (2) memutus dengung pada ikhfa syafawi sehingga terdengar \"m\" lalu \"b\" terpisah; (3) dengung nun dan mim bertasydid terlalu pendek."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh ikhfa syafawi, idgham mimi, izhar syafawi, dan ghunnah",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "mim-1",
+          "question": "Mim sukun bertemu ba dibaca…",
+          "options": [
+            "Ikhfa syafawi: samar dengan dengung",
+            "Izhar syafawi",
+            "Idgham mimi",
+            "Iqlab"
+          ],
+          "answer": 0,
+          "explanation": "Satu-satunya huruf ikhfa syafawi adalah ba."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-2",
+          "question": "Mim sukun bertemu mim dibaca…",
+          "options": [
+            "Izhar syafawi",
+            "Ikhfa syafawi",
+            "Idgham mimi: dilebur dengan dengung",
+            "Dibaca dua kali terpisah"
+          ],
+          "answer": 2,
+          "explanation": "Dua mim menjadi satu mim bertasydid."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-3",
+          "question": "Mim sukun bertemu fa dibaca…",
+          "options": [
+            "Ikhfa syafawi",
+            "Izhar syafawi, dan harus sangat jelas",
+            "Idgham mimi",
+            "Dengan dengung"
+          ],
+          "answer": 1,
+          "explanation": "Fa termasuk huruf yang paling mudah membuat mim tersamar, jadi perlu hati-hati."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-4",
+          "question": "Hukum mim sukun ada berapa?",
+          "options": ["Dua", "Lima", "Empat", "Tiga"],
+          "answer": 3,
+          "explanation": "Ikhfa syafawi, idgham mimi, izhar syafawi."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-5",
+          "question": "Nun bertasydid dibaca…",
+          "options": [
+            "Tanpa dengung",
+            "Dengan dengung dua harakat",
+            "Dengan dengung enam harakat",
+            "Dengan qalqalah"
+          ],
+          "answer": 1,
+          "explanation": "Nun dan mim bertasydid selalu berdengung."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-6",
+          "question": "Di mushaf Madinah, mim yang dibaca izhar ditandai…",
+          "options": ["Tanpa tanda", "Mim kecil", "Tasydid", "Sukun"],
+          "answer": 3,
+          "explanation": "Mim tanpa tanda sebelum ba berarti ikhfa syafawi."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-7",
+          "question": "Apa beda iqlab dan ikhfa syafawi?",
+          "options": [
+            "Iqlab: nun menjadi mim; ikhfa syafawi: mim tetap mim yang disamarkan",
+            "Sama saja",
+            "Iqlab tanpa dengung",
+            "Ikhfa syafawi terjadi sebelum mim"
+          ],
+          "answer": 0,
+          "explanation": "Keduanya terjadi sebelum ba dan berdengung, tetapi asal hurufnya berbeda."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-8",
+          "question": "\"Syafawi\" artinya…",
+          "options": [
+            "Tenggorokan",
+            "Hidung",
+            "Berkaitan dengan bibir",
+            "Lidah"
+          ],
+          "answer": 2,
+          "explanation": "Mim keluar dari kedua bibir."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-9",
+          "question": "Mim sukun bertemu wau dibaca…",
+          "options": [
+            "Idgham mimi",
+            "Ikhfa syafawi",
+            "Idgham bighunnah",
+            "Izhar syafawi"
+          ],
+          "answer": 3,
+          "explanation": "Wau bukan ba dan bukan mim, jadi izhar."
+        },
+        {
+          "type": "quiz",
+          "id": "mim-10",
+          "question": "Pada ghunnah, suara dengung keluar dari…",
+          "options": ["Tenggorokan", "Rongga hidung", "Ujung lidah", "Bibir"],
+          "answer": 1,
+          "explanation": "Tempat keluar dengung adalah khaisyum (rongga hidung)."
+        }
+      ]
     },
     {
       "id": "mad-fari",
       "level": 12,
       "order": 1,
       "title": "Mad far'i",
-      "summary": "Mad wajib, jaiz, 'aridh, lazim, badal, 'iwadh, lin, dan shilah.",
-      "objectives": ["Mengenali jenis mad far'i dan panjangnya"],
+      "summary": "Mad wajib muttasil, jaiz munfasil, 'aridh lissukun, lin, badal, 'iwadh, shilah, lazim (kalimi & harfi), dan farq — sebab, panjang, dan contohnya.",
+      "objectives": [
+        "Mengenali sebab mad far'i: hamzah, sukun, atau waqaf",
+        "Menyebut panjang setiap jenis mad menurut riwayat Hafs jalur Syatibiyyah",
+        "Menjaga panjang mad tetap konsisten dalam satu bacaan"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Tuhfatul Athfal, bab mad far'i dan mad lazim); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "madda_obligatory",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Dari mad asli ke mad far'i",
+          "text": "Mad far'i adalah mad yang punya **sebab** tambahan: **hamzah** (sebelum atau sesudah huruf mad) atau **sukun** (asli atau karena waqaf). Bila panjangnya lebih dari dua harakat, mushaf biasanya memberi **tanda mad** (ٓ)."
+        },
+        {
+          "type": "tip",
+          "text": "Riwayat Hafs jalur Syatibiyyah yang dipakai di mushaf ini: pilih satu panjang untuk tiap jenis mad, lalu pakai panjang yang sama sampai selesai membaca. Konsisten adalah kunci."
+        },
+        {
+          "type": "text",
+          "heading": "Mad wajib muttasil",
+          "text": "Huruf mad bertemu **hamzah dalam satu kata**. Panjangnya **4 atau 5 harakat**, dan wajib dipanjangkan (tidak boleh dua harakat)."
+        },
+        {
+          "type": "example",
+          "surah": 78,
+          "ayah": 26,
+          "words": [1, 1],
+          "note": "Kata pertama: huruf mad bertemu hamzah dalam satu kata — 4 atau 5 harakat."
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 30,
+          "words": [1, 1],
+          "note": "Kata pertama: huruf mad bertemu hamzah dalam satu kata — 4 atau 5 harakat."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: huruf mad bertemu hamzah dalam satu kata — 4 atau 5 harakat."
+        },
+        {
+          "type": "tip",
+          "text": "Kalau berhenti tepat pada kata yang hamzahnya di akhir (misalnya \"as-samā'\"), panjangnya boleh sampai 6 harakat."
+        },
+        {
+          "type": "text",
+          "heading": "Mad jaiz munfasil",
+          "text": "Huruf mad di **akhir kata** bertemu **hamzah di awal kata berikutnya**. Panjangnya **4 atau 5 harakat** dalam jalur Syatibiyyah. Disebut jaiz (boleh) karena ada jalur riwayat lain yang membacanya lebih pendek."
+        },
+        {
+          "type": "example",
+          "surah": 94,
+          "ayah": 3,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: huruf mad di akhir kata bertemu hamzah di kata berikutnya — 4 atau 5 harakat."
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 11,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: huruf mad di akhir kata bertemu hamzah di kata berikutnya — 4 atau 5 harakat."
+        },
+        {
+          "type": "example",
+          "surah": 84,
+          "ayah": 16,
+          "words": [1, 2],
+          "note": "Kata ke-1 dan ke-2: huruf mad di akhir kata bertemu hamzah di kata berikutnya — 4 atau 5 harakat."
+        },
+        {
+          "type": "tip",
+          "text": "Aturan konsisten: panjang mad jaiz **tidak boleh melebihi** panjang mad wajib. Pilihan aman untuk pemula: keduanya 4 harakat."
+        },
+        {
+          "type": "text",
+          "heading": "Mad 'aridh lissukun",
+          "text": "Huruf mad diikuti huruf yang **dimatikan karena berhenti** (waqaf), biasanya di akhir ayat. Panjangnya boleh **2, 4, atau 6 harakat**. Kalau bacaan disambung, mad ini kembali menjadi mad asli."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 2,
+          "note": "Kata terakhir: berhenti di \"al-'ālamīn\" — ya mad diikuti nun yang dimatikan karena waqaf, 2/4/6 harakat.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 5,
+          "note": "Kata terakhir: berhenti di \"nasta'īn\" — mad 'aridh lissukun.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 1,
+          "note": "Kata terakhir: berhenti di \"an-nās\" — alif diikuti sin yang dimatikan karena waqaf.",
+          "words": [4, 4]
+        },
+        {
+          "type": "text",
+          "heading": "Mad lin",
+          "text": "Wau atau ya **mati** yang didahului **fathah**, lalu huruf sesudahnya dimatikan karena waqaf. Bunyinya \"au\" atau \"ai\". Saat berhenti boleh **2, 4, atau 6 harakat**; saat bersambung dibaca pendek."
+        },
+        {
+          "type": "example",
+          "surah": 106,
+          "ayah": 1,
+          "note": "Kata terakhir: berhenti di \"quraisy\" — ya mati setelah fathah, mad lin.",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 106,
+          "ayah": 3,
+          "note": "Kata terakhir: berhenti di \"al-bait\" — mad lin.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 106,
+          "ayah": 4,
+          "note": "Kata terakhir: berhenti di \"khauf\" — wau mati setelah fathah, mad lin.",
+          "words": [7, 7]
+        },
+        {
+          "type": "text",
+          "heading": "Mad badal",
+          "text": "**Hamzah** yang diikuti huruf mad, misalnya \"ā\" dalam \"āmanū\" atau \"ī\" dalam \"īmān\". Dalam riwayat Hafs panjangnya **2 harakat** saja."
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 3,
+          "note": "Kata ketiga, āmanū: hamzah lalu alif — mad badal, dua harakat.",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 98,
+          "ayah": 4,
+          "note": "Kata keempat, ūtū: hamzah lalu wau mad — mad badal, dua harakat.",
+          "words": [4, 4]
+        },
+        {
+          "type": "text",
+          "heading": "Mad 'iwadh",
+          "text": "Saat berhenti pada kata yang berakhir **fathatain** (tanwin fathah), tanwinnya diganti bunyi **\"a\" panjang dua harakat**. \"Afwājan\" dibaca \"afwājā\". Tidak berlaku untuk ta marbuthah."
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 2,
+          "note": "Kata terakhir: berhenti di \"afwājā\" — mad 'iwadh, dua harakat.",
+          "words": [7, 7]
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 3,
+          "note": "Kata terakhir: berhenti di \"tawwābā\" — mad 'iwadh.",
+          "words": [7, 7]
+        },
+        {
+          "type": "text",
+          "heading": "Mad shilah",
+          "text": "Kata ganti **\"hu/hi\"** (ha dhamir) yang **diapit dua huruf berharakat** dibaca panjang. Kalau huruf sesudahnya bukan hamzah: **shilah qashirah**, 2 harakat. Kalau sesudahnya hamzah: **shilah thawilah**, 4 atau 5 harakat seperti mad jaiz. Ada beberapa pengecualian khusus — lihat tahap 16."
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 3,
+          "note": "Kata kelima, innahū kāna: ha dhamir diikuti kaf — shilah qashirah, dua harakat.",
+          "words": [5, 5]
+        },
+        {
+          "type": "example",
+          "surah": 104,
+          "ayah": 3,
+          "note": "Kata ketiga, mālahū akhladah: ha dhamir diikuti hamzah — shilah thawilah, 4 atau 5 harakat.",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 90,
+          "ayah": 5,
+          "note": "Kata kelima, 'alaihi: huruf sebelum ha mati (ya sukun), jadi TIDAK ada shilah. Dibaca pendek \"hi\".",
+          "words": [5, 5]
+        },
+        {
+          "type": "tip",
+          "text": "Ha dhamir di akhir ayat saat berhenti dibaca mati, tanpa shilah. Contohnya kata terakhir Al-Humazah ayat 3."
+        },
+        {
+          "type": "text",
+          "heading": "Mad lazim kalimi",
+          "text": "Huruf mad bertemu **sukun asli** dalam satu kata. Panjangnya selalu **6 harakat**. Bila sukun itu berupa huruf bertasydid disebut **mutsaqqal** (berat); bila sukun biasa disebut **mukhaffaf** (ringan)."
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 7,
+          "note": "Kata terakhir: alif bertemu lam bertasydid — lazim kalimi mutsaqqal, 6 harakat.",
+          "words": [9, 9]
+        },
+        {
+          "type": "example",
+          "surah": 69,
+          "ayah": 1,
+          "note": "Al-ḥāqqah: alif bertemu qaf bertasydid — 6 harakat.",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 80,
+          "ayah": 33,
+          "note": "Kata terakhir, aṣ-ṣākhkhah: alif bertemu kha bertasydid — 6 harakat.",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 10,
+          "ayah": 51,
+          "note": "Kata ā-l-āna: alif bertemu lam bersukun — lazim kalimi mukhaffaf, 6 harakat (ibdal, lebih utama); boleh juga tashil tanpa mad. Hanya ada di Yunus ayat 51 dan 91.",
+          "words": [7, 7]
+        },
+        {
+          "type": "text",
+          "heading": "Mad lazim harfi",
+          "text": "Huruf pembuka surah (huruf muqaththa'ah) yang namanya tiga huruf dengan mad di tengah — **nūn, qāf, ṣād, 'ain, sīn, lām, kāf, mīm** — dibaca **6 harakat** (khusus 'ain boleh 4 atau 6). Huruf **ḥā, yā, ṭā, hā, rā** dibaca **2 harakat**. Alif tidak dipanjangkan."
+        },
+        {
+          "type": "example",
+          "surah": 2,
+          "ayah": 1,
+          "note": "Alif lām mīm: alif tanpa mad, lām 6 harakat, mīm 6 harakat."
+        },
+        {
+          "type": "example",
+          "surah": 20,
+          "ayah": 1,
+          "note": "Ṭā hā: kedua huruf dibaca dua harakat (mad asli harfi)."
+        },
+        {
+          "type": "example",
+          "surah": 19,
+          "ayah": 1,
+          "note": "Kāf hā yā 'ain ṣād: kāf dan ṣād 6 harakat, hā dan yā 2 harakat, 'ain 4 atau 6 harakat."
+        },
+        {
+          "type": "example",
+          "surah": 50,
+          "ayah": 1,
+          "note": "Qāf: 6 harakat."
+        },
+        {
+          "type": "text",
+          "heading": "Mad farq",
+          "text": "Mad yang \"membedakan\" pertanyaan dari pernyataan: hamzah tanya bertemu alif lam yang huruf sesudahnya bertasydid. Dibaca **6 harakat**, termasuk kelompok mad lazim."
+        },
+        {
+          "type": "example",
+          "surah": 10,
+          "ayah": 59,
+          "note": "Kata ā-llāhu: mad farq, 6 harakat (ibdal, lebih utama); boleh juga tashil tanpa mad.",
+          "words": [14, 14]
+        },
+        {
+          "type": "text",
+          "heading": "Ringkasan panjang",
+          "text": "2 harakat: asli, badal, 'iwadh, shilah qashirah. 4–5: wajib muttasil, jaiz munfasil, shilah thawilah. 2/4/6: 'aridh lissukun dan lin (saat berhenti). 6: lazim kalimi, lazim harfi, farq."
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Pakai jari: 2 harakat = dua lipatan, 4 = empat lipatan, 6 = enam lipatan. Latih dengan satu surah pendek sambil menandai setiap tanda mad (ٓ). Rekam, lalu cek apakah semua mad sejenis sama panjang."
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum:** (1) mad wajib dibaca 2 harakat; (2) mad jaiz lebih panjang dari mad wajib; (3) \"aḍ-ḍāllīn\" terlalu pendek; (4) memanjangkan lebih dari dua harakat pada mad tanpa tanda ٓ, kecuali mad 'aridh atau lin saat berhenti."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh panjang 2, 4, 5, dan 6 harakat",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-1",
+          "question": "Huruf mad bertemu hamzah dalam satu kata disebut…",
+          "options": [
+            "Mad wajib muttasil",
+            "Mad jaiz munfasil",
+            "Mad badal",
+            "Mad lazim"
+          ],
+          "answer": 0,
+          "explanation": "Muttasil artinya bersambung dalam satu kata."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-2",
+          "question": "Panjang mad wajib muttasil dalam riwayat Hafs jalur Syatibiyyah…",
+          "options": [
+            "2 harakat",
+            "6 harakat saja",
+            "4 atau 5 harakat",
+            "Bebas"
+          ],
+          "answer": 2,
+          "explanation": "Wajib dipanjangkan 4 atau 5 harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-3",
+          "question": "\"Innā a'ṭainā\": mad pada \"nā\" adalah…",
+          "options": [
+            "Mad wajib muttasil",
+            "Mad jaiz munfasil",
+            "Mad lazim",
+            "Mad 'iwadh"
+          ],
+          "answer": 1,
+          "explanation": "Hamzahnya ada di kata berikutnya."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-4",
+          "question": "\"Aḍ-ḍāllīn\" dibaca panjang…",
+          "options": ["2 harakat", "4 harakat", "5 harakat", "6 harakat"],
+          "answer": 3,
+          "explanation": "Mad lazim kalimi mutsaqqal."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-5",
+          "question": "Berhenti pada \"afwājan\" dibaca…",
+          "options": [
+            "Afwājan",
+            "Afwājā (mad 'iwadh, 2 harakat)",
+            "Afwāj",
+            "Afwājaaa 6 harakat"
+          ],
+          "answer": 1,
+          "explanation": "Fathatain saat waqaf diganti alif."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-6",
+          "question": "Panjang mad badal dalam riwayat Hafs…",
+          "options": ["4 harakat", "6 harakat", "5 harakat", "2 harakat"],
+          "answer": 3,
+          "explanation": "Badal cukup dua harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-7",
+          "question": "Mad 'aridh lissukun boleh dibaca…",
+          "options": ["2, 4, atau 6 harakat", "Hanya 2", "Hanya 6", "4 atau 5"],
+          "answer": 0,
+          "explanation": "Pilih satu dan konsisten."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-8",
+          "question": "Huruf pembuka \"mīm\" dibaca…",
+          "options": ["2 harakat", "Tidak panjang", "6 harakat", "4 harakat"],
+          "answer": 2,
+          "explanation": "Termasuk huruf mad lazim harfi."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-9",
+          "question": "Huruf pembuka \"hā\" dalam Ṭā Hā dibaca…",
+          "options": ["6 harakat", "4 harakat", "Tidak dibaca", "2 harakat"],
+          "answer": 3,
+          "explanation": "ḥā, yā, ṭā, hā, rā dibaca dua harakat."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-10",
+          "question": "\"Mālahū akhladah\": shilah pada \"hū\" dibaca…",
+          "options": [
+            "2 harakat",
+            "4 atau 5 harakat (thawilah)",
+            "Tidak ada shilah",
+            "6 harakat"
+          ],
+          "answer": 1,
+          "explanation": "Sesudahnya hamzah, jadi shilah thawilah."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-11",
+          "question": "\"'Alaihi\" pada Al-Balad ayat 5 tidak dibaca panjang karena…",
+          "options": [
+            "Ada tanda waqaf",
+            "Ha di akhir ayat",
+            "Huruf sebelum ha mati",
+            "Sesudahnya hamzah"
+          ],
+          "answer": 2,
+          "explanation": "Shilah hanya bila ha diapit dua huruf berharakat."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-12",
+          "question": "Aturan yang benar tentang mad jaiz dan mad wajib…",
+          "options": [
+            "Mad jaiz tidak boleh lebih panjang dari mad wajib",
+            "Mad jaiz harus lebih panjang",
+            "Keduanya selalu 2 harakat",
+            "Boleh berbeda-beda setiap ayat"
+          ],
+          "answer": 0,
+          "explanation": "Konsistensi urutan panjang ini dijaga dalam satu bacaan."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-13",
+          "question": "\"Quraisy\" saat berhenti mengandung mad…",
+          "options": ["Badal", "Lin", "Wajib muttasil", "Farq"],
+          "answer": 1,
+          "explanation": "Ya mati setelah fathah lalu waqaf."
+        },
+        {
+          "type": "quiz",
+          "id": "madfari-14",
+          "question": "Mad lazim kalimi mukhaffaf hanya ada pada kata…",
+          "options": [
+            "Aḍ-ḍāllīn",
+            "Al-ḥāqqah",
+            "Āmanū",
+            "Ā-l-āna di Surah Yunus"
+          ],
+          "answer": 3,
+          "explanation": "Terdapat di Yunus ayat 51 dan 91."
+        }
+      ]
     },
     {
       "id": "qalqalah-ra-lam",
       "level": 13,
       "order": 1,
       "title": "Qalqalah, ra', dan lam",
-      "summary": "Qalqalah sughra dan kubra, tafkhim dan tarqiq.",
-      "objectives": ["Membaca qalqalah pada tempatnya"],
+      "summary": "Qalqalah sughra dan kubra untuk kelima hurufnya, kapan ra dibaca tebal atau tipis, dan lam pada lafaz Allah.",
+      "objectives": [
+        "Memantulkan huruf qalqalah dengan tepat tanpa menambah vokal",
+        "Menentukan ra tebal atau tipis dari harakatnya dan huruf sekitarnya",
+        "Membaca lam lafaz Allah sesuai harakat sebelumnya"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Al-Muqaddimah al-Jazariyyah, bab sifat huruf dan bab ra); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
       "rule": "qalaqah",
-      "blocks": []
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Apa itu qalqalah",
+          "text": "**Qalqalah** artinya memantul. Lima huruf — **qaf, tha, ba, jim, dal** (hafalan: *quthbu jadin*) — bila mati diucapkan dengan sedikit pantulan supaya bunyinya tidak hilang."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ق",
+              "name": "Qaf",
+              "note": ""
+            },
+            {
+              "letter": "ط",
+              "name": "Tha",
+              "note": ""
+            },
+            {
+              "letter": "ب",
+              "name": "Ba",
+              "note": ""
+            },
+            {
+              "letter": "ج",
+              "name": "Jim",
+              "note": ""
+            },
+            {
+              "letter": "د",
+              "name": "Dal",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "type": "tip",
+          "text": "Pantulan bukan vokal. \"Yaqṭa'ūn\" bukan \"yaqaṭa'ūn\" atau \"yaqeṭa'ūn\". Makhraj ditekan, lalu dilepas cepat sehingga terdengar ketukan kecil."
+        },
+        {
+          "type": "text",
+          "heading": "Qalqalah sughra (kecil)",
+          "text": "Huruf qalqalah yang **mati di tengah bacaan** (bersukun asli). Pantulannya ringan saja, karena bacaan langsung berlanjut ke huruf sesudahnya."
+        },
+        {
+          "type": "example",
+          "surah": 90,
+          "ayah": 15,
+          "words": [3, 3],
+          "note": "Kata ketiga: qaf (ق) mati di tengah bacaan — pantulan ringan."
+        },
+        {
+          "type": "example",
+          "surah": 100,
+          "ayah": 5,
+          "words": [1, 1],
+          "note": "Kata pertama: tha (ط) mati di tengah bacaan — pantulan ringan."
+        },
+        {
+          "type": "example",
+          "surah": 79,
+          "ayah": 9,
+          "words": [1, 1],
+          "note": "Kata pertama: ba (ب) mati di tengah bacaan — pantulan ringan."
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 1,
+          "words": [1, 1],
+          "note": "Kata pertama: jim (ج) mati di tengah bacaan — pantulan ringan."
+        },
+        {
+          "type": "example",
+          "surah": 96,
+          "ayah": 17,
+          "words": [1, 1],
+          "note": "Kata pertama: dal (د) mati di tengah bacaan — pantulan ringan."
+        },
+        {
+          "type": "text",
+          "heading": "Qalqalah kubra (besar)",
+          "text": "Huruf qalqalah yang **mati karena berhenti** (waqaf), biasanya di akhir ayat. Pantulannya lebih jelas. Bila hurufnya bertasydid, seperti \"watabb\", pantulannya paling kuat."
+        },
+        {
+          "type": "example",
+          "surah": 113,
+          "ayah": 2,
+          "words": [4, 4],
+          "note": "Kata keempat: qaf (ق) di akhir ayat, dimatikan saat berhenti — pantulan jelas."
+        },
+        {
+          "type": "example",
+          "surah": 85,
+          "ayah": 20,
+          "words": [4, 4],
+          "note": "Kata keempat: tha (ط) di akhir ayat, dimatikan saat berhenti — pantulan jelas."
+        },
+        {
+          "type": "example",
+          "surah": 86,
+          "ayah": 3,
+          "words": [2, 2],
+          "note": "Kata kedua: ba (ب) di akhir ayat, dimatikan saat berhenti — pantulan jelas."
+        },
+        {
+          "type": "example",
+          "surah": 70,
+          "ayah": 3,
+          "words": [4, 4],
+          "note": "Kata keempat: jim (ج) di akhir ayat, dimatikan saat berhenti — pantulan jelas."
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "words": [2, 2],
+          "note": "Kata kedua: dal (د) di akhir ayat, dimatikan saat berhenti — pantulan jelas."
+        },
+        {
+          "type": "example",
+          "surah": 111,
+          "ayah": 1,
+          "note": "Kata terakhir, watabb: ba bertasydid saat berhenti — pantulan paling kuat.",
+          "words": [5, 5]
+        },
+        {
+          "type": "tip",
+          "text": "**Kesalahan umum:** (1) pantulan terlalu panjang sampai terdengar vokal baru; (2) tidak memantul sama sekali sehingga huruf hilang; (3) memantulkan huruf yang bukan qalqalah, seperti kaf atau ta."
+        },
+        {
+          "type": "text",
+          "heading": "Ra: tebal atau tipis",
+          "text": "Ra dibaca **tebal** (tafkhim) atau **tipis** (tarqiq) tergantung harakatnya dan huruf di sekitarnya. Tebal: pangkal lidah terangkat sehingga suara penuh, tanpa memonyongkan bibir. Tipis: pangkal lidah turun dan suara ringan."
+        },
+        {
+          "type": "text",
+          "heading": "Ra tebal (tafkhim)",
+          "text": "Ra dibaca tebal bila (1) berfathah atau berdhammah; (2) mati dan sebelumnya fathah atau dhammah; (3) mati dan sebelumnya kasrah yang bukan asli, misalnya hamzah washal; (4) mati sesudah kasrah asli tetapi diikuti huruf tebal dalam kata yang sama (pengecualian: \"firqin\" di Asy-Syu'ara 63 boleh tebal atau tipis)."
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 28,
+          "note": "Kata ketiga, rabbiki: ra berfathah → tebal.",
+          "words": [3, 3]
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 6,
+          "note": "Kata kelima, rabbuka: ra berdhammah → tebal.",
+          "words": [5, 5]
+        },
+        {
+          "type": "example",
+          "surah": 19,
+          "ayah": 16,
+          "note": "Kata keempat, maryam: ra mati sesudah fathah → tebal.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 36,
+          "ayah": 2,
+          "note": "Kata pertama, al-qur'ān: ra mati sesudah dhammah → tebal.",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 89,
+          "ayah": 28,
+          "note": "Kata pertama saat memulai, irji'ī: ra mati sesudah kasrah hamzah washal (bukan kasrah asli) → tebal.",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 78,
+          "ayah": 21,
+          "note": "Kata terakhir, mirṣādā: ra mati sesudah kasrah, tetapi diikuti shad (huruf tebal) → tebal.",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 97,
+          "ayah": 1,
+          "note": "Kata terakhir saat berhenti, al-qadr (pembanding saat waqaf): ra mati, sebelumnya dal mati, dan sebelum itu fathah → tebal.",
+          "words": [5, 5]
+        },
+        {
+          "type": "text",
+          "heading": "Ra tipis (tarqiq)",
+          "text": "Ra dibaca tipis bila (1) berkasrah; (2) mati sesudah kasrah asli dan tidak diikuti huruf tebal dalam kata itu; (3) saat berhenti, ra didahului ya mati atau kasrah."
+        },
+        {
+          "type": "example",
+          "surah": 113,
+          "ayah": 2,
+          "note": "Kata kedua, syarri: ra berkasrah → tipis.",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 73,
+          "ayah": 15,
+          "note": "Kata fir'aun: ra mati sesudah kasrah asli, tanpa huruf tebal sesudahnya → tipis.",
+          "words": [10, 10]
+        },
+        {
+          "type": "example",
+          "surah": 100,
+          "ayah": 11,
+          "note": "Kata terakhir saat berhenti, lakhabīr: ra didahului ya mati → tipis.",
+          "words": [5, 5]
+        },
+        {
+          "type": "tip",
+          "text": "Cara cepat saat berhenti: lihat huruf sebelum ra. Bila **ya mati** atau **kasrah** (langsung, atau terhalang satu huruf mati) → tipis; selain itu → tebal. Ada beberapa pengecualian (misalnya kata \"miṣr\" dan \"al-qiṭr\"); tanyakan kepada guru."
+        },
+        {
+          "type": "text",
+          "heading": "Lam pada lafaz Allah (ulangan)",
+          "text": "Lam lafaz Allah **tebal** sesudah fathah atau dhammah dan saat memulai; **tipis** sesudah kasrah. Lam lainnya selalu tipis."
+        },
+        {
+          "type": "example",
+          "surah": 91,
+          "ayah": 13,
+          "note": "Kata ke-3 dan ke-4: sesudah dhammah \"rasūlu\" → lam tebal.",
+          "words": [3, 4]
+        },
+        {
+          "type": "example",
+          "surah": 98,
+          "ayah": 2,
+          "note": "Kata ke-2 dan ke-3: \"minallāh\" — sesudah fathah nun → lam tebal.",
+          "words": [2, 3]
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 2,
+          "note": "Kata ke-5 dan ke-6: sesudah kasrah \"dīni\" → lam tipis.",
+          "words": [5, 6]
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Latih qalqalah dengan pasangan: \"aq – aṭ – ab – aj – ad\", lalu baca contoh di atas. Untuk ra, baca pasangan tebal-tipis bergantian: \"ra – ri\", \"mar – mir\". Rekam dan dengarkan perbedaannya."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh qalqalah sughra, kubra, dan ra tebal-tipis",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-1",
+          "question": "Huruf qalqalah ada…",
+          "options": [
+            "Lima: qaf, tha, ba, jim, dal",
+            "Empat: qaf, tha, ba, jim",
+            "Enam huruf tenggorokan",
+            "Tiga: ba, jim, dal"
+          ],
+          "answer": 0,
+          "explanation": "Hafalannya quthbu jadin."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-2",
+          "question": "Qalqalah sughra terjadi bila huruf qalqalah…",
+          "options": [
+            "Berharakat fathah",
+            "Mati karena berhenti",
+            "Mati di tengah bacaan",
+            "Bertasydid di tengah"
+          ],
+          "answer": 2,
+          "explanation": "Pantulannya ringan."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-3",
+          "question": "\"Aḥad\" di akhir Al-Ikhlas ayat 1 saat berhenti adalah…",
+          "options": [
+            "Qalqalah sughra",
+            "Qalqalah kubra",
+            "Bukan qalqalah",
+            "Ikhfa"
+          ],
+          "answer": 1,
+          "explanation": "Dal mati karena waqaf."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-4",
+          "question": "Pantulan qalqalah yang benar…",
+          "options": [
+            "Menambah bunyi \"e\"",
+            "Diam tanpa pantulan",
+            "Panjang dua harakat",
+            "Ketukan kecil tanpa menambah vokal"
+          ],
+          "answer": 3,
+          "explanation": "Pantulan tidak boleh menjadi vokal baru."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-5",
+          "question": "Ra berkasrah dibaca…",
+          "options": [
+            "Tebal",
+            "Tipis",
+            "Tergantung huruf sesudahnya",
+            "Dengan dengung"
+          ],
+          "answer": 1,
+          "explanation": "Ra berkasrah selalu tipis."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-6",
+          "question": "\"Maryam\": ra dibaca…",
+          "options": [
+            "Tipis",
+            "Tidak dibaca",
+            "Dengan qalqalah",
+            "Tebal, karena mati sesudah fathah"
+          ],
+          "answer": 3,
+          "explanation": "Ra mati sesudah fathah → tebal."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-7",
+          "question": "\"Fir'aun\": ra dibaca…",
+          "options": [
+            "Tipis, karena mati sesudah kasrah asli",
+            "Tebal",
+            "Dengan dengung",
+            "Panjang"
+          ],
+          "answer": 0,
+          "explanation": "Tidak ada huruf tebal sesudahnya dalam kata itu."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-8",
+          "question": "\"Mirṣādā\": ra dibaca tebal karena…",
+          "options": [
+            "Sebelumnya kasrah",
+            "Ra berkasrah",
+            "Diikuti shad, huruf tebal, dalam kata yang sama",
+            "Di akhir ayat"
+          ],
+          "answer": 2,
+          "explanation": "Huruf isti'la sesudah ra membuat ra tebal meski sebelumnya kasrah."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-9",
+          "question": "Saat memulai \"irji'ī\", ra dibaca…",
+          "options": [
+            "Tipis, karena ada kasrah",
+            "Tidak dibaca",
+            "Dengan qalqalah",
+            "Tebal, karena kasrahnya berasal dari hamzah washal"
+          ],
+          "answer": 3,
+          "explanation": "Kasrah hamzah washal bukan kasrah asli."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-10",
+          "question": "\"Lakhabīr\" saat berhenti, ra dibaca…",
+          "options": [
+            "Tebal",
+            "Tipis, karena didahului ya mati",
+            "Dengan qalqalah",
+            "Panjang 6 harakat"
+          ],
+          "answer": 1,
+          "explanation": "Ya mati sebelum ra saat waqaf membuat ra tipis."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-11",
+          "question": "\"Minallāh\": lam lafaz Allah dibaca…",
+          "options": ["Tipis", "Tidak dibaca", "Tebal", "Dengan dengung"],
+          "answer": 2,
+          "explanation": "Sebelumnya fathah pada nun."
+        },
+        {
+          "type": "quiz",
+          "id": "qrl-12",
+          "question": "Manakah yang BUKAN huruf qalqalah?",
+          "options": ["Kaf", "Qaf", "Dal", "Jim"],
+          "answer": 0,
+          "explanation": "Kaf mirip qaf, tetapi bukan huruf qalqalah."
+        }
+      ]
     },
     {
       "id": "makharij-sifat",
       "level": 14,
       "order": 1,
       "title": "Makharij dan sifat",
-      "summary": "Tempat keluar huruf dan sifat-sifatnya.",
-      "objectives": ["Mengenali kelompok makhraj"],
+      "summary": "Lima daerah tempat keluar huruf, 17 titik makhraj, sifat-sifat huruf, dan pasangan huruf yang sering tertukar oleh penutur bahasa Indonesia.",
+      "objectives": [
+        "Menunjukkan tempat keluar setiap huruf hijaiyah",
+        "Membedakan huruf yang mirip bunyinya (ح–ه, ع–ء, ث–س, ذ–ز–ظ, ص–س, ض–د, ط–ت, ق–ك)",
+        "Mengenal sifat-sifat huruf yang membuat bunyinya berbeda"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
-      "blocks": []
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Al-Muqaddimah al-Jazariyyah, bab makharij dan sifat); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Mengapa makhraj penting",
+          "text": "**Makhraj** adalah tempat keluarnya huruf. Banyak huruf Arab tidak ada padanannya dalam bahasa Indonesia, sehingga sering tertukar. Salah makhraj bisa mengubah kata: \"qalb\" (hati) berbeda dengan \"kalb\" (anjing)."
+        },
+        {
+          "type": "tip",
+          "text": "Cara menemukan makhraj sebuah huruf: **matikan** huruf itu dan dahului dengan hamzah berfathah, lalu rasakan di mana suara berhenti. Contoh: \"ab\", \"at\", \"aq\"."
+        },
+        {
+          "type": "text",
+          "heading": "1. Al-jauf (rongga mulut dan tenggorokan)",
+          "text": "Tempat keluarnya **huruf mad**: alif sesudah fathah, wau mati sesudah dhammah, ya mati sesudah kasrah. Suaranya mengalir tanpa sentuhan lidah atau bibir dan berhenti bersama napas."
+        },
+        {
+          "type": "text",
+          "heading": "2. Al-halq (tenggorokan)",
+          "text": "Enam huruf keluar dari tenggorokan, terbagi tiga bagian: **paling dalam** (hamzah, ha), **tengah** ('ain, ḥa), **paling luar** dekat mulut (ghain, kha)."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ء",
+              "name": "Hamzah",
+              "note": "Paling dalam, putus"
+            },
+            {
+              "letter": "ه",
+              "name": "Ha",
+              "note": "Paling dalam, desah"
+            },
+            {
+              "letter": "ع",
+              "name": "'Ain",
+              "note": "Tengah, tertekan"
+            },
+            {
+              "letter": "ح",
+              "name": "Ḥa",
+              "note": "Tengah, desah bersih"
+            },
+            {
+              "letter": "غ",
+              "name": "Ghain",
+              "note": "Luar, bergetar"
+            },
+            {
+              "letter": "خ",
+              "name": "Kha",
+              "note": "Luar, serak"
+            }
+          ]
+        },
+        {
+          "type": "tip",
+          "text": "Pasangan yang sering tertukar: **ح dan ه** — ḥa lebih tajam dan keluar dari tengah tenggorokan, ha lebih dalam dan lembut. **ع dan ء** — 'ain ditekan dari tengah tenggorokan, hamzah hanya putusan napas."
+        },
+        {
+          "type": "text",
+          "heading": "3. Al-lisan (lidah): pangkal dan tengah",
+          "text": "**Qaf** keluar dari pangkal lidah paling belakang dengan langit-langit lunak; **kaf** sedikit lebih ke depan. **Jim, syin, ya** (bukan mad) keluar dari tengah lidah dengan langit-langit keras."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ق",
+              "name": "Qaf",
+              "note": "Pangkal lidah paling dalam, tebal"
+            },
+            {
+              "letter": "ك",
+              "name": "Kaf",
+              "note": "Sedikit di depan qaf, tipis"
+            },
+            {
+              "letter": "ج",
+              "name": "Jim",
+              "note": "Tengah lidah"
+            },
+            {
+              "letter": "ش",
+              "name": "Syin",
+              "note": "Tengah lidah, udara menyebar"
+            },
+            {
+              "letter": "ي",
+              "name": "Ya",
+              "note": "Tengah lidah"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "heading": "Lidah: tepi dan ujung",
+          "text": "**Dhad** keluar dari tepi lidah bersama gigi geraham atas (kiri, kanan, atau keduanya). **Lam** dari tepi depan lidah. **Nun** dan **ra** dari ujung lidah, ra sedikit lebih ke dalam dan lebih ke punggung lidah."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ض",
+              "name": "Dhad",
+              "note": "Tepi lidah + geraham atas, tebal"
+            },
+            {
+              "letter": "ل",
+              "name": "Lam",
+              "note": "Tepi depan lidah"
+            },
+            {
+              "letter": "ن",
+              "name": "Nun",
+              "note": "Ujung lidah"
+            },
+            {
+              "letter": "ر",
+              "name": "Ra",
+              "note": "Ujung + punggung lidah"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "heading": "Lidah: ujung dengan gigi",
+          "text": "Tiga kelompok ujung lidah: **tha, dal, ta** dengan pangkal gigi seri atas; **shad, zai, sin** di antara ujung lidah dan gigi seri bawah (bunyi desis); **zha, dzal, tsa** dengan ujung gigi seri atas (lidah sedikit keluar)."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ط",
+              "name": "Tha",
+              "note": "Pangkal gigi atas, tebal"
+            },
+            {
+              "letter": "د",
+              "name": "Dal",
+              "note": "Pangkal gigi atas"
+            },
+            {
+              "letter": "ت",
+              "name": "Ta",
+              "note": "Pangkal gigi atas, berdesah"
+            },
+            {
+              "letter": "ص",
+              "name": "Shad",
+              "note": "Desis, tebal"
+            },
+            {
+              "letter": "ز",
+              "name": "Zai",
+              "note": "Desis, bergetar"
+            },
+            {
+              "letter": "س",
+              "name": "Sin",
+              "note": "Desis, tipis"
+            },
+            {
+              "letter": "ظ",
+              "name": "Zha",
+              "note": "Ujung gigi atas, tebal"
+            },
+            {
+              "letter": "ذ",
+              "name": "Dzal",
+              "note": "Ujung gigi atas"
+            },
+            {
+              "letter": "ث",
+              "name": "Tsa",
+              "note": "Ujung gigi atas, berdesah"
+            }
+          ]
+        },
+        {
+          "type": "tip",
+          "text": "**Tsa, dzal, zha**: ujung lidah menyentuh ujung gigi seri atas dan sedikit terlihat. Jangan diganti \"s\" atau \"z\" biasa. Zha bentuknya sama dengan dzal tetapi tebal."
+        },
+        {
+          "type": "text",
+          "heading": "4. Asy-syafatain (dua bibir)",
+          "text": "**Fa** keluar dari bagian dalam bibir bawah dengan ujung gigi seri atas. **Ba** dan **mim** dari rapatnya kedua bibir (ba rapat kuat, mim rapat dengan dengung). **Wau** (bukan mad) dari kedua bibir yang membulat tanpa rapat."
+        },
+        {
+          "type": "letters",
+          "items": [
+            {
+              "letter": "ف",
+              "name": "Fa",
+              "note": "Bibir bawah + gigi atas"
+            },
+            {
+              "letter": "ب",
+              "name": "Ba",
+              "note": "Dua bibir rapat"
+            },
+            {
+              "letter": "م",
+              "name": "Mim",
+              "note": "Dua bibir rapat, dengung"
+            },
+            {
+              "letter": "و",
+              "name": "Wau",
+              "note": "Bibir membulat"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "heading": "5. Al-khaisyum (rongga hidung)",
+          "text": "Tempat keluarnya **dengung** (ghunnah) pada nun dan mim, terutama saat bertasydid, idgham, ikhfa, dan iqlab. Tutup hidungmu saat membaca \"inna\": dengung yang benar akan terhenti."
+        },
+        {
+          "type": "text",
+          "heading": "Sifat huruf: berpasangan",
+          "text": "Selain makhraj, setiap huruf punya **sifat**. Sifat berpasangan antara lain: **hams** (berdesah, napas mengalir) lawan **jahr** (napas tertahan); **syiddah** (suara tertahan), **tawassuth** (tengah), lawan **rakhawah** (suara mengalir); **isti'la** (pangkal lidah naik, suara tebal) lawan **istifal** (tipis)."
+        },
+        {
+          "type": "tip",
+          "text": "Daftar lengkap: **isti'la** (7 huruf tebal) — kha, shad, dhad, ghain, tha, qaf, zha. **Hams** (10 huruf berdesah) — fa, ḥa, tsa, ha, syin, kha, shad, sin, kaf, ta. **Syiddah** (8 huruf tertahan) — hamzah, jim, dal, qaf, tha, ba, kaf, ta. **Tawassuth** (5) — lam, nun, 'ain, mim, ra. **Ithbaq** (lidah menempel lebar) — shad, dhad, tha, zha."
+        },
+        {
+          "type": "tip",
+          "text": "Hafalan populer: huruf **isti'la** — *khuṣṣa ḍaghṭin qiẓ*; huruf **hams** — *fa-ḥatstsahu syakhṣun sakat*; huruf **syiddah** — *ajid qaṭin bakat*; huruf **tawassuth** — *lin 'umar*."
+        },
+        {
+          "type": "text",
+          "heading": "Sifat tunggal",
+          "text": "**Shafir** (desis): shad, zai, sin. **Qalqalah**: qaf, tha, ba, jim, dal. **Lin**: wau dan ya mati sesudah fathah. **Inhiraf** (condong): lam dan ra. **Takrir** (getar): ra — getarannya disembunyikan (ikhfa' at-takrir), terutama saat bertasydid. **Tafasysyi** (menyebar): syin. **Istithalah** (memanjang): dhad."
+        },
+        {
+          "type": "text",
+          "heading": "Pasangan yang sering tertukar",
+          "text": "Latih pasangan ini sampai bedanya jelas: **ḥa–ha**, **'ain–hamzah**, **tsa–sin**, **dzal–zai–zha**, **shad–sin**, **dhad–dal**, **tha–ta**, **qaf–kaf**, **ghain–ra**. Ucapkan bergantian pelan, lalu rekam dan dengarkan."
+        },
+        {
+          "type": "example",
+          "surah": 114,
+          "ayah": 1,
+          "note": "Kata pertama, qul: qaf dari pangkal lidah paling dalam — jangan dibaca \"kul\".",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 2,
+          "note": "Kata terakhir, aṣ-ṣamad: shad tebal dan berdesis — jangan dibaca \"as-samad\".",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 7,
+          "note": "Kata terakhir, aḍ-ḍāllīn: dhad dari tepi lidah — bukan \"ad-dāllīn\" atau \"az-zāllīn\".",
+          "words": [9, 9]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 2,
+          "note": "Kata pertama, al-ḥamdu: ḥa dari tengah tenggorokan — bukan \"al-hamdu\".",
+          "words": [1, 1]
+        },
+        {
+          "type": "audio",
+          "label": "Contoh pasangan huruf yang sering tertukar",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-1",
+          "question": "Huruf mad keluar dari…",
+          "options": [
+            "Al-jauf (rongga mulut dan tenggorokan)",
+            "Al-halq",
+            "Al-khaisyum",
+            "Asy-syafatain"
+          ],
+          "answer": 0,
+          "explanation": "Huruf mad mengalir tanpa sentuhan."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-2",
+          "question": "'Ain dan ḥa keluar dari…",
+          "options": [
+            "Tenggorokan paling dalam",
+            "Pangkal lidah",
+            "Tengah tenggorokan",
+            "Bibir"
+          ],
+          "answer": 2,
+          "explanation": "Hamzah dan ha paling dalam; ghain dan kha paling luar."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-3",
+          "question": "Fa keluar dari…",
+          "options": [
+            "Kedua bibir rapat",
+            "Bibir bawah dengan ujung gigi seri atas",
+            "Ujung lidah",
+            "Tenggorokan"
+          ],
+          "answer": 1,
+          "explanation": "Ba, mim, dan wau dari kedua bibir."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-4",
+          "question": "Dengung (ghunnah) keluar dari…",
+          "options": [
+            "Tenggorokan",
+            "Bibir",
+            "Pangkal lidah",
+            "Rongga hidung (khaisyum)"
+          ],
+          "answer": 3,
+          "explanation": "Tutup hidung dan dengungnya akan terhenti."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-5",
+          "question": "Beda qaf dan kaf…",
+          "options": [
+            "Sama saja",
+            "Qaf lebih dalam dan tebal, kaf lebih depan dan tipis",
+            "Kaf lebih dalam",
+            "Qaf dari bibir"
+          ],
+          "answer": 1,
+          "explanation": "Qalb dan kalb berbeda arti."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-6",
+          "question": "Tsa (ث) diucapkan dengan…",
+          "options": [
+            "Seperti huruf s biasa",
+            "Pangkal lidah",
+            "Bibir rapat",
+            "Ujung lidah menyentuh ujung gigi seri atas"
+          ],
+          "answer": 3,
+          "explanation": "Bukan \"s\"."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-7",
+          "question": "Huruf isti'la (tebal) ada…",
+          "options": ["Tujuh", "Lima", "Sepuluh", "Tiga"],
+          "answer": 0,
+          "explanation": "Kha, shad, dhad, ghain, tha, qaf, zha."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-8",
+          "question": "Sifat takrir (getar) dimiliki huruf…",
+          "options": ["Lam", "Nun", "Ra", "Dal"],
+          "answer": 2,
+          "explanation": "Getarannya disembunyikan, jangan sampai bergetar berulang-ulang."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-9",
+          "question": "Dhad keluar dari…",
+          "options": [
+            "Ujung lidah dan gigi atas",
+            "Tenggorokan",
+            "Bibir",
+            "Tepi lidah bersama geraham atas"
+          ],
+          "answer": 3,
+          "explanation": "Dhad satu-satunya huruf dengan sifat istithalah."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-10",
+          "question": "Cara menemukan makhraj huruf adalah…",
+          "options": [
+            "Baca dengan cepat",
+            "Matikan hurufnya dan dahului dengan hamzah berfathah",
+            "Tulis hurufnya",
+            "Baca dengan nada tinggi"
+          ],
+          "answer": 1,
+          "explanation": "Contohnya \"ab\", \"at\", \"aq\"."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-11",
+          "question": "Huruf shafir (desis) adalah…",
+          "options": ["Qaf, tha, ba", "Lam, ra", "Shad, zai, sin", "Wau, ya"],
+          "answer": 2,
+          "explanation": "Ketiganya keluar dengan bunyi desis."
+        },
+        {
+          "type": "quiz",
+          "id": "makhraj-12",
+          "question": "Salah makhraj bisa…",
+          "options": [
+            "Mengubah kata dan maknanya",
+            "Tidak berpengaruh",
+            "Hanya mengubah nada",
+            "Membuat bacaan lebih cepat"
+          ],
+          "answer": 0,
+          "explanation": "Karena itu makhraj adalah dasar tajwid."
+        }
+      ]
     },
     {
       "id": "waqaf-ibtida",
       "level": 15,
       "order": 1,
       "title": "Waqaf dan ibtida'",
-      "summary": "Cara berhenti dan memulai kembali.",
-      "objectives": ["Berhenti di tempat yang tepat"],
+      "summary": "Cara berhenti yang benar di akhir kata, jenis-jenis waqaf, cara memulai kembali, dan hamzah washal saat memulai.",
+      "objectives": [
+        "Mengubah akhir kata dengan benar saat berhenti (sukun, 'iwadh, ta marbuthah)",
+        "Memilih tempat berhenti yang tidak merusak makna",
+        "Memulai bacaan dengan harakat hamzah washal yang tepat"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
-      "blocks": []
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (Al-Muqaddimah al-Jazariyyah, bab waqaf dan ibtida'); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Tiga istilah",
+          "text": "**Waqaf**: berhenti sejenak sambil menarik napas, dengan niat melanjutkan. **Saktah**: berhenti sangat sebentar **tanpa** menarik napas (wajib di empat tempat dalam riwayat Hafs jalur Syatibiyyah). **Qath'**: menyudahi bacaan."
+        },
+        {
+          "type": "text",
+          "heading": "Cara mengubah akhir kata saat berhenti",
+          "text": "Huruf terakhir berharakat **fathah, kasrah, atau dhammah** dibaca **mati**. Tanwin **kasrah** atau **dhammah** juga dimatikan tanpa bunyi \"n\"."
+        },
+        {
+          "type": "example",
+          "surah": 103,
+          "ayah": 2,
+          "note": "Kata terakhir: \"khusrin\" saat berhenti dibaca \"khusr\".",
+          "words": [4, 4]
+        },
+        {
+          "type": "example",
+          "surah": 112,
+          "ayah": 1,
+          "note": "Kata terakhir: \"aḥadun\" saat berhenti dibaca \"aḥad\" dengan qalqalah.",
+          "words": [4, 4]
+        },
+        {
+          "type": "text",
+          "heading": "Tanwin fathah dan ta marbuthah",
+          "text": "Tanwin **fathah** saat berhenti diganti bunyi **\"a\" panjang** (mad 'iwadh). **Ta marbuthah** (ة) saat berhenti berubah menjadi **\"h\" mati**."
+        },
+        {
+          "type": "example",
+          "surah": 110,
+          "ayah": 2,
+          "note": "Kata terakhir: \"afwājan\" saat berhenti → \"afwājā\".",
+          "words": [7, 7]
+        },
+        {
+          "type": "example",
+          "surah": 98,
+          "ayah": 2,
+          "note": "Kata terakhir: \"muṭahharatan\" saat berhenti → \"muṭahharah\" (ta marbuthah menjadi h).",
+          "words": [6, 6]
+        },
+        {
+          "type": "tip",
+          "text": "Mad sebelum huruf terakhir (\"ar-raḥīm\", \"an-nās\") menjadi mad 'aridh lissukun saat berhenti: 2, 4, atau 6 harakat."
+        },
+        {
+          "type": "text",
+          "heading": "Jenis waqaf menurut makna",
+          "text": "**Tamm** (sempurna): kalimat dan maknanya selesai, tidak terkait dengan sesudahnya — biasanya akhir kisah atau akhir ayat. **Kafi** (cukup): makna selesai, tetapi masih terkait makna sesudahnya. **Hasan** (baik): kalimatnya sah, tetapi sesudahnya masih bergantung padanya. **Qabih** (buruk): maknanya terputus atau berubah."
+        },
+        {
+          "type": "example",
+          "surah": 4,
+          "ayah": 43,
+          "note": "Contoh waqaf qabih: berhenti di kata keenam (\"janganlah kamu mendekati salat\") lalu tidak melanjutkan memberi makna yang salah. Lanjutkan sampai kalimatnya selesai.",
+          "words": [6, 6]
+        },
+        {
+          "type": "tip",
+          "text": "Pedoman aman untuk pemula: berhenti di **akhir ayat** atau di tanda waqaf yang membolehkan berhenti. Kalau kehabisan napas di tengah kalimat, berhentilah, lalu **ulangi** dari kata yang maknanya utuh."
+        },
+        {
+          "type": "text",
+          "heading": "Ibtida': memulai kembali",
+          "text": "**Ibtida'** adalah memulai bacaan setelah berhenti. Mulailah dari kata yang maknanya berdiri sendiri. Kalau perlu, mundur satu atau dua kata (**i'adah**) supaya makna tersambung."
+        },
+        {
+          "type": "text",
+          "heading": "Harakat hamzah washal saat memulai",
+          "text": "Pada **alif lam** → fathah (\"al-\"). Pada **kata kerja** → lihat huruf ketiga: kalau **dhammah asli**, mulai dengan dhammah; kalau **fathah atau kasrah** (atau dhammah yang bukan asli, seperti \"imsyū\"), mulai dengan kasrah. Pada beberapa kata benda seperti ibn, imra'ah, ism → kasrah."
+        },
+        {
+          "type": "example",
+          "surah": 16,
+          "ayah": 125,
+          "note": "Kata pertama saat memulai: huruf ketiganya berdhammah → \"ud'u\".",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 96,
+          "ayah": 1,
+          "note": "Kata pertama saat memulai: huruf ketiganya berfathah → \"iqra'\".",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 1,
+          "ayah": 6,
+          "note": "Kata pertama saat memulai: huruf ketiganya berkasrah → \"ihdinā\".",
+          "words": [1, 1]
+        },
+        {
+          "type": "example",
+          "surah": 15,
+          "ayah": 60,
+          "note": "Kata imra'atahū saat memulai: kata benda khusus → kasrah.",
+          "words": [2, 2]
+        },
+        {
+          "type": "tip",
+          "text": "Saat disambung dengan kata sebelumnya, hamzah washal **tidak dibaca**: \"wa-qra'\", bukan \"wa-iqra'\"."
+        },
+        {
+          "type": "text",
+          "heading": "Tanda waqaf (ulangan)",
+          "text": "Mim (ۘ): harus berhenti (waqaf lazim). Lam-alif (ۙ): jangan berhenti lalu memulai dari sesudahnya. Jim (ۚ): boleh berhenti atau lanjut. Shad-lam-ya (ۖ): lanjut lebih utama. Qaf-lam-ya (ۗ): berhenti lebih utama. Tiga titik (ۛ): berhenti di salah satunya."
+        },
+        {
+          "type": "text",
+          "heading": "Cara melatih",
+          "text": "Baca satu halaman dengan satu tarikan napas per kalimat. Tandai di mana kamu berhenti, lalu periksa: apakah maknanya utuh? Latih juga mengubah akhir kata: bacakan tiap akhir ayat dalam keadaan berhenti."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh berhenti pada tanwin, ta marbuthah, dan huruf mati",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-1",
+          "question": "Saat berhenti, \"khusrin\" dibaca…",
+          "options": ["Khusr", "Khusrin", "Khusrā", "Khusrah"],
+          "answer": 0,
+          "explanation": "Tanwin kasrah dimatikan."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-2",
+          "question": "Saat berhenti, \"afwājan\" dibaca…",
+          "options": ["Afwājan", "Afwāj", "Afwājā", "Afwājah"],
+          "answer": 2,
+          "explanation": "Tanwin fathah diganti alif."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-3",
+          "question": "Ta marbuthah saat berhenti dibaca…",
+          "options": [
+            "Ta mati",
+            "Ha mati",
+            "Tetap dengan tanwin",
+            "Alif panjang"
+          ],
+          "answer": 1,
+          "explanation": "\"Muṭahharatan\" → \"muṭahharah\"."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-4",
+          "question": "Berhenti sebentar tanpa menarik napas disebut…",
+          "options": ["Waqaf", "Qath'", "Ibtida'", "Saktah"],
+          "answer": 3,
+          "explanation": "Dalam riwayat Hafs jalur Syatibiyyah wajib di empat tempat."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-5",
+          "question": "Saat memulai \"ud'u\", hamzah washal dibaca dhammah karena…",
+          "options": [
+            "Selalu dhammah",
+            "Huruf ketiganya berdhammah",
+            "Kata benda",
+            "Ada alif lam"
+          ],
+          "answer": 1,
+          "explanation": "Pada kata kerja, lihat huruf ketiga."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-6",
+          "question": "Hamzah washal pada alif lam saat memulai dibaca…",
+          "options": ["Kasrah", "Dhammah", "Tidak dibaca", "Fathah"],
+          "answer": 3,
+          "explanation": "Selalu \"al-\"."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-7",
+          "question": "Waqaf yang maknanya terputus atau berubah disebut…",
+          "options": ["Qabih", "Tamm", "Kafi", "Hasan"],
+          "answer": 0,
+          "explanation": "Hindari; kalau terpaksa, ulangi dari kata yang tepat."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-8",
+          "question": "Kalau kehabisan napas di tengah kalimat, sebaiknya…",
+          "options": [
+            "Lanjut dari kata berikutnya",
+            "Mulai dari awal surah",
+            "Berhenti, lalu ulangi dari kata yang maknanya utuh",
+            "Tidak perlu diulang"
+          ],
+          "answer": 2,
+          "explanation": "Ini disebut i'adah."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-9",
+          "question": "Tempat berhenti paling aman bagi pemula adalah…",
+          "options": [
+            "Di tengah kata",
+            "Setiap tiga kata",
+            "Setelah tanda lam-alif",
+            "Akhir ayat"
+          ],
+          "answer": 3,
+          "explanation": "Berhenti di akhir ayat dianjurkan oleh banyak ulama, walau ada ayat yang lebih baik disambung dengan ayat sesudahnya."
+        },
+        {
+          "type": "quiz",
+          "id": "waqaf-10",
+          "question": "Saat disambung, \"wa-qra'\": hamzah washal…",
+          "options": [
+            "Dibaca kasrah",
+            "Tidak dibaca",
+            "Dibaca fathah",
+            "Dibaca panjang"
+          ],
+          "answer": 1,
+          "explanation": "Hamzah washal hanya dibaca saat memulai."
+        }
+      ]
     },
     {
       "id": "gharib-hafs",
       "level": 16,
       "order": 1,
       "title": "Bacaan gharib Hafs",
-      "summary": "Saktah, isymam, imalah, tashil, dan naql.",
-      "objectives": ["Mengenali lima bacaan gharib dan tempatnya"],
+      "summary": "Bacaan khusus riwayat Hafs 'an 'Ashim jalur Syatibiyyah: empat saktah, imalah, isymam, tashil, naql, sin/shad, dha'f, pengecualian ha dhamir, dan idgham khusus.",
+      "objectives": [
+        "Mengenali tempat-tempat bacaan gharib di mushaf",
+        "Membaca setiap bacaan gharib sesuai riwayat Hafs",
+        "Mengenali tanda kecil yang menandainya di mushaf"
+      ],
       "review": "draft",
-      "provenance": "Kerangka saja; teks pelajarannya belum ditulis. Menunggu penyusunan oleh pengajar.",
-      "sources": [],
-      "blocks": []
+      "provenance": "Draf disusun asisten AI untuk aplikasi ini atas permintaan pemilik (25 September 2026). Penjelasan ditulis orisinal mengikuti pembagian hukum dalam matan klasik (riwayat Hafs 'an 'Ashim dari jalur Syatibiyyah); tidak menyalin terjemahan atau syarah modern. Contoh ayat hanya rujukan surah:ayat + posisi kata, dicari otomatis dari teks Tanzil dan dicek silang dengan anotasi cpfair. BELUM ditinjau guru bersanad; wajib 2 peninjau sebelum terbit.",
+      "sources": [
+        {
+          "title": "Tuhfatul Athfal (matan tajwid, domain publik)",
+          "author": "Sulaiman al-Jamzuri",
+          "url": ""
+        },
+        {
+          "title": "Al-Muqaddimah al-Jazariyyah (matan tajwid, domain publik)",
+          "author": "Ibnul Jazari",
+          "url": ""
+        },
+        {
+          "title": "Contoh ayat: Tanzil Uthmani 1.0.2, dicek silang dengan cpfair/quran-tajweed (CC BY 4.0)",
+          "author": "tanzil.net · github.com/cpfair/quran-tajweed",
+          "url": "https://github.com/cpfair/quran-tajweed"
+        }
+      ],
+      "blocks": [
+        {
+          "type": "text",
+          "heading": "Apa itu bacaan gharib",
+          "text": "**Gharib** artinya asing: bacaan yang cara membacanya tidak sesuai kaidah umum, karena begitulah riwayat Hafs mengajarkannya. Tempatnya sedikit dan sudah diketahui, jadi cukup dikenali satu per satu."
+        },
+        {
+          "type": "tip",
+          "text": "Hampir semua bacaan gharib diberi **tanda kecil** di mushaf Madinah. Kalau melihat tanda yang asing, cari di tahap ini."
+        },
+        {
+          "type": "text",
+          "heading": "1. Saktah (empat tempat)",
+          "text": "Berhenti sangat sebentar **tanpa menarik napas**, lalu lanjut. Tandanya huruf **sin kecil** (ۜ). Dalam jalur Syatibiyyah, saktah **wajib** di empat tempat berikut saat bacaan disambung. Di Al-Haqqah 28–29 (\"māliyah — halaka\") boleh saktah atau idgham."
+        },
+        {
+          "type": "example",
+          "surah": 18,
+          "ayah": 1,
+          "note": "Kata terakhir: \"'iwajā\" — saktah sebelum lanjut ke \"qayyiman\" di ayat 2.",
+          "words": [11, 11]
+        },
+        {
+          "type": "example",
+          "surah": 36,
+          "ayah": 52,
+          "note": "Kata \"marqadinā\" — saktah sebelum \"hādzā\".",
+          "words": [6, 6]
+        },
+        {
+          "type": "example",
+          "surah": 75,
+          "ayah": 27,
+          "note": "Kata kedua: \"man\" — saktah, sehingga nun tidak di-idgham-kan ke ra: \"man — rāq\".",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 83,
+          "ayah": 14,
+          "note": "Kata \"bal\" — saktah, sehingga lam tidak di-idgham-kan ke ra: \"bal — rāna\".",
+          "words": [2, 2]
+        },
+        {
+          "type": "text",
+          "heading": "2. Imalah",
+          "text": "Bunyi \"a\" dimiringkan ke arah \"e\". Dalam riwayat Hafs hanya ada **satu** tempat: \"majrēhā\" di Surah Hud."
+        },
+        {
+          "type": "example",
+          "surah": 11,
+          "ayah": 41,
+          "note": "Kata \"majrēhā\": ra dibaca miring ke \"e\" — tandanya titik bulat kecil di bawah huruf.",
+          "words": [6, 6]
+        },
+        {
+          "type": "text",
+          "heading": "3. Isymam",
+          "text": "Memoncongkan bibir seperti membaca dhammah **tanpa suara**, saat membaca nun bertasydid. Hanya di satu tempat: \"ta'mannā\" di Surah Yusuf. Mushaf Madinah memakai isymam; dalam jalur Syatibiyyah ada juga cara rawm (dhammah dibaca samar sebagian)."
+        },
+        {
+          "type": "example",
+          "surah": 12,
+          "ayah": 11,
+          "note": "Kata \"ta'mannā\": bibir dimoncongkan sesaat pada nun pertama, tanpa bunyi \"u\".",
+          "words": [6, 6]
+        },
+        {
+          "type": "text",
+          "heading": "4. Tashil",
+          "text": "Hamzah kedua dibaca **ringan**, di antara hamzah dan alif. Satu-satunya tashil yang **wajib** adalah \"a'jamiyy\" di Surah Fushshilat. (Pada \"ā-l-āna\" dan \"ā-llāhu\", tashil hanyalah cara kedua selain mad 6 harakat.)"
+        },
+        {
+          "type": "example",
+          "surah": 41,
+          "ayah": 44,
+          "note": "Kata \"a-'jamiyy\": hamzah kedua dibaca lunak — tandanya titik bulat kecil.",
+          "words": [9, 9]
+        },
+        {
+          "type": "text",
+          "heading": "5. Bi'sa-lismu (sering disebut naql)",
+          "text": "Pada \"bi'sal-ismu\" di Surah Al-Hujurat, dua hamzah washal gugur saat bersambung dan lam diberi **kasrah** untuk menghindari dua huruf mati bertemu, sehingga dibaca \"bi'sa-lismu\". Sebagian buku menyebutnya naql."
+        },
+        {
+          "type": "example",
+          "surah": 49,
+          "ayah": 11,
+          "note": "Dibaca \"bi'sa-lismu\" saat disambung. Kalau memulai dari \"al-ism\", ada dua cara: \"alismu\" atau \"lismu\".",
+          "words": [29, 30]
+        },
+        {
+          "type": "text",
+          "heading": "6. Sin atau shad",
+          "text": "Beberapa kata ditulis dengan shad tetapi dibaca **sin**, ditandai sin kecil di atasnya. Di Al-Baqarah 245 dan Al-A'raf 69 dibaca sin. Di Ath-Thur 37 boleh sin atau shad. Di Al-Ghasyiyah 22 hanya shad."
+        },
+        {
+          "type": "example",
+          "surah": 2,
+          "ayah": 245,
+          "note": "Kata \"wa yabsuṭu\": dibaca dengan sin.",
+          "words": [14, 14]
+        },
+        {
+          "type": "example",
+          "surah": 7,
+          "ayah": 69,
+          "note": "Kata \"basṭatan\": dibaca dengan sin.",
+          "words": [22, 22]
+        },
+        {
+          "type": "example",
+          "surah": 52,
+          "ayah": 37,
+          "note": "Kata \"al-muṣaiṭirūn\": boleh sin atau shad, dan shad lebih utama — tandanya sin kecil di bawah.",
+          "words": [7, 7]
+        },
+        {
+          "type": "example",
+          "surah": 88,
+          "ayah": 22,
+          "note": "Kata \"bimuṣaiṭir\": hanya dengan shad.",
+          "words": [3, 3]
+        },
+        {
+          "type": "text",
+          "heading": "7. Dha'f",
+          "text": "Kata \"ḍa'f\" di Surah Ar-Rum ayat 54 boleh dibaca dengan **fathah** atau **dhammah** pada dhad dalam riwayat Hafs. Fathah didahulukan dalam praktik; pilih satu dan konsisten dalam ayat itu."
+        },
+        {
+          "type": "example",
+          "surah": 30,
+          "ayah": 54,
+          "note": "Kata \"ḍa'fin\" (tiga kali dalam ayat ini): boleh \"ḍa'f\" atau \"ḍu'f\".",
+          "words": [5, 5]
+        },
+        {
+          "type": "text",
+          "heading": "8. Pengecualian ha dhamir",
+          "text": "Biasanya ha dhamir dibaca panjang bila diapit huruf berharakat, dan pendek bila didahului huruf mati. Ada pengecualian yang harus dihafal."
+        },
+        {
+          "type": "example",
+          "surah": 25,
+          "ayah": 69,
+          "note": "Kata \"fīhī muhānā\": didahului ya mati tetapi TETAP dibaca panjang (shilah) — khusus di sini.",
+          "words": [7, 7]
+        },
+        {
+          "type": "example",
+          "surah": 39,
+          "ayah": 7,
+          "note": "Kata \"yarḍahu lakum\": seharusnya panjang, tetapi dibaca PENDEK \"hu\".",
+          "words": [13, 13]
+        },
+        {
+          "type": "example",
+          "surah": 7,
+          "ayah": 111,
+          "note": "Kata \"arjih\": ha dibaca mati (sukun). Sama di Asy-Syu'ara 36.",
+          "words": [2, 2]
+        },
+        {
+          "type": "example",
+          "surah": 27,
+          "ayah": 28,
+          "note": "Kata \"fa alqih\": ha dibaca mati.",
+          "words": [4, 4]
+        },
+        {
+          "type": "text",
+          "heading": "9. Idgham khusus",
+          "text": "Dua tempat terkenal di mana huruf mati dilebur ke huruf sesudahnya: \"irkam-ma'anā\" (ba ke mim) di Surah Hud dan \"yalhadz-dzālik\" (tsa ke dzal) di Al-A'raf."
+        },
+        {
+          "type": "example",
+          "surah": 11,
+          "ayah": 42,
+          "note": "Dibaca \"irkam-ma'anā\": ba dilebur ke mim dengan dengung.",
+          "words": [14, 15]
+        },
+        {
+          "type": "example",
+          "surah": 7,
+          "ayah": 176,
+          "note": "Dibaca \"yalhadz-dzālik\" bila disambung: tsa dilebur ke dzal.",
+          "words": [20, 20]
+        },
+        {
+          "type": "text",
+          "heading": "10. Nun yang tetap jelas",
+          "text": "Nun pada huruf pembuka **yā sīn** (Yasin 1–2) dan **nūn** (Al-Qalam 1) dibaca **jelas** dalam riwayat Hafs, walaupun bertemu wau sesudahnya."
+        },
+        {
+          "type": "example",
+          "surah": 36,
+          "ayah": 1,
+          "note": "Yā sīn lalu \"wal-qur'ān\" di ayat 2: nun dibaca jelas."
+        },
+        {
+          "type": "tip",
+          "text": "Bacaan gharib paling baik dipastikan langsung kepada guru. Dengarkan juga qari riwayat Hafs pada ayat-ayat ini dan tirukan."
+        },
+        {
+          "type": "audio",
+          "label": "Contoh saktah, imalah, isymam, tashil, dan naql",
+          "asset": null
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-1",
+          "question": "Saktah wajib dalam riwayat Hafs jalur Syatibiyyah ada di…",
+          "options": [
+            "Empat tempat",
+            "Satu tempat",
+            "Tujuh tempat",
+            "Setiap akhir ayat"
+          ],
+          "answer": 0,
+          "explanation": "Al-Kahf 1, Yasin 52, Al-Qiyamah 27, Al-Muthaffifin 14. Di Al-Haqqah 28–29 boleh saktah atau idgham."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-2",
+          "question": "Imalah dalam riwayat Hafs terdapat pada kata…",
+          "options": [
+            "Ta'mannā",
+            "A'jamiyy",
+            "Majrēhā (Hud 41)",
+            "Bi'sa-lismu"
+          ],
+          "answer": 2,
+          "explanation": "Satu-satunya imalah dalam riwayat Hafs."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-3",
+          "question": "Isymam dilakukan dengan…",
+          "options": [
+            "Membaca e",
+            "Memoncongkan bibir tanpa suara",
+            "Memanjangkan 6 harakat",
+            "Berhenti tanpa napas"
+          ],
+          "answer": 1,
+          "explanation": "Pada \"ta'mannā\" di Yusuf 11."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-4",
+          "question": "Tashil artinya…",
+          "options": [
+            "Memindahkan harakat",
+            "Berhenti sebentar",
+            "Memiringkan a ke e",
+            "Membaca hamzah secara ringan"
+          ],
+          "answer": 3,
+          "explanation": "Pada \"a'jamiyy\" di Fushshilat 44."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-5",
+          "question": "Mengapa \"bi'sal-ismu\" dibaca \"bi'sa-lismu\"?",
+          "options": [
+            "Karena saktah",
+            "Dua hamzah washal gugur dan lam diberi kasrah",
+            "Karena imalah",
+            "Karena ada tanda mad"
+          ],
+          "answer": 1,
+          "explanation": "Lam dikasrahkan supaya dua huruf mati tidak bertemu."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-6",
+          "question": "\"Wa yabsuṭu\" di Al-Baqarah 245 dibaca dengan…",
+          "options": ["Shad", "Boleh keduanya", "Tsa", "Sin"],
+          "answer": 3,
+          "explanation": "Ada sin kecil di atasnya."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-7",
+          "question": "\"Fīhī muhānā\" (Al-Furqan 69) dibaca…",
+          "options": [
+            "Panjang (shilah), walaupun didahului ya mati",
+            "Pendek",
+            "Dengan saktah",
+            "Dengan imalah"
+          ],
+          "answer": 0,
+          "explanation": "Pengecualian khusus riwayat Hafs."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-8",
+          "question": "\"Yarḍahu lakum\" (Az-Zumar 7) dibaca…",
+          "options": [
+            "Panjang \"huu\"",
+            "Dengan sukun",
+            "Pendek \"hu\"",
+            "Dengan imalah"
+          ],
+          "answer": 2,
+          "explanation": "Pengecualian lain untuk ha dhamir."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-9",
+          "question": "\"Man rāq\" tidak di-idgham-kan karena…",
+          "options": [
+            "Ada qalqalah",
+            "Nun bertasydid",
+            "Ra berkasrah",
+            "Ada saktah"
+          ],
+          "answer": 3,
+          "explanation": "Saktah memutus idgham."
+        },
+        {
+          "type": "quiz",
+          "id": "gharib-10",
+          "question": "\"Irkab ma'anā\" dibaca…",
+          "options": [
+            "Irkab ma'anā dengan jelas",
+            "Irkam-ma'anā",
+            "Irka ma'anā",
+            "Irkab-ba'anā"
+          ],
+          "answer": 1,
+          "explanation": "Ba dilebur ke mim."
+        }
+      ]
     }
   ]
 }

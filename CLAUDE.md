@@ -16,7 +16,8 @@ Rules:
 
 1. `QURAN_APP_GUIDE_DAN_PROMPT_CODEX.md` + `docs/RELIGIOUS_CONTENT_GOVERNANCE.md` — konten, data, streak, audio, keamanan. Selalu menang.
 2. `docs/design/v2/DESIGN.md` — sistem desain (token, komponen, aturan tata letak).
-3. `docs/design/v2/screens/NN-*.md` + `.png` — spesifikasi & gambar acuan per layar. **Gambar acuan adalah target visual.** Kalau ragu, cocokkan ke PNG-nya.
+   `docs/design/v3/DESIGN.md` — tambahan v3: logo MyQuran, ikon, splash, onboarding, materi nun sukun. Berlaku bersama v2.
+3. `docs/design/v2/screens/NN-*.md` + `.png` dan `docs/design/v3/screens/15–18-*.md` + `.png` — spesifikasi & gambar acuan per layar. **Gambar acuan adalah target visual.** Kalau ragu, cocokkan ke PNG-nya.
 4. `docs/revisi-v2/SPESIFIKASI_REVISI_V2.md`, `docs/revisi-v2/RISET_SUMBER.md` — fitur & sumber data.
 
 ## Aturan UI yang tidak boleh dilanggar
@@ -28,6 +29,14 @@ Rules:
 - Tab bar: 5 tab (Beranda, Qur'an, Belajar, Hafalan, Saya), tanpa tombol cari terpisah. Cari ada di header Beranda & Qur'an.
 - Teks Arab: `SacredText.quran`, RTL, tanpa tinggi tetap, line-height ≥ 2.0, tidak pernah di-clip.
 - Setiap layar punya versi terang & gelap yang lolos kontras (teks 4.5:1; teks Arab besar & warna tajwid 3:1).
+
+## Aturan brand & onboarding (v3)
+
+- Logo hanya dari `assets/brand/` lewat `Image.asset`, **utuh**: tidak digambar ulang, dipotong, diregangkan, atau diberi filter warna. Versi gelap dipilih lewat berkasnya sendiri. `logo_utama_asli*.png` hanya arsip.
+- Nama tampilan aplikasi: **MyQuran**. Package id tidak diubah tanpa izin pemilik.
+- Animasi hanya dengan API bawaan Flutter. Tanpa Lottie/Rive/aset animasi pihak ketiga. Hormati `MediaQuery.disableAnimationsOf`.
+- Onboarding tampil sekali (`onboarding.selesai.v1`). Rumus gerak di DESIGN v3 §5c adalah spesifikasi, bukan saran.
+- Semua font, paket, dan aset harus gratis dengan lisensi yang jelas (lihat `docs/design/v3/LISENSI_ASET.md`). Jangan menambah yang berbayar.
 
 ## Aturan konten
 

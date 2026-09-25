@@ -74,6 +74,9 @@ abstract final class SacredIcons {
   static const chevronLeft = ['M15 18.5 8.5 12 15 5.5'];
   static const chevronDown = ['m6 9.5 6 6 6-6'];
   static const chevronRight = ['m9.5 6 6 6-6 6'];
+
+  /// Panah ke kanan untuk jalur menu ("Saya → Belajar").
+  static const arrowRight = ['M5 12h14', 'm13 6 6 6-6 6'];
   static const close = ['M6 6l12 12M18 6 6 18'];
 
   /// Tiga titik mendatar.

@@ -27,10 +27,18 @@
 - [x] Keystore rilis dibuat, SHA-1/SHA-256-nya terdaftar di Firebase, dan `google-services.json` diperbarui (22 September 2026; lihat `docs/RELEASE.md`).
 - [x] API key Android dibatasi ke `com.zainularkaan.quran` + SHA-1 debug/rilis; diverifikasi ditolak untuk klien tanpa identitas, package lain, dan sertifikat lain.
 - [x] Kebijakan privasi terbit di https://quran-app-zainularkaan.web.app/privacy dan ditautkan dari Pengaturan > Tentang aplikasi. (Formulir Data safety hanya berlaku bila kelak terbit di Play Store.)
-- [x] Nama aplikasi: Ruang Tilawah.
+- [x] Nama aplikasi: Ruang Tilawah (sejak 1.9.0 berganti nama tampilan menjadi **MyQuran**; package id tetap).
 - [ ] Uji di dua perangkat: masuk, sinkron, baca bersamaan, hapus bookmark di satu perangkat, keluar, ganti akun, hapus akun.
 
+## Google Play (mulai 1.9.0, 25 September 2026)
+
+Build Play dibuat dengan `flutter build appbundle --release` dan tidak memuat izin
+pasang APK maupun pengunduh pembaruan GitHub (kebijakan Play). Langkah lengkap,
+deklarasi App content, dan Data safety: `docs/PLAY_STORE_RELEASE.md`.
+
 ## Distribusi APK langsung (dipilih 22 September 2026)
+
+Build GitHub Releases: `flutter build apk --release --dart-define=DISTRIBUTION=github`.
 
 Aplikasi didistribusikan gratis lewat GitHub Releases, bukan Google Play.
 Butir khusus Play Console di atas (deklarasi foreground service, Data safety,
