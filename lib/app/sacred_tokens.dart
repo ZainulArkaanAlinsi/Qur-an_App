@@ -97,6 +97,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   final Color danger;
   final Color dangerSoft;
 
+  /// Tema gelap (latar gelap). Dipakai memilih berkas logo gelap, bukan
+  /// mewarnai ulang logo (docs/design/v3/DESIGN.md §2).
+  bool get isDark => bg.computeLuminance() < .2;
+
+  // Grup brand v3 (docs/design/v3/DESIGN.md §2). Warna logo dan ikon, bukan
+  // untuk teks UI.
+  static const brandIcon = Color(0xFF0D5843);
+  static const brandCover = Color(0xFF265A43);
+  static const brandGold = Color(0xFFBD9B62);
+
   /// Bayangan kartu v2: bayangan tipis + cincin 0.5 px.
   List<BoxShadow> get cardShadows => [
     BoxShadow(color: shadow, blurRadius: 2, offset: const Offset(0, 1)),
@@ -696,6 +706,77 @@ abstract final class SacredText {
 
   /// Judul serif layar turunan (Pelajaran: 32/36).
   static TextStyle get lessonTitle => _font(serif, 32, 36, 500);
+
+  // Gaya v3 (docs/design/v3/DESIGN.md, docs/design/v3/html/).
+
+  /// Tagline splash "BACA · BELAJAR · HAFAL": 12/800, tracking 0.14em.
+  static TextStyle get splashTagline =>
+      _font(ui, 12, 16, 800).copyWith(letterSpacing: 12 * .14);
+
+  /// Judul onboarding: EB Garamond 500 33/38 (halaman 4: 36/40).
+  static TextStyle get onboardingTitle =>
+      _font(serif, 33, 38, 500).copyWith(letterSpacing: 33 * -.01);
+  static TextStyle get onboardingTitleLarge =>
+      _font(serif, 36, 40, 500).copyWith(letterSpacing: 36 * -.01);
+
+  /// "Lewati" 15/700 dan label CTA onboarding 16.5/800.
+  static TextStyle get skipLabel => _font(ui, 15, 20, 700);
+  static TextStyle get onboardingCta => _font(ui, 16.5, 22, 800);
+
+  /// Opsi titik mulai: judul 15.5/800, keterangan 12.5/600, catatan kaki.
+  static TextStyle get optionTitle => _font(ui, 15.5, 20, 800);
+  static TextStyle get optionSubtitle => _font(ui, 12.5, 17, 600);
+  static TextStyle get onboardingNote => _font(ui, 12.5, 18, 600);
+
+  /// Ilustrasi onboarding: label kartu 12.5/800, terjemahan 12.5/18, baris
+  /// jalur 14.5/800 + 11.5/600, chip hukum 12/700, persen cincin 13/800.
+  static TextStyle get illustrationLabel => _font(ui, 12.5, 16, 800);
+  static TextStyle get illustrationBody => _font(ui, 12.5, 18, 500);
+  static TextStyle get pathTitle => _font(ui, 14.5, 19, 800);
+  static TextStyle get pathNote => _font(ui, 11.5, 15, 600);
+  static TextStyle get ruleChip => _font(ui, 12, 16, 700);
+  static TextStyle get ringPercent => _font(ui, 13, 16, 800);
+
+  /// Materi v3: lencana DRAF, chip huruf penentu, nomor surah di daftar
+  /// ringkas.
+  static TextStyle get draftBadge =>
+      _font(ui, 11, 14, 800).copyWith(letterSpacing: 11 * .08);
+  static TextStyle get letterChip => _font(ui, 12, 16, 800);
+
+  /// Keterangan di bawah ayat contoh 13.5/19.
+  static TextStyle get exampleNote => _font(ui, 13.5, 19, 500);
+}
+
+/// Cahaya dan kertas ilustrasi splash & onboarding v3, diambil dari HTML
+/// acuan (docs/design/v3/html/). Terang dan gelap berbeda opasitasnya.
+abstract final class SacredGlow {
+  /// Glow 380 di belakang logo splash: rgba(233,196,106,.30) / (254,214,91,.14).
+  static const splashLight = Color(0x4DE9C46A);
+  static const splashDark = Color(0x24FED65B);
+
+  /// Halo di belakang logo onboarding halaman 1.
+  static const haloLight = Color(0xF2FFFAEC);
+  static const haloDark = Color(0x1AFED65B);
+
+  /// Glow latar tiap halaman onboarding: emas, mint, pasir, mint.
+  static const pagesLight = [
+    Color(0x57E9C46A),
+    Color(0x6BA9D6BE),
+    Color(0x66F0D6A0),
+    Color(0x57A9D6BE),
+  ];
+  static const pagesDark = [
+    Color(0x21FED65B),
+    Color(0x1F8FD7B8),
+    Color(0x1AFED65B),
+    Color(0x1A8FD7B8),
+  ];
+
+  /// Kartu kertas abstrak di ilustrasi onboarding halaman 2 dan garisnya.
+  static const paperLight = Color(0xFFFBF6EA);
+  static const paperDark = Color(0xFF15201C);
+  static const paperLineLight = Color(0x383E3222);
+  static const paperLineDark = Color(0x33ECEFEA);
 }
 
 /// Warna lencana ikon kotak (baris Saya, Mode baca, Salat, Sesi hafalan).

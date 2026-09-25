@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
+import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/chip_palette.dart';
@@ -13,6 +14,8 @@ import 'package:quran_app_2025/app/widgets/theme_preview.dart';
 import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/features/khatam/domain/juz_coverage.dart';
+import 'package:quran_app_2025/features/onboarding/domain/start_point.dart';
+import 'package:quran_app_2025/features/onboarding/presentation/brand_art.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
@@ -181,6 +184,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _startSettings(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final current = StartPoint.saved ?? StartPoint.initial;
+    const icons = {
+      StartPoint.nol: SacredIcons.cap,
+      StartPoint.tajwid: SacredIcons.book,
+      StartPoint.hafalan: SacredIcons.layers,
+    };
+    return Column(
+      children: [
+        for (final point in StartPoint.values) ...[
+          if (point != StartPoint.values.first)
+            Divider(
+              height: .5,
+              thickness: .5,
+              indent: SettingsRow.separatorInset,
+              color: tokens.sep,
+            ),
+          Semantics(
+            selected: point == current,
+            inMutuallyExclusiveGroup: true,
+            child: SettingsRow(
+              icon: icons[point]!,
+              chipColor: SacredBadge.green,
+              title: point.title,
+              subtitle: point.subtitle,
+              trailing: point == current
+                  ? LineIcon(
+                      SacredIcons.checkCircle,
+                      color: tokens.primaryText,
+                      size: 22,
+                    )
+                  : const SizedBox(width: 22),
+              onTap: () async {
+                await SharedPreferencesService.setStartPoint(point.id);
+                if (mounted) setState(() {});
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _themeSettings(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final controller = AppScope.of(context);
@@ -344,6 +391,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
 
+        // Titik mulai pilihan onboarding bisa diubah di sini
+        // (docs/design/v3/DESIGN.md §5b).
+        _Group(
+          header: 'Belajar',
+          child: SettingsRow(
+            icon: SacredIcons.cap,
+            chipColor: SacredBadge.green,
+            title: 'Titik mulai',
+            value: (StartPoint.saved ?? StartPoint.initial).shortLabel,
+            onTap: () => _openSheet('Mulai dari mana?', _startSettings),
+          ),
+        ),
+
         _Group(
           header: 'Audio & kebiasaan',
           child: Column(
@@ -404,8 +464,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           header: 'Tentang & pembaruan',
           child: Column(
             children: [
-              const _AutoUpdateCard(),
-              Divider(height: .5, thickness: .5, color: tokens.sep),
+              // Pengunduh APK hanya di build GitHub; build Play diperbarui
+              // lewat Play (lib/app/distribution.dart).
+              if (isGithubBuild) ...[
+                const _AutoUpdateCard(),
+                Divider(height: .5, thickness: .5, color: tokens.sep),
+              ],
               const _AboutCard(),
             ],
           ),
@@ -830,52 +894,66 @@ class _AboutCardState extends State<_AboutCard> {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final update = _update;
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Logo utama 160 dp, utuh (docs/design/v3/screens/15-logo-ikon.md).
+          const BrandLogo(width: 160, semanticLabel: 'Logo MyQuran'),
+          const SizedBox(height: 12),
           Text(
-            'Ruang Tilawah $appVersion',
+            'MyQuran $appVersion',
+            textAlign: TextAlign.center,
             style: SacredText.settingTitle.copyWith(color: tokens.ink),
           ),
           if (_status != null) ...[
             const SizedBox(height: 4),
-            Text(
-              _status!,
-              style: SacredText.cardNote.copyWith(color: tokens.sec),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _status!,
+                textAlign: TextAlign.center,
+                style: SacredText.cardNote.copyWith(color: tokens.sec),
+              ),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Wrap(
+            alignment: WrapAlignment.center,
             spacing: 8,
-            runSpacing: 4,
+            runSpacing: 8,
             children: [
-              if (update != null)
-                FilledButton.icon(
-                  onPressed: () => launchUrl(
-                    update.url,
-                    mode: LaunchMode.externalApplication,
+              // Build Play diperbarui lewat Play; pemeriksa rilis GitHub
+              // hanya ada di build GitHub.
+              if (isGithubBuild)
+                if (update != null)
+                  SacredButton(
+                    label: 'Unduh pembaruan',
+                    icon: SacredIcons.download,
+                    height: 40,
+                    textStyle: SacredText.buttonSmall,
+                    onTap: () => launchUrl(
+                      update.url,
+                      mode: LaunchMode.externalApplication,
+                    ),
+                  )
+                else
+                  SacredButton(
+                    label: _checking ? 'Memeriksa…' : 'Periksa pembaruan',
+                    icon: SacredIcons.download,
+                    tone: ButtonTone.soft,
+                    height: 40,
+                    textStyle: SacredText.buttonSmall,
+                    onTap: _checking ? null : _check,
                   ),
-                  icon: const Icon(Icons.download_rounded),
-                  label: const Text('Unduh pembaruan'),
-                )
-              else
-                OutlinedButton.icon(
-                  onPressed: _checking ? null : _check,
-                  icon: _checking
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.system_update_rounded),
-                  label: const Text('Periksa pembaruan'),
-                ),
-              TextButton(
-                onPressed: () => launchUrl(
+              SacredButton(
+                label: 'Kebijakan privasi',
+                tone: ButtonTone.fill,
+                height: 40,
+                textStyle: SacredText.buttonSmall,
+                onTap: () => launchUrl(
                   Uri.parse(privacyPolicyUrl),
                   mode: LaunchMode.externalApplication,
                 ),
-                child: const Text('Kebijakan privasi'),
               ),
             ],
           ),

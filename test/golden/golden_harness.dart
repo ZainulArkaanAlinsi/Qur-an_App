@@ -83,6 +83,17 @@ Future<void> pumpGolden(
   await tester.pumpAndSettle();
 }
 
+/// Mendekode semua [Image] yang sedang tampil (logo di splash/onboarding).
+/// Dekode gambar butuh waktu nyata, jadi dijalankan di luar waktu semu.
+Future<void> loadImages(WidgetTester tester) async {
+  await tester.runAsync(() async {
+    for (final element in find.byType(Image).evaluate()) {
+      await precacheImage((element.widget as Image).image, element);
+    }
+  });
+  await tester.pump();
+}
+
 /// Semua teks yang tampil terpotong (elipsis atau melebihi maxLines).
 List<String> truncatedTexts(WidgetTester tester) {
   final result = <String>[];

@@ -1,3 +1,4 @@
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -9,6 +10,25 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Saluran distribusi. Bawaan: Google Play. Build untuk GitHub Releases dibuat
+// dengan `--dart-define=DISTRIBUTION=github`; Flutter meneruskan dart-define ke
+// Gradle (base64, dipisah koma), jadi satu flag mengatur Dart dan manifest.
+// Hanya build GitHub yang boleh memasang APK pembaruan sendiri; kebijakan
+// Google Play melarang aplikasi dari Play memperbarui diri di luar Play.
+val dartDefines: Map<String, String> =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.filter { it.isNotBlank() }
+        ?.mapNotNull { encoded ->
+            val decoded = String(Base64.getDecoder().decode(encoded))
+            val separator = decoded.indexOf('=')
+            if (separator <= 0) null
+            else decoded.substring(0, separator) to decoded.substring(separator + 1)
+        }
+        ?.toMap()
+        ?: emptyMap()
+val githubBuild = dartDefines["DISTRIBUTION"] == "github"
 
 android {
     namespace = "com.example.quran_app_2025"
@@ -30,7 +50,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["appLabel"] = "Ruang Tilawah"
+        manifestPlaceholders["appLabel"] = "MyQuran"
 
         // Satu APK dibagikan lewat GitHub Releases, jadi isinya memuat kode
         // mesin tiap arsitektur. x86_64 praktis hanya dipakai emulator dan
@@ -61,13 +81,18 @@ android {
         }
     }
 
+    // Izin pasang APK dan FileProvider pembaruan hanya ikut build GitHub.
+    if (githubBuild) {
+        sourceSets.getByName("release").manifest.srcFile("src/github/AndroidManifest.xml")
+    }
+
     buildTypes {
         // Build debug terpasang BERDAMPINGAN dengan aplikasi rilis di HP:
         // ID dan nama berbeda, jadi debug (kunci debug) tidak menimpa atau
         // memaksa mencopot aplikasi rilis beserta data lokalnya.
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appLabel"] = "Ruang Tilawah Debug"
+            manifestPlaceholders["appLabel"] = "MyQuran Debug"
         }
         release {
             if (!hasReleaseKey) {

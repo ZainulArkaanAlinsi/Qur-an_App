@@ -5,6 +5,9 @@ import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 import 'package:quran_app_2025/features/tajweed/domain/tajweed_rule.dart';
 
+/// Jumlah kata ayat menurut `tanzilWords()`, atau null bila tidak diketahui.
+typedef VerseWordCount = int? Function(int surah, int ayah);
+
 /// Memuat jalur belajar dari `assets/learn/curriculum.json`.
 ///
 /// Gagal tertutup, sama seperti materi tajwid: satu entri rusak menolak seluruh
@@ -16,7 +19,11 @@ class CurriculumRepository {
   static Future<Curriculum> load() async =>
       parse(await rootBundle.loadString(asset));
 
-  static Curriculum parse(String raw) {
+  /// [wordCount], bila diberikan, dipakai menolak `words` yang melewati
+  /// jumlah kata ayatnya (lihat `exampleWords`). Tanpa itu, hanya bentuk
+  /// rentangnya yang diperiksa; layar contoh tetap mengabaikan rentang yang
+  /// tidak cocok dengan teks.
+  static Curriculum parse(String raw, {VerseWordCount? wordCount}) {
     final root = jsonDecode(raw);
     if (root is! Map<String, dynamic>) {
       throw const FormatException('Kurikulum harus berupa objek JSON.');
@@ -82,7 +89,7 @@ class CurriculumRepository {
           title: title,
           summary: summary,
           objectives: _strings(entry['objectives'], id, 'objectives'),
-          blocks: _blocks(entry['blocks'], id),
+          blocks: _blocks(entry['blocks'], id, wordCount),
           sources: sources,
           review: review,
           provenance: provenance,
@@ -142,7 +149,11 @@ class CurriculumRepository {
     return sources;
   }
 
-  static List<LessonBlock> _blocks(Object? value, String id) {
+  static List<LessonBlock> _blocks(
+    Object? value,
+    String id,
+    VerseWordCount? wordCount,
+  ) {
     if (value == null) return const [];
     if (value is! List) {
       throw FormatException('"blocks" pada "$id" harus berupa daftar.');
@@ -152,12 +163,16 @@ class CurriculumRepository {
       if (item is! Map<String, dynamic>) {
         throw FormatException('Blok pada "$id" harus berupa objek.');
       }
-      blocks.add(_block(item, id));
+      blocks.add(_block(item, id, wordCount));
     }
     return blocks;
   }
 
-  static LessonBlock _block(Map<String, dynamic> item, String id) {
+  static LessonBlock _block(
+    Map<String, dynamic> item,
+    String id,
+    VerseWordCount? wordCount,
+  ) {
     final type = _string(item['type']);
     switch (type) {
       case 'text':
@@ -204,10 +219,21 @@ class CurriculumRepository {
             ayah > surahCatalog[surah - 1].ayahCount) {
           throw FormatException('Nomor ayat contoh pada "$id" tidak valid.');
         }
+        final words = _words(item['words'], id);
+        if (words != null && wordCount != null) {
+          final count = wordCount(surah, ayah);
+          if (count != null && words.last > count) {
+            throw FormatException(
+              'Kata ${words.last} pada contoh $surah:$ayah di "$id" melewati '
+              'jumlah kata ayatnya ($count).',
+            );
+          }
+        }
         return LessonExample(
           surah: surah,
           ayah: ayah,
           note: _string(item['note']),
+          words: words,
         );
 
       case 'audio':
@@ -251,6 +277,23 @@ class CurriculumRepository {
       default:
         throw FormatException('Jenis blok "$type" pada "$id" tidak dikenal.');
     }
+  }
+
+  /// `words`: `[dari, sampai]`, 1-based, dari ≤ sampai. Null bila tidak ada.
+  static List<int>? _words(Object? value, String id) {
+    if (value == null) return null;
+    if (value is! List ||
+        value.length != 2 ||
+        value[0] is! int ||
+        value[1] is! int) {
+      throw FormatException('"words" pada "$id" harus [dari, sampai].');
+    }
+    final from = value[0] as int;
+    final to = value[1] as int;
+    if (from < 1 || to < from) {
+      throw FormatException('Rentang "words" [$from, $to] pada "$id" salah.');
+    }
+    return List.unmodifiable([from, to]);
   }
 
   static String _string(Object? value) => value is String ? value.trim() : '';

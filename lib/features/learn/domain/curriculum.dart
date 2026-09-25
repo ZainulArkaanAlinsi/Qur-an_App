@@ -63,6 +63,7 @@ class LessonExample extends LessonBlock {
     required this.surah,
     required this.ayah,
     required this.note,
+    this.words,
   });
 
   final int surah;
@@ -71,7 +72,22 @@ class LessonExample extends LessonBlock {
   /// Keterangan penyusun materi, mis. bagian mana yang dimaksud.
   final String note;
 
+  /// Kata yang disorot, `[dari, sampai]` 1-based dan inklusif, atau null.
+  /// Hitungannya sama persis dengan `tanzilWords()` di mushaf: basmalah awal
+  /// ayat 1 dibuang, tanda waqaf/sajdah ikut kata sebelumnya
+  /// (docs/design/v3/DESIGN.md §6).
+  final List<int>? words;
+
   String get verseKey => '$surah:$ayah';
+
+  /// Huruf penentu yang ditulis penyusun di dalam kurung pada [note],
+  /// mis. "bertemu hamzah (أ)" → "أ". Null bila tidak ada.
+  String? get keyLetter {
+    final match = _keyLetter.firstMatch(note);
+    return match?.group(1);
+  }
+
+  static final _keyLetter = RegExp(r'\(([ء-يٱ])\)');
 }
 
 /// Contoh bunyi. Rekamannya wajib suara manusia yang berizin; selama belum
