@@ -35,7 +35,7 @@ Assalamu'alaikum, a short update on this request:
 2. What attribution text would you like to see?
 3. Does this use also need separate permission from KFGQPC, or does QUL's arrangement cover it?
 
-Demo build (direct APK download, Android 7.0+, ~46 MB): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+Demo build (direct download of the latest APK, Android 7.0+, ~46 MB): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 Source code: https://github.com/ZainulArkaanAlinsi/Qur-an_App
 
 JazakAllahu khairan for QUL and for your time.

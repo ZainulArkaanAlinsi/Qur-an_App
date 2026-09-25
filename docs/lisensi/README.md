@@ -20,8 +20,8 @@ surat berisi:
 | 07 | QuranEnc | Arab + Inggris | formulir quranenc.com/en/home/contact_us | `07-quranenc.md` |
 | — | Tanzil, cpfair | — | tidak perlu surat; cukup atribusi (sudah ada) | `STATUS_HAK_CIPTA.md` |
 
-**Link demo** (langsung mengunduh APK MyQuran):
-https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+**Link demo** (langsung mengunduh APK MyQuran versi terbaru; ikut berganti otomatis setiap rilis baru):
+https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 ## Supaya diterima
 

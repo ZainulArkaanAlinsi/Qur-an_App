@@ -3,7 +3,11 @@
 # Pemakaian:
 #   pwsh tool/build_release.ps1
 #
-# Hasil: build/app/outputs/flutter-apk/myquran-<versi>.apk
+# Hasil: build/app/outputs/flutter-apk/myquran-<versi>.apk dan salinannya
+# myquran.apk. Unggah KEDUANYA ke rilis GitHub: nama bernomor untuk arsip,
+# nama tetap untuk tautan unduhan yang selalu mengarah ke rilis terbaru
+# (https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk,
+# dipakai di docs/lisensi/).
 # APK lama (debug, split-per-abi, versi sebelumnya) dihapus lebih dulu supaya
 # folder tidak menumpuk dan tidak ada risiko mengunggah berkas yang salah.
 
@@ -40,15 +44,23 @@ $built = Join-Path $outDir 'app-release.apk'
 $final = Join-Path $outDir "myquran-$version.apk"
 Move-Item $built $final -Force
 Remove-Item (Join-Path $outDir 'app-release.apk.sha1') -Force -ErrorAction SilentlyContinue
+# Isinya identik, jadi pemeriksa pembaruan (aset .apk pertama) tetap benar
+# apa pun urutan asetnya.
+$stable = Join-Path $outDir 'myquran.apk'
+Copy-Item $final $stable -Force
 
 $hash = (Get-FileHash $final -Algorithm SHA256).Hash
 $size = (Get-Item $final).Length
 
 Write-Host ''
 Write-Host "Berkas : $final"
+Write-Host "Salinan: $stable (nama tetap untuk tautan rilis terbaru)"
 Write-Host "Ukuran : $size byte"
 Write-Host "SHA-256: $hash"
 Write-Host ''
 Write-Host 'Verifikasi tanda tangan (sesuaikan versi build-tools):'
 Write-Host "  & `"$env:LOCALAPPDATA\Android\Sdk\build-tools\<versi>\apksigner.bat`" verify --print-certs `"$final`""
 Write-Host 'Sertifikat SHA-256 harus sama dengan yang tercatat di docs/RELEASE.md.'
+Write-Host ''
+Write-Host 'Unggah ke GitHub (kedua berkas):'
+Write-Host "  gh release create v$version `"$final`" `"$stable`" --title `"MyQuran $version`" --notes-file <catatan.md>"

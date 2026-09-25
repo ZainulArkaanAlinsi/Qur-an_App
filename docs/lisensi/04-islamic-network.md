@@ -38,7 +38,7 @@ Google Play.
 
 **Could you confirm this use is okay, and tell me the attribution wording you prefer?**
 
-Demo build (direct APK download, Android 7.0+, ~46 MB): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+Demo build (direct download of the latest APK, Android 7.0+, ~46 MB): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 Source code: https://github.com/ZainulArkaanAlinsi/Qur-an_App
 Privacy policy: https://quran-app-zainularkaan.web.app/privacy
 

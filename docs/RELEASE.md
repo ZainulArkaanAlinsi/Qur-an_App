@@ -58,6 +58,12 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    (docs/PLAY_STORE_RELEASE.md).
 4. Buat rilis di GitHub dengan tag `v<versi>` (mis. `v1.2.0`), lampirkan APK
    dengan nama `myquran-<versi>.apk` (sebelum 1.9.0: `ruang-tilawah-<versi>.apk`), dan cantumkan SHA-256 berkasnya.
+   Lampirkan juga salinan identiknya bernama **`myquran.apk`** (dibuat oleh
+   `tool/build_release.ps1`). Tautan
+   `https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk`
+   selalu langsung mengunduh APK rilis terbaru; tautan ini dipakai di surat
+   izin (`docs/lisensi/`), jadi jangan lupa aset ini atau tautannya mati.
+   Rilis harus berstatus *latest* (bukan draf atau pra-rilis).
    Tag harus diawali `v` dan berupa angka bertitik agar pemeriksa pembaruan
    di aplikasi dapat membandingkannya.
 
