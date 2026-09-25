@@ -154,6 +154,7 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
     final stacked = MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6;
     // Tata letak halaman mushaf menunggu izin lisensi (layar 03/04): tanpa
     // data yang sah, kartunya tampil "segera".
@@ -167,7 +168,7 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
       return _ModeCard(
         icon: icon,
         title: title,
-        subtitle: open ? subtitle : '$subtitle · segera',
+        subtitle: subtitle,
         selected: widget.mode == value,
         available: open,
         onTap: open && widget.mode != value && widget.onMode != null
@@ -227,6 +228,14 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
                   ],
                 ),
               ),
+            if (!widget.available.containsAll(ReadingMode.values)) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Tampilan halaman mushaf menyusul setelah izin tata letak '
+                'Mushaf Madinah keluar.',
+                style: SacredText.cardNote.copyWith(color: tokens.sec),
+              ),
+            ],
             const SizedBox(height: 14),
             GroupedList(
               children: [
@@ -328,38 +337,59 @@ class _ModeCard extends StatelessWidget {
           : open
           ? '$title, ketuk untuk memilih'
           : '$title, belum tersedia',
-      child: Opacity(
-        opacity: open ? 1 : .55,
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(8, 14, 8, 14),
-            decoration: BoxDecoration(
-              color: selected ? tokens.surf : tokens.bg,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: selected ? tokens.cta : tokens.sep,
-                width: selected ? 2 : 1,
-              ),
+      // Mode yang belum tersedia tidak dipudarkan (teks pudar sulit dibaca);
+      // ikonnya abu dan ada label "Segera"; alasannya di catatan bawah.
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 14, 8, 12),
+          decoration: BoxDecoration(
+            color: selected ? tokens.surf : tokens.bg,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected ? tokens.cta : tokens.sep,
+              width: selected ? 2 : 1,
             ),
-            child: Column(
-              children: [
-                LineIcon(icon, color: tokens.primaryText, size: 26),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: SacredText.buttonSmall.copyWith(color: tokens.ink),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+          ),
+          child: Column(
+            children: [
+              LineIcon(
+                icon,
+                color: open ? tokens.primaryText : tokens.sec,
+                size: 26,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: SacredText.buttonSmall.copyWith(color: tokens.ink),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: SacredText.cardNote.copyWith(color: tokens.sec),
+              ),
+              if (!open) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tokens.goldSoft,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Segera',
+                    textAlign: TextAlign.center,
+                    style: SacredText.cardNote.copyWith(color: tokens.goldText),
+                  ),
                 ),
               ],
-            ),
+            ],
           ),
         ),
       ),
