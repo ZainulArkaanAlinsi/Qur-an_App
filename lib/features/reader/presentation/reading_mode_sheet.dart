@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/glass/glass_sheet.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -44,14 +45,10 @@ Future<void> showReadingModeSheet(
   ValueChanged<ReadingMode>? onMode,
 }) {
   final tokens = Theme.of(context).extension<SacredTokens>()!;
-  return showModalBottomSheet<void>(
+  return showGlassSheet<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    backgroundColor: tokens.bg,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-    ),
+    background: tokens.bg,
+    header: (_) => const _ReadingModeHeader(),
     builder: (sheetContext) => ReadingModeSheet(
       tajweed: tajweed,
       onTajweed: onTajweed,
@@ -69,6 +66,57 @@ Future<void> showReadingModeSheet(
             },
     ),
   );
+}
+
+/// Kepala kaca sheet Tampilan baca: judul dan tombol Selesai.
+class _ReadingModeHeader extends StatelessWidget {
+  const _ReadingModeHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text(
+                'Tampilan baca',
+                style: SacredText.headline.copyWith(
+                  color: tokens.ink,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ),
+          Semantics(
+            button: true,
+            excludeSemantics: true,
+            label: 'Selesai',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => Navigator.pop(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 10,
+                ),
+                child: Text(
+                  'Selesai',
+                  style: SacredText.headline.copyWith(
+                    color: tokens.primaryText,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ReadingModeSheet extends StatefulWidget {
@@ -106,7 +154,6 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
     final stacked = MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6;
     // Tata letak halaman mushaf menunggu izin lisensi (layar 03/04): tanpa
     // data yang sah, kartunya tampil "segera".
@@ -156,44 +203,6 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      'Tampilan baca',
-                      style: SacredText.headline.copyWith(
-                        color: tokens.ink,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                Semantics(
-                  button: true,
-                  excludeSemantics: true,
-                  label: 'Selesai',
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => Navigator.pop(context),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 10,
-                      ),
-                      child: Text(
-                        'Selesai',
-                        style: SacredText.headline.copyWith(
-                          color: tokens.primaryText,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 10),
             if (stacked)
               Column(
