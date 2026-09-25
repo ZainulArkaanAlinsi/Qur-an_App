@@ -29,6 +29,7 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 | AlAdhan | Jadwal salat | API gratis | ✅ Aman | Atribusi sudah ada |
 | GDELT | Daftar judul berita + tautan | Data terbuka; isi berita milik penerbitnya | ✅ Aman (hanya judul + tautan) | — |
 | Font Plus Jakarta Sans, EB Garamond, Amiri, Amiri Quran | Tampilan | SIL OFL 1.1 | ✅ Aman | Teks lisensi ikut di halaman lisensi aplikasi |
+| Kode aplikasi | Seluruh `lib/`, tes, tool | **MIT** (`LICENSE`), hanya untuk kode & dokumen buatan pemilik | ✅ | Pengecualian (data, font, logo) tercantum di `NOTICE` |
 | Logo MyQuran | Brand | Milik pemilik (dibuat dengan alat gambar) | ⚠️ Simpan bukti | Simpan bukti akun/tanggal/prompt dan cek ketentuan alatnya (LISENSI_ASET §1) |
 | Materi tajwid tahap 6–16 | Belajar | Teks orisinal (draf); ayat hanya rujukan | ✅ Aman | Tetap draf sampai 2 ustadz meninjau |
 

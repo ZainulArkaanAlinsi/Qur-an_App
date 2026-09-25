@@ -11,6 +11,7 @@ Gratis · tanpa iklan · tanpa pembelian · tetap bisa dipakai tanpa internet
 [![Android 7.0+](https://img.shields.io/badge/Android-7.0%2B-265A43?style=for-the-badge&logo=android&logoColor=white)](#-unduh)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Tanpa iklan](https://img.shields.io/badge/iklan-tidak%20ada-BD9B62?style=for-the-badge)](#-prinsip)
+[![Lisensi MIT](https://img.shields.io/badge/lisensi-MIT-0B3F48?style=for-the-badge)](LICENSE)
 
 <a href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk"><b>⬇️ Unduh APK terbaru</b></a>
 &nbsp;·&nbsp;
@@ -137,6 +138,11 @@ Butuh Android 7.0 atau lebih baru. APK GitHub ditandatangani dengan kunci rilis 
 
 Surat permohonan izin kepada tiap pemilik data ada di [`docs/lisensi/`](docs/lisensi/).
 
+**Lisensi kode:** [MIT](LICENSE). Lisensi ini hanya mencakup kode dan dokumen buatan pemilik
+repositori. Teks Al-Qur'an, terjemahan, data tajwid, font, serta logo dan identitas MyQuran
+tetap mengikuti lisensi pemiliknya masing-masing (daftar lengkapnya di [`NOTICE`](NOTICE)).
+Terjemahan Kemenag hanya boleh dipakai untuk keperluan nonkomersial.
+
 ---
 
 ## 🛠️ Teknologi
@@ -213,7 +219,7 @@ The Qur'an text and translations come verbatim from licensed datasets (Tanzil, K
 <div align="center">
 
 Dibuat oleh **Zainul Arkaan** sebagai proyek pelajar.<br>
-Hak cipta kode © 2026 Zainul Arkaan. Data dan aset pihak ketiga mengikuti lisensinya masing-masing.
+Kode berlisensi [MIT](LICENSE) © 2026 Zainul Arkaan. Data, font, dan logo mengikuti [`NOTICE`](NOTICE).
 
 <sub>Semoga bermanfaat. Jika menemukan kesalahan pada teks atau terjemahan, mohon laporkan lewat <a href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/issues">Issues</a>.</sub>
 
