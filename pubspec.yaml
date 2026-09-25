@@ -35,6 +35,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Tes kinerja kaca di HP asli (integration_test/glass_perf_test.dart).
+  # Bagian dari SDK Flutter, bukan paket pub.
+  integration_test:
+    sdk: flutter
   crypto: ^3.0.7
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.4

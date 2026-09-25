@@ -55,11 +55,14 @@ class GoldenVariant {
 const storeShots = bool.fromEnvironment('STORE_SHOTS');
 
 /// Memasang [child] di layar 390×844 (atau [size]) dengan tema aplikasi.
+/// [wrap] membungkus Navigator, seperti `MaterialApp.builder` di aplikasi
+/// (mis. GlassScope yang juga harus terlihat dari sheet).
 Future<void> pumpGolden(
   WidgetTester tester,
   Widget child, {
   GoldenVariant variant = const GoldenVariant(Brightness.light, 1),
   Size size = phone,
+  Widget Function(Widget navigator)? wrap,
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
@@ -79,12 +82,15 @@ Future<void> pumpGolden(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: SacredTheme.themeFor(AppPalette.sacred, variant.brightness),
-      builder: (context, app) => MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(textScaler: TextScaler.linear(variant.textScale)),
-        child: app!,
-      ),
+      builder: (context, app) {
+        final scaled = MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(variant.textScale)),
+          child: app!,
+        );
+        return wrap == null ? scaled : wrap(scaled);
+      },
       home: child,
     ),
   );

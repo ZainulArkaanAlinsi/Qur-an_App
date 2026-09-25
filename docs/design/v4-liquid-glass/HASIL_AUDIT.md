@@ -241,3 +241,22 @@ tajwid terbaca di kartu biasa dan di latar ayat aktif pada ketiga tema.
 
 `bash tool/glass_audit.sh`: 2 GAGAL (C3, C4: Prompt 4). `flutter analyze` bersih,
 `flutter test` 608 lulus.
+
+## Prompt 4 — kinerja (25 September 2026)
+
+- `lib/app/glass/glass_governor.dart`: pengawas frame (`addTimingsCallback`, jendela 120
+  frame, anggaran 1000/refresh rate, > 8% frame lambat di dua jendela → turun satu
+  tingkat, disimpan di `glass_tier_auto`, tidak naik di sesi yang sama, reset sekali per
+  versi lewat `glass_tier_version`). Hanya mendengar di mode Otomatis dan selama layar
+  berkaca (AppShell, pembaca) adalah rute teratas (`GlassGovernorScope`). Diuji di
+  `test/glass_governor_test.dart`.
+- Saya → Membaca → **Efek kaca**: Otomatis / Penuh / Ringan / Mati dengan pratinjau kaca
+  asli di tingkat masing-masing dan keterangan "Otomatis menurunkan efek bila HP terasa
+  berat." Golden `12_saya_efek_kaca_{light,dark}`.
+- `integration_test/glass_perf_test.dart` + `test_driver/perf_driver.dart`: skenario A/B/C
+  × penuh/padat dengan `watchPerformance`. Alurnya lulus di Windows desktop; **belum
+  diukur di HP** (tidak ada HP tersambung), lihat `HASIL_KINERJA.md`.
+
+`bash tool/glass_audit.sh`: **0 GAGAL** (1 CEK: 6 pemakaian kaca di luar lib/app/glass/, semuanya
+chrome mengambang: tab bar, nav pembaca, mini player, pratinjau Efek kaca, dan pembungkus
+`GlassSurface` yang tidak lagi dipakai). `flutter analyze` bersih, `flutter test` 616 lulus.

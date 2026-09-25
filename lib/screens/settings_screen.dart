@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
+import 'package:quran_app_2025/app/glass/glass_tokens.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/chip_palette.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
@@ -286,6 +289,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Saya → Efek kaca (LIQUID_GLASS.md §4): Otomatis / Penuh / Ringan / Mati.
+  /// Pratinjaunya kaca sungguhan di tingkat masing-masing.
+  Widget _glassSettings(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final glass = GlassScope.maybeOf(context);
+    if (glass == null) return const SizedBox.shrink();
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    final forcedSolid =
+        GlassTokens.of(context).solidOnly ||
+        (MediaQuery.maybeHighContrastOf(context) ?? false);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Empat pilihan dalam satu baris; lebarnya mengikuti layar.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final preference in GlassPreference.values) ...[
+                if (preference.index > 0) const SizedBox(width: 10),
+                Expanded(
+                  child: _GlassPreviewTile(
+                    label: preference.label,
+                    tier: resolveGlassTier(
+                      preference: preference,
+                      autoTier: glass.autoTier,
+                      solidPalette: false,
+                      highContrast: false,
+                      disableAnimations: reduced,
+                    ),
+                    selected: glass.preference == preference,
+                    onTap: () => glass.setPreference(preference),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Otomatis menurunkan efek bila HP terasa berat.',
+            style: SacredText.cardNote.copyWith(color: tokens.sec),
+          ),
+          if (forcedSolid) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Kontras tinggi aktif: kaca selalu padat supaya teks paling '
+              'jelas.',
+              style: SacredText.cardNote.copyWith(color: tokens.sec),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = AppScope.of(context);
@@ -386,6 +445,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ThemeMode.dark => 'Gelap',
                 },
                 onTap: () => _openSheet('Tema', _themeSettings),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.sliders,
+                chipColor: SacredBadge.blue,
+                title: 'Efek kaca',
+                value:
+                    (GlassScope.maybeOf(context)?.preference ??
+                            GlassPreference.auto)
+                        .label,
+                onTap: () => _openSheet('Efek kaca', _glassSettings),
               ),
             ],
           ),
@@ -1526,6 +1601,105 @@ class _ReminderRow extends StatelessWidget {
       onTap: () => Navigator.of(
         context,
       ).push(MaterialPageRoute<void>(builder: (_) => const PrayerScreen())),
+    );
+  }
+}
+
+/// Pratinjau satu pilihan efek kaca: kapsul [LiquidGlass] di tingkatnya
+/// sendiri, di atas garis warna supaya bedanya terlihat.
+class _GlassPreviewTile extends StatelessWidget {
+  const _GlassPreviewTile({
+    required this.label,
+    required this.tier,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final GlassTier tier;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      selected: selected,
+      button: true,
+      label: 'Efek kaca $label',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: 60,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: selected ? tokens.primary : tokens.sep,
+                  width: selected ? 2 : 1,
+                ),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final color in [
+                        tokens.art,
+                        tokens.gold,
+                        tokens.bg,
+                        tokens.primaryText,
+                      ])
+                        Expanded(child: ColoredBox(color: color)),
+                    ],
+                  ),
+                  Center(
+                    child: LiquidGlass(
+                      size: GlassSize.small,
+                      tier: tier,
+                      shadow: false,
+                      borderRadius: const BorderRadius.all(Radius.circular(14)),
+                      child: SizedBox(
+                        width: 48,
+                        height: 28,
+                        child: Center(
+                          child: Text(
+                            'Aa',
+                            style: SacredText.buttonSmall.copyWith(
+                              color: tokens.ink,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            // Label utuh; kalau sempit diperkecil, bukan dipotong.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                style: SacredText.footnote.copyWith(
+                  color: selected ? tokens.primaryText : tokens.ink,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

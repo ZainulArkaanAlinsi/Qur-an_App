@@ -9,6 +9,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
 import 'package:quran_app_2025/app/glass/glass_motion.dart';
 import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
@@ -931,85 +932,89 @@ class _ReaderScreenState extends State<ReaderScreen>
 
           // Satu BackdropGroup per rute: semua kaca di pembaca berbagi satu
           // tangkapan backdrop (LIQUID_GLASS.md §7).
-          return BackdropGroup(
-            child: Stack(
-              children: [
-                if (_focusMode)
-                  Positioned.fill(
-                    child: GeometricPattern(
-                      tile: 56,
-                      opacity: .05,
-                      color: tokens.gold,
-                    ),
-                  ),
-                Column(
-                  children: [
-                    if (_focusMode)
-                      _FocusHeader(
-                        onClose: () => _setFocusMode(false),
-                        onDisplay: _openDisplaySheet,
+          return GlassGovernorScope(
+            child: BackdropGroup(
+              child: Stack(
+                children: [
+                  if (_focusMode)
+                    Positioned.fill(
+                      child: GeometricPattern(
+                        tile: 56,
+                        opacity: .05,
+                        color: tokens.gold,
                       ),
-                    Expanded(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: _onListScroll,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            _viewport = constraints.maxHeight;
-                            return _buildList(content, verses, itemCount);
-                          },
+                    ),
+                  Column(
+                    children: [
+                      if (_focusMode)
+                        _FocusHeader(
+                          onClose: () => _setFocusMode(false),
+                          onDisplay: _openDisplaySheet,
+                        ),
+                      Expanded(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: _onListScroll,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              _viewport = constraints.maxHeight;
+                              return _buildList(content, verses, itemCount);
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    if (_focusMode)
-                      _FocusBar(
-                        tracker: _tracker,
-                        onMurottal: () => unawaited(_openMurottal(content)),
-                        onTranslation: () {
-                          _showTranslation = true;
-                          _setFocusMode(false);
-                        },
+                      if (_focusMode)
+                        _FocusBar(
+                          tracker: _tracker,
+                          onMurottal: () => unawaited(_openMurottal(content)),
+                          onTranslation: () {
+                            _showTranslation = true;
+                            _setFocusMode(false);
+                          },
+                        ),
+                      SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                          child: _audioError == null
+                              ? AudioMiniPlayer(
+                                  onOpen: (_, __) =>
+                                      unawaited(_openMurottal(content)),
+                                )
+                              : _AudioUnavailable(
+                                  message: _audioError!,
+                                  onRetry: () {
+                                    final ayah = _audioErrorVerse;
+                                    setState(() => _audioError = null);
+                                    if (ayah != null) {
+                                      unawaited(_playVerse(ayah));
+                                    }
+                                  },
+                                  onDismiss: () =>
+                                      setState(() => _audioError = null),
+                                ),
+                        ),
                       ),
-                    SafeArea(
-                      top: false,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                        child: _audioError == null
-                            ? AudioMiniPlayer(
-                                onOpen: (_, __) =>
-                                    unawaited(_openMurottal(content)),
-                              )
-                            : _AudioUnavailable(
-                                message: _audioError!,
-                                onRetry: () {
-                                  final ayah = _audioErrorVerse;
-                                  setState(() => _audioError = null);
-                                  if (ayah != null) unawaited(_playVerse(ayah));
-                                },
-                                onDismiss: () =>
-                                    setState(() => _audioError = null),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (!_focusMode)
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: _ReaderNav(
-                      surah: widget.surah,
-                      verse: _verse,
-                      content: content,
-                      shown: _navShown,
-                      onRowHeight: (height) => _navRow.value = height,
-                      onBack: () => Navigator.of(context).maybePop(),
-                      onJump: _jumpToVerse,
-                      onDisplay: () => unawaited(_openReadingMode(content)),
-                      onFocus: () => _setFocusMode(true),
-                    ),
+                    ],
                   ),
-              ],
+                  if (!_focusMode)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: _ReaderNav(
+                        surah: widget.surah,
+                        verse: _verse,
+                        content: content,
+                        shown: _navShown,
+                        onRowHeight: (height) => _navRow.value = height,
+                        onBack: () => Navigator.of(context).maybePop(),
+                        onJump: _jumpToVerse,
+                        onDisplay: () => unawaited(_openReadingMode(content)),
+                        onFocus: () => _setFocusMode(true),
+                      ),
+                    ),
+                ],
+              ),
             ),
           );
         },

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
 import 'package:quran_app_2025/app/glass/glass_tokens.dart';
+import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 /// Tingkat kualitas kaca (LIQUID_GLASS.md §4, "Tingkat kualitas").
@@ -52,9 +54,20 @@ class GlassController extends ChangeNotifier {
   /// Tingkat yang dipilih pengawas frame untuk mode "Otomatis".
   GlassTier get autoTier => _autoTier;
 
-  void load() {
+  /// Pengawas frame yang menurunkan [autoTier] bila HP terasa berat.
+  late final governor = GlassGovernor(this);
+
+  /// Memuat pilihan tersimpan. Tingkat hasil pengawas di-reset sekali
+  /// setiap versi aplikasi berubah (§7): pembaruan bisa membuat kaca lebih
+  /// ringan, jadi HP yang dulu diturunkan diberi kesempatan lagi.
+  void load({String version = appVersion}) {
     _preference = SharedPreferencesService.getGlassPreference();
     _autoTier = SharedPreferencesService.getGlassAutoTier();
+    if (SharedPreferencesService.getGlassTierVersion() != version) {
+      _autoTier = GlassTier.full;
+      SharedPreferencesService.setGlassAutoTier(GlassTier.full);
+      SharedPreferencesService.setGlassTierVersion(version);
+    }
   }
 
   Future<void> setPreference(GlassPreference value) async {
@@ -71,6 +84,12 @@ class GlassController extends ChangeNotifier {
     _autoTier = value;
     notifyListeners();
     await SharedPreferencesService.setGlassAutoTier(value);
+  }
+
+  @override
+  void dispose() {
+    governor.dispose();
+    super.dispose();
   }
 }
 

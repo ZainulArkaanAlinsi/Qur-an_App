@@ -77,6 +77,7 @@ class LiquidGlass extends StatelessWidget {
     this.interactive = false,
     this.sheenShift,
     this.shadow = true,
+    this.tier,
   });
 
   final Widget child;
@@ -94,6 +95,10 @@ class LiquidGlass extends StatelessWidget {
   /// L0. Matikan untuk bilah yang menempel di tepi layar.
   final bool shadow;
 
+  /// Tingkat tetap untuk pratinjau (Saya → Efek kaca). Bawaannya mengikuti
+  /// [GlassScope]. Palet kontras tinggi tetap selalu padat.
+  final GlassTier? tier;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -103,7 +108,9 @@ class LiquidGlass extends StatelessWidget {
             ? SacredTokens.dark
             : SacredTokens.light);
     final glass = GlassTokens.of(context);
-    final tier = GlassScope.tierOf(context);
+    final tier = glass.solidOnly
+        ? GlassTier.solid
+        : this.tier ?? GlassScope.tierOf(context);
     final spec = glass.spec(size, tier);
     final moving = interactive && tier == GlassTier.full;
 

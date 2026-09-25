@@ -303,6 +303,14 @@ class SharedPreferencesService {
     await _prefs?.setString('glass_tier_auto', tier.name);
   }
 
+  /// Versi aplikasi saat tingkat kaca otomatis terakhir di-reset.
+  static String? getGlassTierVersion() =>
+      _prefs?.getString('glass_tier_version');
+
+  static Future<void> setGlassTierVersion(String version) async {
+    await _prefs?.setString('glass_tier_version', version);
+  }
+
   /// Tinggi baris teks Arab di Reader.
   static double getArabicLineHeight() {
     final value = _prefs?.getDouble('arabic_line_height') ?? 2.0;
