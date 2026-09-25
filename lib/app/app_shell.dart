@@ -138,8 +138,10 @@ class _AppShellState extends State<AppShell> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Jeda 8 di atas tab bar supaya dua kaca tidak saling
+                  // menempel tepinya.
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: AudioMiniPlayer(
                       onOpen: (surah, ayah) => Navigator.of(context).push(
                         MaterialPageRoute(

@@ -114,7 +114,13 @@ class LiquidGlass extends StatelessWidget {
         sheen: glass.sheenTop,
         shift: moving ? sheenShift : null,
       ),
-      child: padding == null ? child : Padding(padding: padding!, child: child),
+      // Ripple Material tidak dipakai di atas kaca (§6); sorot tekan tetap.
+      child: Theme(
+        data: theme.copyWith(splashFactory: NoSplash.splashFactory),
+        child: padding == null
+            ? child
+            : Padding(padding: padding!, child: child),
+      ),
     );
     content = Stack(
       // Isi mengikuti batas yang diberikan induk, bukan batas longgar Stack.
