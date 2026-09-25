@@ -26,7 +26,7 @@
 
 نرجو التكرّم بالإذن، وإفادتنا بصيغة النسبة التي تفضّلونها.
 
-للتجربة (تنزيل مباشر): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+للتجربة (تنزيل مباشر لأحدث إصدار): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 جزاكم الله خيرًا.
 زين الأركان (Zainul Arkaan)
@@ -53,7 +53,7 @@ re-host, redistribute or edit the files.
 
 May we have your permission, and which attribution wording do you prefer?
 
-Try the app (direct download): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+Try the app (direct download, latest version): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 JazakAllahu khairan,
 Zainul Arkaan
