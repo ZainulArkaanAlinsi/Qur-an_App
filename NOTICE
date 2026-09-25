@@ -1,0 +1,46 @@
+MyQuran
+Copyright (c) 2026 Zainul Arkaan
+
+Kode sumber aplikasi ini berlisensi MIT (lihat LICENSE).
+
+Lisensi MIT HANYA berlaku untuk kode dan dokumen yang dibuat pemilik repositori ini.
+Bagian berikut BUKAN milik pemilik atau tidak ikut dilisensikan MIT, dan tetap
+mengikuti lisensi atau syarat pemiliknya masing-masing:
+
+1. Teks Al-Qur'an
+   assets/quran/raw/tanzil_uthmani_v1.0.2.txt, assets/quran/raw/quran-data.xml
+   Sumber: Tanzil Project (https://tanzil.net). Lisensi: Creative Commons
+   Attribution 3.0. Harus disalin persis tanpa diubah, dengan menyebut Tanzil dan
+   menautkan ke tanzil.net.
+
+2. Terjemahan Al-Qur'an bahasa Indonesia
+   assets/quran/raw/tanzil_id.indonesian_2010-06-04.txt
+   Hak cipta: Kementerian Agama Republik Indonesia (didistribusikan lewat Tanzil).
+   Hanya untuk penggunaan nonkomersial, dengan menyebut sumber.
+
+3. Data warna tajwid
+   assets/quran/raw/tajweed_cpfair_tanzil_v1.0.2.json
+   Sumber: cpfair/quran-tajweed (https://github.com/cpfair/quran-tajweed).
+   Lisensi: Creative Commons Attribution 4.0.
+
+4. Font
+   assets/fonts/ (Plus Jakarta Sans, EB Garamond, Amiri, Amiri Quran)
+   Lisensi: SIL Open Font License 1.1. Teks lisensinya ada di berkas OFL-*.txt di
+   folder yang sama.
+
+5. Logo dan identitas MyQuran
+   assets/brand/, assets/icons/, docs/play-store/ (ikon, logo, grafis, dan
+   screenshot toko)
+   Hak cipta dilindungi. Tidak boleh dipakai untuk aplikasi lain atau untuk kesan
+   seolah-olah resmi dari MyQuran tanpa izin tertulis pemilik.
+
+6. Gambar lain tanpa catatan sumber
+   assets/images/mecca.png, assets/images/madina.png
+   Tidak dipakai aplikasi. Asalnya tidak tercatat, jadi tidak ikut dilisensikan.
+
+7. Data yang diunduh saat aplikasi berjalan
+   Terjemahan bahasa lain (QuranEnc), audio murottal (Islamic Network/alquran.cloud,
+   MP3Quran, equran.id), dan jadwal salat (AlAdhan) tidak disimpan di repositori ini
+   dan tetap milik penyedianya.
+
+Ringkasan per sumber dan status izinnya: docs/lisensi/STATUS_HAK_CIPTA.md.
