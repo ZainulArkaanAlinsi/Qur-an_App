@@ -1,4 +1,4 @@
-# Rilis ke Google Play — MyQuran 1.9.0 (17)
+# Rilis ke Google Play — MyQuran 1.9.1 (18)
 
 Panduan singkat untuk unggahan pertama ke Play Console. Butir bertanda **wajib** akan
 membuat aplikasi ditolak atau tidak bisa tayang bila dilewati.
@@ -19,8 +19,22 @@ flutter build appbundle --release
 - Ditandatangani kunci upload dari `android/key.properties`. **Jangan pernah** mengunggah
   build yang ditandatangani kunci debug (Gradle memberi peringatan bila `key.properties`
   tidak ada).
-- Package id `com.zainularkaan.quran`, versionCode 17, versionName 1.9.0,
+- Package id `com.zainularkaan.quran`, versionCode 18, versionName 1.9.1,
   targetSdk 36, minSdk 24.
+
+### Catatan rilis (kolom "Yang baru" di Play Console)
+
+Bahasa Indonesia:
+
+```
+Warna tajwid kini lebih jelas di semua latar: kartu ayat, ayat yang sedang diputar, ayat bertanda, mode sepia, dan kontras tinggi. Idgham mimi dan idgham bilaghunnah juga lebih mudah dibedakan.
+```
+
+English:
+
+```
+Tajweed colours are now easier to read on every background: verse cards, the playing verse, bookmarked verses, sepia, and high contrast. Idgham mimi and idgham bilaghunnah are also easier to tell apart.
+```
 
 ## 2. Wajib sebelum unggah
 

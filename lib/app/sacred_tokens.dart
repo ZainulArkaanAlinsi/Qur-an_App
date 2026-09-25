@@ -255,10 +255,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     fill: Color(0x1F000000),
     primary: Color(0xFF00301F),
     primaryText: Color(0xFF00301F),
-    primarySoft: Color(0xFFD7E7DF),
+    // Sama dengan palet hijau: latar ayat aktif yang lebih pekat membuat
+    // warna tajwid di bawah 4.5 : 1 (docs/WARNA_TAJWID.md).
+    primarySoft: Color(0xFFE0ECE5),
     gold: Color(0xFF7A5A0E),
     goldText: Color(0xFF5A420A),
-    goldSoft: Color(0xFFF3E6BF),
+    goldSoft: Color(0xFFFBF0CC),
     cta: Color(0xFF000000),
     ctaInk: Color(0xFFFFFFFF),
     toggleOn: Color(0xFF00301F),
@@ -295,10 +297,11 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     fill: Color(0x33FFFFFF),
     primary: Color(0xFFA9E8C9),
     primaryText: Color(0xFFBDEFD8),
-    primarySoft: Color(0x3DA9E8C9),
+    // Alfa lebih rendah supaya warna tajwid tetap >= 4.5 : 1 di ayat aktif.
+    primarySoft: Color(0x21A9E8C9),
     gold: Color(0xFFFFE27A),
     goldText: Color(0xFFFFE27A),
-    goldSoft: Color(0x33FFE27A),
+    goldSoft: Color(0x1FFFE27A),
     cta: Color(0xFFFFE27A),
     ctaInk: Color(0xFF000000),
     toggleOn: Color(0xFFA9E8C9),
