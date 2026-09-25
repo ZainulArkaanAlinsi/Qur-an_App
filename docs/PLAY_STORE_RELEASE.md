@@ -1,4 +1,4 @@
-# Rilis ke Google Play — MyQuran 1.9.1 (18)
+# Rilis ke Google Play — MyQuran 1.9.2 (19)
 
 Panduan singkat untuk unggahan pertama ke Play Console. Butir bertanda **wajib** akan
 membuat aplikasi ditolak atau tidak bisa tayang bila dilewati.
@@ -19,7 +19,7 @@ flutter build appbundle --release
 - Ditandatangani kunci upload dari `android/key.properties`. **Jangan pernah** mengunggah
   build yang ditandatangani kunci debug (Gradle memberi peringatan bila `key.properties`
   tidak ada).
-- Package id `com.zainularkaan.quran`, versionCode 18, versionName 1.9.1,
+- Package id `com.zainularkaan.quran`, versionCode 19, versionName 1.9.2,
   targetSdk 36, minSdk 24.
 
 ### Catatan rilis (kolom "Yang baru" di Play Console)
