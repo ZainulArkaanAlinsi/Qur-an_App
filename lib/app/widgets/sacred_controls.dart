@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
+import 'package:flutter/services.dart';
+import 'package:quran_app_2025/app/glass/glass_motion.dart';
 import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -273,13 +276,16 @@ class SacredTab {
   final String label;
 }
 
-/// Tab bar v2 (DESIGN.md §3): kapsul kaca tinggi 64, 12 dari kiri/kanan dan
-/// 24 dari bawah, 5 tab sama lebar, ikon 22 + label 11, tab aktif berupa
-/// kapsul primarySoft. Scrim gradien setinggi 140 di belakangnya.
+/// Tab bar v4 (DESIGN.md §3 + LIQUID_GLASS.md §6): kapsul kaca tinggi 64,
+/// 12 dari kiri/kanan dan 24 dari bawah, 5 tab sama lebar, ikon 22 + label
+/// 11. Tab aktif ditandai satu lensa `primarySoft` yang meluncur dengan
+/// pegas, memanjang searah gerak, mengecil saat ditekan, dan bisa digeser
+/// dengan jari lalu menempel ke tab terdekat.
 ///
+/// Isi halaman terlihat lewat kaca; tidak ada scrim padat di belakangnya.
 /// Tidak ada tombol cari terpisah lagi; cari ada di header Beranda & Qur'an.
 /// Dulu tombol itu membuat label terpotong ("Beran…", "Penga…").
-class FloatingTabBar extends StatelessWidget {
+class FloatingTabBar extends StatefulWidget {
   const FloatingTabBar({
     super.key,
     required this.tabs,
@@ -295,21 +301,173 @@ class FloatingTabBar extends StatelessWidget {
   static const reservedHeight = 104.0;
 
   @override
+  State<FloatingTabBar> createState() => _FloatingTabBarState();
+}
+
+class _FloatingTabBarState extends State<FloatingTabBar>
+    with TickerProviderStateMixin {
+  static const _gap = 2.0;
+  static const _lensHeight = 56.0;
+
+  /// Posisi pusat lensa dalam satuan tab (0 = tab pertama).
+  late final AnimationController _lens = AnimationController.unbounded(
+    vsync: this,
+    value: widget.currentIndex.toDouble(),
+  );
+
+  /// Skala tekan lensa: 1 normal, 0.94 saat ditekan.
+  late final AnimationController _press = AnimationController.unbounded(
+    vsync: this,
+    value: 1,
+  );
+
+  /// Posisi kilau kaca -1..1, mengikuti lensa.
+  late final ValueNotifier<double> _sheen = ValueNotifier(
+    _sheenFor(widget.currentIndex.toDouble()),
+  );
+
+  double _slot = 0;
+  bool _dragging = false;
+
+  /// Tab di bawah lensa saat digeser; label dan ikonnya ikut aktif.
+  int? _dragIndex;
+
+  int get _last => widget.tabs.length - 1;
+
+  bool get _reduced => MediaQuery.disableAnimationsOf(context);
+
+  double _sheenFor(double position) =>
+      _last == 0 ? 0 : (position / _last) * 2 - 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _lens.addListener(() => _sheen.value = _sheenFor(_lens.value));
+  }
+
+  @override
+  void didUpdateWidget(FloatingTabBar old) {
+    super.didUpdateWidget(old);
+    if (old.currentIndex != widget.currentIndex && !_dragging) {
+      _glideTo(widget.currentIndex);
+    }
+  }
+
+  @override
+  void dispose() {
+    _lens.dispose();
+    _press.dispose();
+    _sheen.dispose();
+    super.dispose();
+  }
+
+  void _glideTo(int index, {double velocity = 0}) {
+    if (_reduced) {
+      _lens.value = index.toDouble();
+      return;
+    }
+    _lens.animateWith(
+      SpringSimulation(
+        GlassMotion.spring,
+        _lens.value,
+        index.toDouble(),
+        velocity,
+      ),
+    );
+  }
+
+  void _pressDown() {
+    if (_reduced) return;
+    _press.animateTo(
+      GlassMotion.pressScale,
+      duration: GlassMotion.press,
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _pressUp() {
+    if (_reduced) {
+      _press.value = 1;
+      return;
+    }
+    _press.animateWith(
+      SpringSimulation(GlassMotion.spring, _press.value, 1, 0),
+    );
+  }
+
+  void _select(int index) {
+    _glideTo(index);
+    if (index == widget.currentIndex) return;
+    HapticFeedback.selectionClick();
+    widget.onSelected(index);
+  }
+
+  int _indexAt(double x) =>
+      (x / (_slot + _gap)).floor().clamp(0, _last).toInt();
+
+  double _positionAt(double x) =>
+      ((x - _slot / 2) / (_slot + _gap)).clamp(0.0, _last.toDouble());
+
+  void _dragStart(DragStartDetails details) {
+    _dragging = true;
+    _lens.stop();
+    _lens.value = _positionAt(details.localPosition.dx);
+    _pressDown();
+    setState(() => _dragIndex = _lens.value.round());
+  }
+
+  void _dragUpdate(DragUpdateDetails details) {
+    _lens.value = _positionAt(details.localPosition.dx);
+    final nearest = _lens.value.round();
+    if (nearest != _dragIndex) {
+      HapticFeedback.selectionClick();
+      setState(() => _dragIndex = nearest);
+    }
+  }
+
+  void _dragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final tabsPerSecond = _slot <= 0 ? 0.0 : velocity / (_slot + _gap);
+    // Lemparan cepat boleh meloncat ke tab berikutnya; selebihnya menempel
+    // ke tab terdekat dari posisi jari.
+    final target = (_lens.value + tabsPerSecond * .08)
+        .round()
+        .clamp(0, _last)
+        .toInt();
+    _dragging = false;
+    setState(() => _dragIndex = null);
+    _pressUp();
+    _glideTo(target, velocity: tabsPerSecond);
+    if (target != widget.currentIndex) widget.onSelected(target);
+  }
+
+  void _dragCancel() {
+    _dragging = false;
+    setState(() => _dragIndex = null);
+    _pressUp();
+    _glideTo(widget.currentIndex);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final active = _dragIndex ?? widget.currentIndex;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
+        // Pemisah tipis dari isi: hanya 20 px terbawah, alfa maks 40%.
         IgnorePointer(
           child: Container(
-            height: 140 + bottomInset,
+            height: 20 + bottomInset,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
-                colors: [tokens.bg, tokens.bg, tokens.bg.withValues(alpha: 0)],
-                stops: const [0, .36, 1],
+                colors: [
+                  tokens.bg.withValues(alpha: .40),
+                  tokens.bg.withValues(alpha: 0),
+                ],
               ),
             ),
           ),
@@ -327,23 +485,69 @@ class FloatingTabBar extends StatelessWidget {
             maxScaleFactor: 1.3,
             child: LiquidGlass(
               borderRadius: const BorderRadius.all(Radius.circular(32)),
+              interactive: true,
+              sheenShift: _sheen,
               child: SizedBox(
                 height: 64,
                 child: Padding(
                   padding: const EdgeInsets.all(4),
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < tabs.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 2),
-                        Expanded(
-                          child: _TabButton(
-                            tab: tabs[i],
-                            selected: i == currentIndex,
-                            onTap: () => onSelected(i),
-                          ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final count = widget.tabs.length;
+                      _slot =
+                          (constraints.maxWidth - _gap * (count - 1)) / count;
+                      return GestureDetector(
+                        // Tiap tab punya Semantics sendiri di bawah.
+                        excludeFromSemantics: true,
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: (_) => _pressDown(),
+                        onTapUp: (details) {
+                          _pressUp();
+                          _select(_indexAt(details.localPosition.dx));
+                        },
+                        onTapCancel: _pressUp,
+                        onHorizontalDragStart: _dragStart,
+                        onHorizontalDragUpdate: _dragUpdate,
+                        onHorizontalDragEnd: _dragEnd,
+                        onHorizontalDragCancel: _dragCancel,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: RepaintBoundary(
+                                child: _reduced
+                                    ? _FadingLens(
+                                        index: active,
+                                        count: count,
+                                        width: _slot,
+                                        color: tokens.primarySoft,
+                                      )
+                                    : _GlidingLens(
+                                        position: _lens,
+                                        press: _press,
+                                        width: _slot,
+                                        gap: _gap,
+                                        color: tokens.primarySoft,
+                                      ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                for (var i = 0; i < count; i++) ...[
+                                  if (i > 0) const SizedBox(width: _gap),
+                                  Expanded(
+                                    child: _TabButton(
+                                      tab: widget.tabs[i],
+                                      selected: i == active,
+                                      onTap: () => _select(i),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -355,6 +559,96 @@ class FloatingTabBar extends StatelessWidget {
   }
 }
 
+/// Lensa yang meluncur: memanjang searah gerak (scaleX maks 1.12, scaleY
+/// berkurang setengahnya) dan mengecil saat ditekan.
+class _GlidingLens extends StatelessWidget {
+  const _GlidingLens({
+    required this.position,
+    required this.press,
+    required this.width,
+    required this.gap,
+    required this.color,
+  });
+
+  final AnimationController position;
+  final AnimationController press;
+  final double width;
+  final double gap;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final capsule = SizedBox(
+      width: width,
+      height: _FloatingTabBarState._lensHeight,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(28),
+        ),
+      ),
+    );
+    return AnimatedBuilder(
+      animation: Listenable.merge([position, press]),
+      child: capsule,
+      builder: (context, child) {
+        final speed = position.isAnimating ? position.velocity.abs() : 0.0;
+        final stretch =
+            (speed / GlassMotion.stretchVelocity).clamp(0.0, 1.0) *
+            GlassMotion.maxStretch;
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Transform.translate(
+            offset: Offset(position.value * (width + gap), 0),
+            child: Transform.scale(
+              scaleX: (1 + stretch) * press.value,
+              scaleY: (1 - stretch / 2) * press.value,
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Kurangi gerak: lensa tidak meluncur; tab lama memudar dan tab baru muncul
+/// dalam 150 ms.
+class _FadingLens extends StatelessWidget {
+  const _FadingLens({
+    required this.index,
+    required this.count,
+    required this.width,
+    required this.color,
+  });
+
+  final int index;
+  final int count;
+  final double width;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+    duration: GlassMotion.reducedFade,
+    child: Align(
+      key: ValueKey(index),
+      alignment: Alignment(count == 1 ? 0 : -1 + 2 * index / (count - 1), 0),
+      child: SizedBox(
+        width: width,
+        height: _FloatingTabBarState._lensHeight,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(28),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Satu tab: ikon + label. Tanpa ripple; ketukan ditangani tab bar supaya
+/// lensa bisa ditekan dan digeser. Semantics tetap per tab.
 class _TabButton extends StatelessWidget {
   const _TabButton({
     required this.tab,
@@ -374,45 +668,35 @@ class _TabButton extends StatelessWidget {
       selected: selected,
       button: true,
       label: tab.label,
+      onTap: onTap,
       child: ExcludeSemantics(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(28),
-          child: Container(
-            height: 56,
-            decoration: selected
-                ? BoxDecoration(
-                    color: tokens.primarySoft,
-                    borderRadius: BorderRadius.circular(28),
-                  )
-                : null,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                LineIcon(
-                  tab.icon,
-                  color: color,
-                  size: 22,
-                  strokeWidth: selected
-                      ? SacredIcons.strokeNavActive
-                      : SacredIcons.strokeNav,
+        child: SizedBox(
+          height: _FloatingTabBarState._lensHeight,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              LineIcon(
+                tab.icon,
+                color: color,
+                size: 22,
+                strokeWidth: selected
+                    ? SacredIcons.strokeNavActive
+                    : SacredIcons.strokeNav,
+              ),
+              const SizedBox(height: 3),
+              // Label utuh, tidak pernah dielipsis; kalau sangat sempit ia
+              // diperkecil, bukan dipotong.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  tab.label,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: (selected ? SacredText.tabActive : SacredText.tabIdle)
+                      .copyWith(color: color),
                 ),
-                const SizedBox(height: 3),
-                // Label utuh, tidak pernah dielipsis; kalau sangat sempit ia
-                // diperkecil, bukan dipotong.
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    tab.label,
-                    maxLines: 1,
-                    softWrap: false,
-                    style:
-                        (selected ? SacredText.tabActive : SacredText.tabIdle)
-                            .copyWith(color: color),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
