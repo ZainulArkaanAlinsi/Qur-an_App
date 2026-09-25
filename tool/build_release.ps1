@@ -3,7 +3,7 @@
 # Pemakaian:
 #   pwsh tool/build_release.ps1
 #
-# Hasil: build/app/outputs/flutter-apk/ruang-tilawah-<versi>.apk
+# Hasil: build/app/outputs/flutter-apk/myquran-<versi>.apk
 # APK lama (debug, split-per-abi, versi sebelumnya) dihapus lebih dulu supaya
 # folder tidak menumpuk dan tidak ada risiko mengunggah berkas yang salah.
 
@@ -35,7 +35,9 @@ flutter build apk --release --target-platform android-arm,android-arm64 --dart-d
 if ($LASTEXITCODE -ne 0) { throw 'flutter build apk gagal' }
 
 $built = Join-Path $outDir 'app-release.apk'
-$final = Join-Path $outDir "ruang-tilawah-$version.apk"
+# Pemeriksa pembaruan memilih berkas .apk mana pun di rilis, jadi nama baru
+# aman bagi pengguna versi lama.
+$final = Join-Path $outDir "myquran-$version.apk"
 Move-Item $built $final -Force
 Remove-Item (Join-Path $outDir 'app-release.apk.sha1') -Force -ErrorAction SilentlyContinue
 

@@ -57,7 +57,7 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    memakai `flutter build appbundle --release` tanpa flag itu
    (docs/PLAY_STORE_RELEASE.md).
 4. Buat rilis di GitHub dengan tag `v<versi>` (mis. `v1.2.0`), lampirkan APK
-   dengan nama `ruang-tilawah-<versi>.apk`, dan cantumkan SHA-256 berkasnya.
+   dengan nama `myquran-<versi>.apk` (sebelum 1.9.0: `ruang-tilawah-<versi>.apk`), dan cantumkan SHA-256 berkasnya.
    Tag harus diawali `v` dan berupa angka bertitik agar pemeriksa pembaruan
    di aplikasi dapat membandingkannya.
 

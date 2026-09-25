@@ -79,14 +79,14 @@ flutter build appbundle --release
 Enkripsi saat transit: **Ya** (HTTPS). Pengguna bisa meminta penghapusan data: **Ya**
 (Saya › kartu profil › Hapus akun & data cloud).
 
-## 4. Store listing
+## 4. Store listing (7 bahasa)
 
-- Nama aplikasi (maks. 30 karakter): **MyQuran: Baca, Tajwid, Hafalan** (30 karakter).
-  Jangan hanya "MyQuran" — sudah banyak aplikasi dengan nama itu.
-- Ikon 512×512: `docs/play-store/icon-512.png` (dari `assets/icons/icon.png`, tanpa
-  transparansi).
-- Feature graphic 1024×500 dan minimal 2 screenshot ponsel: ambil dari aplikasi di HP
-  (onboarding, kartu ayat, mushaf, Belajar, Hafalan).
+- Teks listing Indonesia, Inggris, Arab, Melayu, Turki, Urdu, dan Prancis ada di
+  `docs/play-store/LISTING.md`. Batas karakter sudah dicek, dan hanya fitur yang ada di
+  rilis yang disebut.
+- Gambar per bahasa ada di `docs/play-store/<kode>/`: `feature-graphic.jpg` (1024×500)
+  dan `screenshot-1…7.jpg` (1080×1920). Ikon 512: `docs/play-store/icon-512.png`.
+- Membuat ulang gambar: lihat komentar di `tool/store/store_assets_test.dart`.
 - Kategori: Books & Reference atau Education.
 - Jangan memakai ikon/warna aplikasi lain dan jangan mengklaim "resmi Kemenag".
 
