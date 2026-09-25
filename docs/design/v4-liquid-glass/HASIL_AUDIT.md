@@ -260,3 +260,29 @@ tajwid terbaca di kartu biasa dan di latar ayat aktif pada ketiga tema.
 `bash tool/glass_audit.sh`: **0 GAGAL** (1 CEK: 6 pemakaian kaca di luar lib/app/glass/, semuanya
 chrome mengambang: tab bar, nav pembaca, mini player, pratinjau Efek kaca, dan pembungkus
 `GlassSurface` yang tidak lagi dipakai). `flutter analyze` bersih, `flutter test` 616 lulus.
+
+## Audit 25 September 2026 — commit 33313a4 (Prompt 5, putaran 1)
+
+`bash tool/glass_audit.sh`: **0 GAGAL**, 1 CEK (C5: 6 pemakaian kaca, semuanya chrome
+mengambang). `flutter analyze`: bersih. `flutter test`: 616 lulus (termasuk 106 golden).
+Golden kaca dan pembaca dibuka dan dinilai di bagian Prompt 3 di atas.
+
+| # | Nilai | Bukti |
+| --- | --- | --- |
+| G1 | 2 | `lib/app/glass/liquid_glass.dart:70-330`: L0 `_GlassShadowPainter` di luar klip dan tidak tergambar di bawah kaca (157, 179); L1 `BackdropFilter.grouped` + `glassFilter` (164); L2 tint + L3 kilau `_GlassFillPainter` (225); L4 tepi + L5 sorot dalam `_GlassEdgePainter` di `RepaintBoundary` (279). Golden `glass/kaca_*_penuh`. |
+| G2 | 2 | Backdrop terlihat 12.4% (terang), 10.4% (sepia), 17.3% (gelap). Tidak ada scrim padat: gradien 20 px alfa 40% (`sacred_controls.dart:468`); audit B1, B2 lulus. Garis uji tampak samar lewat nav, sheet, mini player, dan tab bar di `glass/kaca_terang_penuh`, `kaca_gelap_penuh`, `kaca_sepia_penuh`; halaman Hafalan terlihat di balik tab bar di `10_hafalan_light`. |
+| G3 | 2 | Lensa pegas 420/32 (`sacred_controls.dart:370`), regangan maks 1.12 + skala tekan 0.94 (`_GlidingLens` 564, 394), geser jari + haptik (401, 423), pudar 150 ms saat Kurangi gerak (`_FadingLens` 617). Nav pembaca dilipat setelah gulir turun > 24 px (`reader_screen.dart:146-166`). Tanpa ripple: `liquid_glass.dart:126`, `test/glass_tab_bar_test.dart`. |
+| G4 | 2 | Tab bar (`sacred_controls.dart`), nav pembaca (`reader_screen.dart:1036`), mini player (`audio_mini_player.dart:99`), tombol bulat (`glass_circle_button.dart:72`), dan kepala sheet (`glass_sheet.dart:52`) semuanya memakai `LiquidGlass`. Audit B3 lulus; `test/glass_mini_player_test.dart` menguji token di 6 palet. |
+| G5 | 2 | `glass_tokens.dart:119-195` (terang, sepia, gelap, kontras tinggi terang/gelap) + `lerp` (264); kontras tinggi selalu padat (`solidOnly`). Golden `glass/kaca_{terang,gelap,sepia,kontras_tinggi}_{penuh,padat}`. |
+| G6 | 2 | `test/glass_contrast_test.dart`: 6 palet × 3 tingkat × 3 ukuran × 9 latar terburuk; ink ≥ 7, sec ≥ 4.5, primaryText ≥ 4.5, semua lulus. Angka penuh dikunci (12.62/4.57/6.92 terang, 8.94/4.55/6.72 sepia, 10.28/4.80/7.65 gelap). |
+| G7 | 2 | Ayat di permukaan padat (`AnimatedContainer` surf/primarySoft), tanpa efek di teks Arab. Tajwid ≥ 4.5 di semua permukaan ayat untuk semua palet (`test/tajweed_widget_test.dart`, tabel Prompt 3). Nav menyingkir saat membaca (`05_kartu_gulir_*`, `05_tajwid_*`). |
+| G8 | 1 | Audit A1–A4 lulus, `BackdropGroup` di AppShell dan pembaca, maksimal 3 kaca (tabel Prompt 2). **Anggaran §7 belum diukur di HP asli** (`HASIL_KINERJA.md`), jadi nilainya maksimal 1 menurut rubrik. |
+| G9 | 2 | Tingkat penuh/ringan/padat + kontras tinggi + Kurangi gerak (`glass_tier.dart`, `test/glass_tier_test.dart`); pengawas frame (`glass_governor.dart:69`, `test/glass_governor_test.dart`); Saya → Efek kaca (`settings_screen.dart`, golden `12_saya_efek_kaca_*`). |
+| G10 | 1 | Audit 0 GAGAL, tes kontras, golden, dan tes kinerja ada dan dijalankan. Hasil tes kinerja di HP belum dicatat (hanya alurnya yang terbukti di desktop). |
+
+**Total: 18/20 — BELUM LULUS** (syarat: G8 = 2). Penyebab satu-satunya: anggaran kinerja
+§7 belum diukur di HP asli. Putaran berikutnya tidak bisa menaikkan G8 atau G10 tanpa HP,
+jadi putaran 2–3 tidak dijalankan.
+
+Perbaikan berikutnya (butuh pemilik): sambungkan HP, jalankan perintah di
+`HASIL_KINERJA.md`, isi tabelnya. Bila semua anggaran lulus, G8 = 2 dan G10 = 2 → 20/20.
