@@ -80,3 +80,35 @@ ambang ink 7, sec 4.5, primaryText 4.5 di 9 latar uji (`test/glass_contrast_test
 
 `bash tool/glass_audit.sh`: **5 GAGAL** (dari 12). Target Prompt 1 lulus: A1, A2, B1, B4,
 C1, C2. Sisa: A3, B2, B3 (Prompt 2), C3, C4 (Prompt 4).
+
+## Prompt 2 — permukaan (25 September 2026)
+
+- Tab bar: scrim padat diganti gradien 20 px (alfa maks 40%); lensa meluncur dengan pegas
+  420/32, regangan maks 1.12, tekan 0.94, geser jari lalu menempel, haptik; tanpa ripple.
+- Nav pembaca: menumpang di atas daftar, dilipat setelah gulir turun > 24 px (220 ms,
+  kurva v3), muncul saat gulir naik. Ayat tidak bergeser (tes `reader_screen_test.dart`,
+  golden `05_kartu_gulir_*`). Tampilan awal identik piksel dengan sebelum perubahan.
+- Mini player: LiquidGlass + token di 6 kombinasi palet; muncul dari bawah 280 ms.
+- Sheet: `showGlassSheet()` (kepala kaca + grabber yang meregang, isi padat) untuk sheet
+  murottal, Tampilan baca, dan aturan tajwid.
+- Tombol bulat: `GlassCircleButton` (diameter 44) untuk tombol dengar di hero Beranda.
+- Penanda: item daftar dan keadaan kosong kembali ke kartu padat.
+
+### Jumlah kaca terlihat bersamaan
+
+| Layar | Kaca | Jumlah maks | Batas |
+| --- | --- | --- | --- |
+| Beranda | tab bar, mini player (saat murottal aktif), tombol dengar di hero | 3 | 3 |
+| Qur'an, Belajar, Hafalan, Saya | tab bar, mini player | 2 | 3 |
+| Pembaca (kartu ayat) | nav, mini player | 2 | 2 |
+| Pembaca + sheet terbuka | nav, kepala sheet (mini player tertutup isi sheet yang padat) | 2 | 2 |
+| Pembaca mode fokus | mini player | 1 | 2 |
+| Murottal, Penanda, Salat, Pelajaran | – | 0 | 3 |
+
+Tidak ada kaca di item daftar (A3 lulus). `GlassSurface` tidak dipakai lagi; kelasnya tetap
+ada sebagai pembungkus `@Deprecated`.
+
+### Audit setelah Prompt 2
+
+`bash tool/glass_audit.sh`: **2 GAGAL** (C3 pengawas frame, C4 tes kinerja: Prompt 4).
+Target Prompt 2 lulus: A3, B2, B3.
