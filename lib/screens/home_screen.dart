@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/glass_circle_button.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -493,8 +494,9 @@ class _HeroCard extends StatelessWidget {
   }
 }
 
-/// Tombol dengar 48 di atas kartu hero. Ikonnya berganti jeda selama
-/// murottal sedang diputar, supaya orang tahu ketukannya berhasil.
+/// Tombol dengar berkaca di atas kartu hero (LIQUID_GLASS.md §2: tombol
+/// bulat mengambang, diameter 44). Ikonnya berganti jeda selama murottal
+/// sedang diputar, supaya orang tahu ketukannya berhasil.
 class _ListenButton extends StatelessWidget {
   const _ListenButton({required this.onTap});
 
@@ -504,14 +506,10 @@ class _ListenButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: QuranAudioService.instance.isPlaying,
-      builder: (context, playing, _) => RoundIconButton(
+      builder: (context, playing, _) => GlassCircleButton(
         icon: playing ? SacredIcons.pause : SacredIcons.headphones,
         filled: playing,
         tooltip: playing ? 'Jeda murottal' : 'Dengarkan murottal',
-        size: 48,
-        background: SacredArt.glass,
-        border: Border.all(color: SacredArt.glassBorder),
-        iconColor: SacredArt.ink,
         strokeWidth: SacredIcons.strokeNav,
         onTap: onTap,
       ),
