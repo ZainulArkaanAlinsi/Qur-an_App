@@ -146,7 +146,7 @@ void main() {
     final selected = await _pump(tester, initial: 1);
     expect(
       tester.getSemantics(find.bySemanticsLabel('Qur’an')),
-      containsSemantics(
+      isSemantics(
         label: 'Qur’an',
         isButton: true,
         isSelected: true,
@@ -156,7 +156,7 @@ void main() {
     final learn = find.bySemanticsLabel('Belajar');
     expect(
       tester.getSemantics(learn),
-      containsSemantics(isButton: true, isSelected: false),
+      isSemantics(isButton: true, isSelected: false),
     );
     tester.semantics.tap(find.semantics.byLabel('Belajar'));
     await tester.pumpAndSettle();
