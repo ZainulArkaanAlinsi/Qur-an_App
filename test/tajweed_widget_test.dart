@@ -230,32 +230,98 @@ void main() {
     expect(find.text(TajweedRule.idghamBilaghunnah.nameId), findsOneWidget);
   });
 
-  test('setiap warna palet berkontras >= 4:1 terhadap permukaan kartu', () {
+  // LIQUID_GLASS.md §5: warna tajwid >= 4.5 : 1 di SEMUA permukaan ayat —
+  // kartu (surf), latar (bg), ayat aktif (primarySoft), ayat bertanda
+  // (goldSoft), di semua palet, terang dan gelap. Warna isi yang transparan
+  // dikomposit di atas kartu dan di atas latar.
+  group('kontras warna tajwid di semua permukaan ayat', () {
     double contrast(Color a, Color b) {
       final la = a.computeLuminance();
       final lb = b.computeLuminance();
       return (la > lb ? la + .05 : lb + .05) / (la > lb ? lb + .05 : la + .05);
     }
 
-    for (final (brightness, theme) in [
-      (Brightness.light, SacredTheme.light),
-      (Brightness.dark, SacredTheme.dark),
-    ]) {
-      final surfaces = [
-        theme.colorScheme.surface,
-        theme.colorScheme.surfaceContainerLowest,
-        theme.cardTheme.color!,
-      ];
-      for (final rule in TajweedRule.values) {
-        final color = TajweedPalette.draftPreview.colorFor(rule, brightness);
-        for (final surface in surfaces) {
+    for (final palette in AppPalette.values) {
+      for (final brightness in Brightness.values) {
+        test('${palette.name} ${brightness.name}', () {
+          final t = SacredTheme.tokensFor(palette, brightness);
+          final surfaces = <String, Color>{
+            'surf': t.surf,
+            'bg': t.bg,
+            'ayat aktif di kartu': Color.alphaBlend(t.primarySoft, t.surf),
+            'ayat aktif di latar': Color.alphaBlend(t.primarySoft, t.bg),
+            'ayat bertanda di kartu': Color.alphaBlend(t.goldSoft, t.surf),
+            'ayat bertanda di latar': Color.alphaBlend(t.goldSoft, t.bg),
+          };
+          for (final rule in TajweedRule.values) {
+            final color = TajweedPalette.draftPreview.colorFor(
+              rule,
+              brightness,
+            );
+            for (final MapEntry(key: name, value: surface)
+                in surfaces.entries) {
+              expect(
+                contrast(color, surface),
+                greaterThanOrEqualTo(4.5),
+                reason: '${palette.name} $brightness ${rule.name} vs $name',
+              );
+            }
+          }
+        });
+      }
+    }
+
+    test('abu tetap lebih redup dari tinta, urutan tiga mad tetap', () {
+      for (final brightness in Brightness.values) {
+        final palette = TajweedPalette.draftPreview;
+        final t = SacredTheme.tokensFor(AppPalette.sacred, brightness);
+        final ink = contrast(t.ink, t.surf);
+        for (final rule in [
+          TajweedRule.hamzahWasl,
+          TajweedRule.lamSyamsiyah,
+          TajweedRule.silent,
+          TajweedRule.idghamMutajanisain,
+          TajweedRule.idghamMutaqaribain,
+        ]) {
           expect(
-            contrast(color, surface),
-            greaterThanOrEqualTo(4.0),
-            reason: '$brightness ${rule.name} vs $surface',
+            contrast(palette.colorFor(rule, brightness), t.surf),
+            lessThan(ink),
+            reason: '$brightness ${rule.name}',
+          );
+        }
+        double lum(TajweedRule rule) =>
+            palette.colorFor(rule, brightness).computeLuminance();
+        if (brightness == Brightness.light) {
+          // Terang: thabi'i paling terang, wajib paling gelap.
+          expect(
+            lum(TajweedRule.madThabii),
+            greaterThan(lum(TajweedRule.madJaiz)),
+          );
+          expect(
+            lum(TajweedRule.madJaiz),
+            greaterThan(lum(TajweedRule.madWajib)),
+          );
+          // Abu hamzah washal lebih terang daripada abu idgham.
+          expect(
+            lum(TajweedRule.hamzahWasl),
+            greaterThan(lum(TajweedRule.idghamMutajanisain)),
+          );
+        } else {
+          // Gelap: jaiz paling terang, wajib paling gelap.
+          expect(
+            lum(TajweedRule.madJaiz),
+            greaterThan(lum(TajweedRule.madThabii)),
+          );
+          expect(
+            lum(TajweedRule.madThabii),
+            greaterThan(lum(TajweedRule.madWajib)),
+          );
+          expect(
+            lum(TajweedRule.idghamMutajanisain),
+            greaterThan(lum(TajweedRule.hamzahWasl)),
           );
         }
       }
-    }
+    });
   });
 }

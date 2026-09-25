@@ -112,3 +112,132 @@ ada sebagai pembungkus `@Deprecated`.
 
 `bash tool/glass_audit.sh`: **2 GAGAL** (C3 pengawas frame, C4 tes kinerja: Prompt 4).
 Target Prompt 2 lulus: A3, B2, B3.
+
+## Prompt 3 — warna & keterbacaan (25 September 2026)
+
+### Warna tajwid
+
+Diukur di **semua permukaan ayat**: kartu (`surf`), latar (`bg`), ayat aktif (`primarySoft`)
+dan ayat bertanda (`goldSoft`), masing-masing di atas kartu dan di atas latar; di palet hijau,
+sepia, dan kontras tinggi; terang dan gelap. Sebelum revisi, 7 warna terang di bawah 4.5
+(terendah abu hamzah washal **3.54** di ayat aktif) dan mad wajib gelap **4.41**.
+
+Hanya nilai warna yang berubah; hukum, data, dan status draf tetap. Aturan hubungan:
+abu tetap lebih redup daripada tinta; tiga mad tetap satu keluarga biru dengan urutan
+terang-gelap yang sama; pasangan yang mudah tertukar (ΔE2000 < 15) tidak boleh menjadi
+lebih mirip dan pasangan lain tetap ≥ 15. Syarat "tidak ada pasangan yang lebih mirip sama
+sekali" tidak mungkin dipenuhi: semua warna terang harus digelapkan ke L* ≈ 44 supaya lolos
+4.5, sehingga pasangan yang jauh (ΔE > 20) ikut menyusut sedikit. Itu sebabnya batas "mudah
+tertukar" dipakai. Warna yang berubah ditandai ✱.
+
+#### Terang
+
+| Hukum | Lama | Baru | Kontras terburuk lama → baru | ΔE lama→baru |
+| --- | --- | --- | --- | --- |
+| hamzah washal / lam syamsiyah / tidak dibaca ✱ | `#7A7A7A` | `#676767` | 3.54 → **4.66** | 7.5 |
+| mad thabi'i ✱ | `#2F5FE0` | `#0B5FE0` | 4.51 → **4.64** | 1.9 |
+| mad jaiz | `#3340D0` | `#3340D0` | 6.21 → **6.21** | 0.0 |
+| mad wajib | `#0A1596` | `#0A1596` | 11.09 → **11.09** | 0.0 |
+| mad lazim | `#5A0F8C` | `#5A0F8C` | 9.19 → **9.19** | 0.0 |
+| qalqalah | `#C8000A` | `#C8000A` | 5.00 → **5.00** | 0.0 |
+| ikhfa haqiqi | `#8A009C` | `#8A009C` | 6.76 → **6.76** | 0.0 |
+| ikhfa syafawi | `#B0009A` | `#B0009A` | 5.22 → **5.22** | 0.0 |
+| idgham bighunnah ✱ | `#127A60` | `#00765F` | 4.35 → **4.60** | 1.8 |
+| idgham bilaghunnah ✱ | `#1F7A12` | `#1D7810` | 4.49 → **4.62** | 0.7 |
+| idgham mimi ✱ | `#3C8A00` | `#587000` | 3.58 → **4.63** | 11.2 |
+| idgham mutajanisain / mutaqaribain ✱ | `#6E6E6E` | `#565656` | 4.20 → **6.05** | 8.9 |
+| iqlab ✱ | `#0078B8` | `#017095` | 3.95 → **4.61** | 7.6 |
+| ghunnah ✱ | `#C25400` | `#A05300` | 3.79 → **4.64** | 8.1 |
+
+Pasangan yang mudah tertukar (ΔE2000 < 15), lama → baru:
+
+| Pasangan | ΔE lama | ΔE baru |
+| --- | --- | --- |
+| hamzah washal / lam syamsiyah / tidak dibaca – idgham mutajanisain / mutaqaribain | 4.77 | 6.19 |
+| idgham bilaghunnah – idgham mimi | 7.03 | 10.50 |
+| ikhfa haqiqi – ikhfa syafawi | 8.14 | 8.14 |
+| mad lazim – ikhfa haqiqi | 8.68 | 8.68 |
+| mad wajib – mad lazim | 9.67 | 9.67 |
+| mad thabi'i – mad jaiz | 9.75 | 10.43 |
+| mad jaiz – mad wajib | 13.03 | 13.03 |
+| mad thabi'i – iqlab | 13.09 | 14.44 |
+
+Jarak terkecil antarhukum: 4.77 → 6.19. Semua pasangan lain ≥ 15 (terkecil baru 15.04).
+
+#### Gelap
+
+| Hukum | Lama | Baru | Kontras terburuk lama → baru | ΔE lama→baru |
+| --- | --- | --- | --- | --- |
+| hamzah washal / lam syamsiyah / tidak dibaca | `#9A9A9A` | `#9A9A9A` | 4.63 → **4.63** | 0.0 |
+| mad thabi'i | `#8FA8FF` | `#8FA8FF` | 5.72 → **5.72** | 0.0 |
+| mad jaiz | `#A0A8FF` | `#A0A8FF` | 5.92 → **5.92** | 0.0 |
+| mad wajib ✱ | `#7F8CFF` | `#5A97FD` | 4.41 → **4.52** | 8.5 |
+| mad lazim | `#C69BFF` | `#C69BFF` | 5.92 → **5.92** | 0.0 |
+| qalqalah | `#FF7A7A` | `#FF7A7A` | 5.16 → **5.16** | 0.0 |
+| ikhfa haqiqi | `#D98BFF` | `#D98BFF` | 5.64 → **5.64** | 0.0 |
+| ikhfa syafawi | `#FF8AE6` | `#FF8AE6` | 6.23 → **6.23** | 0.0 |
+| idgham bighunnah | `#52D6B0` | `#52D6B0` | 7.21 → **7.21** | 0.0 |
+| idgham bilaghunnah | `#7DDB6E` | `#7DDB6E` | 7.59 → **7.59** | 0.0 |
+| idgham mimi ✱ | `#8FE05A` | `#B5D943` | 8.06 → **8.05** | 8.0 |
+| idgham mutajanisain / mutaqaribain | `#A8A8A8` | `#A8A8A8` | 5.48 → **5.48** | 0.0 |
+| iqlab | `#5CCBFF` | `#5CCBFF` | 7.10 → **7.10** | 0.0 |
+| ghunnah | `#FFA25C` | `#FFA25C` | 6.57 → **6.57** | 0.0 |
+
+Pasangan yang mudah tertukar (ΔE2000 < 15), lama → baru:
+
+| Pasangan | ΔE lama | ΔE baru |
+| --- | --- | --- |
+| mad thabi'i – mad jaiz | 3.88 | 3.88 |
+| hamzah washal / lam syamsiyah / tidak dibaca – idgham mutajanisain / mutaqaribain | 4.26 | 4.26 |
+| idgham bilaghunnah – idgham mimi | 4.49 | 11.78 |
+| mad lazim – ikhfa haqiqi | 5.65 | 5.65 |
+| mad thabi'i – mad wajib | 7.86 | 8.35 |
+| mad jaiz – mad wajib | 8.53 | 11.87 |
+| ikhfa haqiqi – ikhfa syafawi | 9.62 | 9.62 |
+| mad jaiz – mad lazim | 10.60 | 10.60 |
+| mad lazim – ikhfa syafawi | 13.57 | 13.57 |
+| mad wajib – mad lazim | 14.09 | 21.51 |
+| mad thabi'i – mad lazim | 14.47 | 14.47 |
+
+Jarak terkecil antarhukum: 3.88 → 3.88. Semua pasangan lain ≥ 15 (terkecil baru 15.57).
+
+Keterbatasan: mad thabi'i dan mad jaiz gelap tetap ΔE 3.88 seperti semula. Keduanya
+sudah di batas gamut biru sRGB; setiap geseran rona membuat pasangan lain lebih mirip.
+Warna bukan satu-satunya penanda: nama hukum selalu ada di chip, legenda, dan ketukan huruf.
+
+Latar ayat aktif/bertanda di palet **kontras tinggi** dulu lebih pekat daripada palet hijau
+(`primarySoft` #D7E7DF, `goldSoft` #F3E6BF; gelap alfa 24%/20%), dan justru di situ warna
+tajwid paling samar (abu 3.35). Nilainya disamakan dengan palet hijau (#E0ECE5, #FBF0CC;
+gelap alfa 13%/12%). Ayat aktif tetap tersorot; hurufnya kini ≥ 4.5 di semua palet.
+
+Tes: `test/tajweed_widget_test.dart` memeriksa 17 hukum × 6 permukaan × 3 palet × terang/gelap
+(≥ 4.5), abu lebih redup daripada tinta, dan urutan terang tiga mad.
+
+### Golden kaca (`test/golden/goldens/glass/`)
+
+Latar uji: garis putih, hitam, hijau hero, emas, merah, biru, teal; teks tebal hitam/putih;
+kartu hero hijau. Bayangan dirender sungguhan.
+
+| PNG | a. tepi menangkap cahaya | b. warna belakang samar | c. label tab tidak aktif jelas |
+| --- | --- | --- | --- |
+| `kaca_terang_penuh` | Ya, kiri-atas tab bar, mini player, kepala sheet | Ya, garis warna tampak pastel dan kabur di nav, sheet, mini player; teks di belakang tidak terbaca | Ya |
+| `kaca_terang_padat` | Ya, tepi tetap | Tidak (padat, sesuai tingkat) | Ya |
+| `kaca_gelap_penuh` | Ya, garis terang tipis di tepi atas | Ya, garis warna tampak gelap-samar | Ya |
+| `kaca_gelap_padat` | Ya | Tidak (padat) | Ya |
+| `kaca_sepia_penuh` | Ya | Ya, bernuansa krem | Ya |
+| `kaca_sepia_padat` | Ya | Tidak (padat) | Ya |
+| `kaca_kontras_tinggi_penuh` / `_padat` | Garis `outline` 1.5 px | Tidak: kontras tinggi selalu padat, kedua PNG identik | Ya |
+
+Tombol bulat kaca di hero: cakram terang berikon gelap (terang/sepia), cakram gelap
+bertepi terang (gelap). Bentuk dan ukuran sama di tingkat penuh dan padat.
+
+### Golden pembaca tajwid (`05_tajwid_{fatihah,baqarah}_{terang,gelap,sepia}`)
+
+Tajwid aktif, satu ayat aktif (1:2, 2:3). Ayat aktif bergulir ke tepat di bawah nav; tidak
+ada huruf yang tertutup nav. Teks Arab tanpa bayangan, glow, gradien, atau blur. Warna
+tajwid terbaca di kartu biasa dan di latar ayat aktif pada ketiga tema.
+
+### Audit setelah Prompt 3
+
+`bash tool/glass_audit.sh`: 2 GAGAL (C3, C4: Prompt 4). `flutter analyze` bersih,
+`flutter test` 608 lulus.
