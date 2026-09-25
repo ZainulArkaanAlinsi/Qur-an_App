@@ -49,6 +49,11 @@ class GoldenVariant {
   ];
 }
 
+/// Mode bahan screenshot Play Store (`--dart-define=STORE_SHOTS=true`):
+/// bayangan dirender sungguhan dan gambar ditulis ke `build/store_shots/`,
+/// bukan dibandingkan dengan golden (lihat flutter_test_config.dart).
+const storeShots = bool.fromEnvironment('STORE_SHOTS');
+
 /// Memasang [child] di layar 390×844 (atau [size]) dengan tema aplikasi.
 Future<void> pumpGolden(
   WidgetTester tester,
@@ -67,6 +72,9 @@ Future<void> pumpGolden(
     bottom: gestureBar * 3,
   );
   addTearDown(tester.view.reset);
+  // Tes biasa mematikan blur bayangan; screenshot toko memakai bayangan asli.
+  // Dikembalikan oleh pembanding store shots setelah gambar diambil.
+  if (storeShots) debugDisableShadows = false;
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
