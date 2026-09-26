@@ -26,8 +26,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     required this.toggleOn,
     required this.art,
     required this.artInk,
-    required this.glass,
-    required this.glassBorder,
     required this.heatmap,
     required this.ring,
     required this.tertiary,
@@ -64,8 +62,14 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   /// Latar kartu hero/sampul.
   final Color art;
   final Color artInk;
-  final Color glass;
-  final Color glassBorder;
+
+  /// Token kaca v3. Kaca v4 memakai `GlassTokens` (lib/app/glass/) dan
+  /// digambar oleh `LiquidGlass`; getter ini hanya menjaga pemanggil lama.
+  @Deprecated('Pakai LiquidGlass; warnanya dari GlassTokens.tint.')
+  Color get glass => surf.withValues(alpha: .38);
+
+  @Deprecated('Pakai LiquidGlass; tepinya dari GlassTokens.rimStart/rimEnd.')
+  Color get glassBorder => ring;
 
   /// Empat tingkat heatmap istiqamah, dari kosong ke penuh.
   final List<Color> heatmap;
@@ -142,8 +146,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF0E6A4C),
     art: Color(0xFF064E3B),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC2FCF9F8),
-    glassBorder: Color(0xD9FFFFFF),
     heatmap: [
       Color(0xFFE6E2D8),
       Color(0xFFF6E3A2),
@@ -182,8 +184,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF2F9E75),
     art: Color(0xFF0B3D2F),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC214201C),
-    glassBorder: Color(0x17FFFFFF),
     heatmap: [
       Color(0xFF1A2823),
       Color(0xFF3D3715),
@@ -223,8 +223,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF0E6A4C),
     art: Color(0xFF064E3B),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC2FBF4E4),
-    glassBorder: Color(0xD9FFFFFF),
     heatmap: [
       Color(0xFFE6E2D8),
       Color(0xFFF6E3A2),
@@ -266,8 +264,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF00301F),
     art: Color(0xFF00301F),
     artInk: Color(0xFFFFE27A),
-    glass: Color(0xF2FFFFFF),
-    glassBorder: Color(0xFF3A3A3A),
     heatmap: [
       Color(0xFFE0E0E0),
       Color(0xFFBDA45A),
@@ -307,8 +303,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFFA9E8C9),
     art: Color(0xFF0A0A0A),
     artInk: Color(0xFFFFE27A),
-    glass: Color(0xF20A0A0A),
-    glassBorder: Color(0xFF9A9A9A),
     heatmap: [
       Color(0xFF1F1F1F),
       Color(0xFF6B5A16),
@@ -348,8 +342,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     Color? toggleOn,
     Color? art,
     Color? artInk,
-    Color? glass,
-    Color? glassBorder,
     List<Color>? heatmap,
     Color? ring,
     Color? tertiary,
@@ -381,8 +373,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: toggleOn ?? this.toggleOn,
     art: art ?? this.art,
     artInk: artInk ?? this.artInk,
-    glass: glass ?? this.glass,
-    glassBorder: glassBorder ?? this.glassBorder,
     heatmap: heatmap ?? this.heatmap,
     ring: ring ?? this.ring,
     tertiary: tertiary ?? this.tertiary,
@@ -420,8 +410,6 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       toggleOn: mix(toggleOn, other.toggleOn),
       art: mix(art, other.art),
       artInk: mix(artInk, other.artInk),
-      glass: mix(glass, other.glass),
-      glassBorder: mix(glassBorder, other.glassBorder),
       heatmap: [
         for (var i = 0; i < heatmap.length; i++)
           mix(heatmap[i], other.heatmap[i]),

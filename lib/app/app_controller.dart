@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
@@ -9,9 +10,14 @@ class AppController extends ChangeNotifier {
   AppPalette _palette = AppPalette.sacred;
   AppPalette get palette => _palette;
 
+  /// Pilihan efek kaca dan tingkat hasil pengawas frame. Punya notifier
+  /// sendiri supaya ganti tingkat kaca tidak membangun ulang MaterialApp.
+  final glass = GlassController();
+
   Future<void> load() async {
     _themeMode = SharedPreferencesService.getThemeMode();
     _palette = SharedPreferencesService.getPalette();
+    glass.load();
   }
 
   Future<void> setPalette(AppPalette palette) async {

@@ -14,6 +14,7 @@ import 'package:quran_app_2025/features/reader/presentation/card_parts.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'golden_harness.dart';
@@ -103,6 +104,30 @@ void main() {
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/05_kartu_${variant.suffix}.png'),
+      );
+    });
+  }
+
+  // Nav kaca dilipat setelah gulir turun: ayat terlihat lewat kaca di area
+  // status bar (LIQUID_GLASS.md §6).
+  for (final brightness in Brightness.values) {
+    testWidgets('05 kartu · gulir ${brightness.name}', (tester) async {
+      await _prepare(tester);
+      await _pumpReader(tester, variant: GoldenVariant(brightness, 1));
+      await _settle(tester);
+      final list = find.byType(ScrollablePositionedList);
+      final gesture = await tester.startGesture(tester.getCenter(list));
+      for (var i = 0; i < 10; i++) {
+        await gesture.moveBy(const Offset(0, -26));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await tester.pump(const Duration(milliseconds: 300));
+      await gesture.up();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Surah').hitTestable(), findsNothing);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/05_kartu_gulir_${brightness.name}.png'),
       );
     });
   }

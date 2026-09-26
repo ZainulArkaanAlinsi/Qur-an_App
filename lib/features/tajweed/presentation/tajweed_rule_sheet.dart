@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/glass_sheet.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -47,13 +48,12 @@ Future<void> showTajweedRuleSheet(
   TajweedExplanations? explanations,
 }) {
   final tokens = Theme.of(context).extension<SacredTokens>()!;
-  return showModalBottomSheet<void>(
+  return showGlassSheet<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    backgroundColor: tokens.bg,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+    background: tokens.bg,
+    header: (sheetContext) => _RuleHeader(
+      rule: rule,
+      color: palette.colorFor(rule, Theme.of(sheetContext).brightness),
     ),
     builder: (sheetContext) => TajweedRuleSheet(
       verse: verse,
@@ -73,6 +73,41 @@ Future<void> showTajweedRuleSheet(
       },
     ),
   );
+}
+
+/// Kepala kaca sheet aturan tajwid: warna hukum dan namanya.
+class _RuleHeader extends StatelessWidget {
+  const _RuleHeader({required this.rule, required this.color});
+
+  final TajweedRule rule;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Row(
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text(
+                rule.nameId,
+                style: SacredText.stageTitle.copyWith(color: tokens.ink),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class TajweedRuleSheet extends StatelessWidget {
@@ -113,29 +148,7 @@ class TajweedRuleSheet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      rule.nameId,
-                      style: SacredText.stageTitle.copyWith(color: tokens.ink),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 2),
             Text(
               'DRAF — nama hukum belum direview guru tajwid',
               style: SacredText.cardNote.copyWith(color: tokens.goldText),

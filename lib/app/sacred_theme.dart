@@ -1,6 +1,7 @@
 // CupertinoPageTransitionsBuilder tinggal di pustaka Cupertino, bukan Material.
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/glass_tokens.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 
 /// Pilihan warna aplikasi. Sepia untuk membaca lama di ruangan terang,
@@ -41,9 +42,23 @@ abstract final class SacredTheme {
     };
   }
 
+  /// Token kaca v4 (LIQUID_GLASS.md §4). Sepia gelap memakai kaca gelap,
+  /// sama seperti token warnanya.
+  static GlassTokens glassFor(AppPalette palette, Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    return switch (palette) {
+      AppPalette.sacred => isDark ? GlassTokens.dark : GlassTokens.light,
+      AppPalette.sepia => isDark ? GlassTokens.dark : GlassTokens.sepia,
+      AppPalette.highContrast =>
+        isDark ? GlassTokens.highContrastDark : GlassTokens.highContrastLight,
+    };
+  }
+
   static ThemeData themeFor(AppPalette palette, Brightness brightness) {
     final tokens = tokensFor(palette, brightness);
-    final base = _theme(brightness).copyWith(extensions: [tokens]);
+    final base = _theme(
+      brightness,
+    ).copyWith(extensions: [tokens, glassFor(palette, brightness)]);
     final isDark = brightness == Brightness.dark;
     return switch (palette) {
       AppPalette.sacred => base,

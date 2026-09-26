@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/distribution.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -120,41 +121,50 @@ class _AppShellState extends State<AppShell> {
       backgroundColor: tokens.bg,
       // Tab bar mengambang di atas isi layar; tiap halaman menyisakan ruang
       // kosong di bawah daftarnya sendiri supaya tidak ada yang tertutup.
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: SafeArea(
-              bottom: false,
-              child: IndexedStack(index: _index, children: pages),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: AudioMiniPlayer(
-                    onOpen: (surah, ayah) => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ReaderScreen(surah: surah, initialVerse: ayah),
+      // Satu BackdropGroup: tab bar dan mini player berbagi satu tangkapan
+      // backdrop (LIQUID_GLASS.md §7).
+      // Pengawas frame hanya bekerja selama layar berkaca ini tampil.
+      body: GlassGovernorScope(
+        child: BackdropGroup(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: SafeArea(
+                  bottom: false,
+                  child: IndexedStack(index: _index, children: pages),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Jeda 8 di atas tab bar supaya dua kaca tidak saling
+                    // menempel tepinya.
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: AudioMiniPlayer(
+                        onOpen: (surah, ayah) => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ReaderScreen(surah: surah, initialVerse: ayah),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    FloatingTabBar(
+                      tabs: _tabs,
+                      currentIndex: _index,
+                      onSelected: (value) => setState(() => _index = value),
+                    ),
+                  ],
                 ),
-                FloatingTabBar(
-                  tabs: _tabs,
-                  currentIndex: _index,
-                  onSelected: (value) => setState(() => _index = value),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

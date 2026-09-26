@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
+import 'package:quran_app_2025/app/glass/glass_motion.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -59,7 +63,8 @@ class ReaderScreen extends StatefulWidget {
   State<ReaderScreen> createState() => _ReaderScreenState();
 }
 
-class _ReaderScreenState extends State<ReaderScreen> {
+class _ReaderScreenState extends State<ReaderScreen>
+    with SingleTickerProviderStateMixin {
   late Future<_ReaderContent> _content;
   late ReadingSessionTracker _tracker;
   bool _focusMode = false;
@@ -76,6 +81,96 @@ class _ReaderScreenState extends State<ReaderScreen> {
   Timer? _saveTimer;
   int _currentVerse = 1;
   bool _ready = false;
+
+  /// Nav kaca menumpang di atas daftar dan dilipat saat menggulir turun
+  /// (LIQUID_GLASS.md §6). 1 = tampil penuh, 0 = tinggal area status bar.
+  late final AnimationController _navShown = AnimationController(
+    vsync: this,
+    value: 1,
+    duration: GlassMotion.navToggle,
+  );
+
+  /// Tinggi baris nav tanpa area status bar; diukur setelah tata letak.
+  final _navRow = ValueNotifier<double>(0);
+
+  /// Tinggi area daftar, untuk mengubah tinggi nav menjadi perataan item.
+  double _viewport = 0;
+
+  ScrollDirection _userScroll = ScrollDirection.idle;
+  double _scrollRun = 0;
+
+  /// Perkiraan tinggi baris nav sebelum diukur: padding 12 + kolom judul
+  /// (dua baris teks) atau tombol 44, mana yang lebih tinggi.
+  double _navRowHeight(BuildContext context) {
+    if (_navRow.value > 0) return _navRow.value;
+    final scale = MediaQuery.textScalerOf(context).scale(16) / 16;
+    return 12 + math.max(44, 8 + 40 * scale);
+  }
+
+  /// Bagian atas daftar yang sedang tertutup nav, dalam piksel.
+  double get _navCover =>
+      MediaQuery.paddingOf(context).top +
+      _navRowHeight(context) * _navShown.value +
+      _navHairline;
+
+  /// [_navCover] sebagai pecahan tinggi daftar, untuk perataan item.
+  double get _navAlignment => _focusMode || _viewport <= 0
+      ? 0
+      : (_navCover / _viewport).clamp(0.0, .5).toDouble();
+
+  void _setNav(bool shown) {
+    final target = shown ? 1.0 : 0.0;
+    if (_navShown.value == target && !_navShown.isAnimating) return;
+    if (_navShown.isAnimating && _navShown.velocity.sign == (shown ? 1 : -1)) {
+      return;
+    }
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    _navShown.animateTo(
+      target,
+      duration: reduced ? GlassMotion.reducedFade : GlassMotion.navToggle,
+      curve: reduced ? Curves.linear : GlassMotion.ease,
+    );
+  }
+
+  void _setFocusMode(bool focus) {
+    setState(() {
+      _focusMode = focus;
+      _navShown.value = 1;
+      _scrollRun = 0;
+    });
+  }
+
+  /// Sembunyikan nav setelah gulir turun > 24 px oleh pengguna; tampilkan
+  /// lagi saat gulir naik atau kembali ke atas. Gulir otomatis (ikut audio,
+  /// lompat ayat) tidak mengubah nav.
+  bool _onListScroll(ScrollNotification notification) {
+    if (_focusMode ||
+        notification.depth != 0 ||
+        notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    // Pembaca layar: nav selalu tampil supaya tombol kembali tetap terjangkau.
+    if (MediaQuery.accessibleNavigationOf(context)) return false;
+    if (notification is UserScrollNotification) {
+      _userScroll = notification.direction;
+      _scrollRun = 0;
+    } else if (notification is ScrollUpdateNotification) {
+      if (notification.metrics.extentBefore <= 0) {
+        _setNav(true);
+        return false;
+      }
+      if (_userScroll == ScrollDirection.idle) return false;
+      final delta = notification.scrollDelta ?? 0;
+      if (delta > 0) {
+        _scrollRun = _scrollRun < 0 ? delta : _scrollRun + delta;
+        if (_scrollRun > GlassMotion.navHideDistance) _setNav(false);
+      } else if (delta < 0) {
+        _scrollRun = _scrollRun > 0 ? delta : _scrollRun + delta;
+        if (_scrollRun < -8) _setNav(true);
+      }
+    }
+    return false;
+  }
 
   /// Kartu pertama yang terlihat saat layar dibuka.
   late final int _firstCard = widget.initialVerse
@@ -403,7 +498,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
             .where(
               (item) =>
                   item.index > 0 &&
-                  item.itemTrailingEdge > 0 &&
+                  // Ayat yang tertutup nav belum dianggap sedang dibaca.
+                  item.itemTrailingEdge > _navAlignment &&
                   item.itemLeadingEdge < 1,
             )
             .toList()
@@ -482,7 +578,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (!mounted) return;
     _tracker.setPaused(false);
     if (result != null && _scroll.isAttached) {
-      _scroll.jumpTo(index: _indexForVerse(result));
+      _scroll.jumpTo(index: _indexForVerse(result), alignment: _navAlignment);
     }
   }
 
@@ -643,14 +739,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final visible = _positions.itemPositions.value.any(
       (item) =>
           item.index == index &&
-          item.itemLeadingEdge >= 0 &&
+          item.itemLeadingEdge >= _navAlignment &&
           item.itemTrailingEdge <= .85,
     );
     if (visible) return;
     unawaited(
       _scroll.scrollTo(
         index: index,
-        alignment: .08,
+        alignment: .08 + _navAlignment,
         duration: const Duration(milliseconds: 450),
         curve: Curves.easeOutCubic,
       ),
@@ -662,6 +758,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
     _saveTimer?.cancel();
     _savePosition();
     _positions.itemPositions.removeListener(_positionChanged);
+    _navShown.dispose();
+    _navRow.dispose();
     QuranAudioService.instance.playingVerse.removeListener(_followAudio);
     QuranAudioService.instance.error.removeListener(_showAudioError);
     _timerText.dispose();
@@ -686,6 +784,130 @@ class _ReaderScreenState extends State<ReaderScreen> {
     );
   }
 
+  /// Daftar kartu ayat. Di mode kartu, kepala daftar (item 0) memuat ruang
+  /// untuk nav kaca, chip bahasa/tajwid, petunjuk tajwid, dan pelat surah.
+  Widget _buildList(
+    _ReaderContent content,
+    List<String> verses,
+    int itemCount,
+  ) => Listener(
+    onPointerDown: (_) => _tracker.interact(),
+    child: ScrollablePositionedList.builder(
+      itemScrollController: _scroll,
+      itemPositionsListener: _positions,
+      initialScrollIndex: _currentVerse == 1
+          ? 0
+          : _indexForVerse(_currentVerse),
+      // Ayat lanjutan dibuka tepat di bawah nav, bukan di belakangnya.
+      initialAlignment: _currentVerse == 1 ? 0 : _navAlignment,
+      physics: const BouncingScrollPhysics(),
+      padding: _focusMode
+          ? const EdgeInsets.fromLTRB(22, 8, 22, 20)
+          : const EdgeInsets.only(bottom: 28),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          final plate = _SurahPlate(
+            surah: widget.surah,
+            arabicName: content.arabicName,
+            timerText: _timerText,
+            tracker: _tracker,
+            compact: _focusMode,
+          );
+          if (_focusMode) return plate;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Ruang di bawah nav kaca; nav sendiri menumpang di atas daftar
+              // sehingga ayat tidak bergeser saat nav dilipat.
+              ValueListenableBuilder<double>(
+                valueListenable: _navRow,
+                builder: (context, _, _) => SizedBox(
+                  height:
+                      MediaQuery.paddingOf(context).top +
+                      _navRowHeight(context) +
+                      _navHairline,
+                ),
+              ),
+              // Di tengah, seperti saat chip masih di luar daftar.
+              Center(
+                child: ReaderChips(
+                  languageLabel: _languageLabel,
+                  tajweed: _tajweed,
+                  onLanguage: () => unawaited(_openTranslations()),
+                  onTajweed: () => _toggleTajweed(content),
+                ),
+              ),
+              if (_tajweed &&
+                  content.tajweed != null &&
+                  !SharedPreferencesService.getTajweedHintDone())
+                TajweedHint(
+                  onClose: () {
+                    unawaited(SharedPreferencesService.setTajweedHintDone());
+                    setState(() {});
+                  },
+                ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: plate,
+              ),
+            ],
+          );
+        }
+        if (_focusMode) {
+          return _FocusBlock(
+            verses: verses,
+            first: (index - 1) * _focusChunk,
+            count: _focusChunk,
+            basmalah: content.basmalah,
+            size: _arabicSize,
+            lineHeight: _lineHeight,
+          );
+        }
+        final number = index;
+        final translation = content.translation;
+        final second = _second;
+        final secondVerses = _secondVerses;
+        // Bahasa kedua yang belum tersimpan ditawarkan
+        // sekali, di kartu pertama yang dibuka.
+        final offerDownload =
+            second != null && secondVerses == null && number == _firstCard;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: _VerseCard(
+            key: ValueKey('${widget.surah.number}:$number'),
+            verseNumber: number,
+            arabic: verses[number - 1],
+            basmalah: number == 1 ? content.basmalah : 0,
+            onTajweedTap: (rule, inBasmalah) =>
+                _openRule(content, number, rule, inBasmalah: inBasmalah),
+            tajweed: _tajweed && content.tajweed != null
+                ? content.tajweed![number - 1]
+                : null,
+            translation: _showTranslation && translation != null
+                ? translation[number - 1]
+                : null,
+            secondCode: second == null ? null : translationCode(second),
+            secondText: secondVerses?[number - 1],
+            secondRtl: second?.direction == 'rtl',
+            extra: offerDownload
+                ? TranslationDownloadRow(
+                    edition: second,
+                    state: _download,
+                    onDownload: () => unawaited(_downloadSecond()),
+                  )
+                : null,
+            surahNumber: widget.surah.number,
+            arabicSize: _arabicSize,
+            lineHeight: _lineHeight,
+            onPlay: _playVerse,
+          ),
+        );
+      },
+    ),
+  );
+
   Widget _buildBody(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     return Scaffold(
@@ -708,171 +930,92 @@ class _ReaderScreenState extends State<ReaderScreen> {
               ? (verses.length / _focusChunk).ceil() + 1
               : verses.length + 1;
 
-          return Stack(
-            children: [
-              if (_focusMode)
-                Positioned.fill(
-                  child: GeometricPattern(
-                    tile: 56,
-                    opacity: .05,
-                    color: tokens.gold,
-                  ),
-                ),
-              Column(
+          // Satu BackdropGroup per rute: semua kaca di pembaca berbagi satu
+          // tangkapan backdrop (LIQUID_GLASS.md §7).
+          return GlassGovernorScope(
+            child: BackdropGroup(
+              child: Stack(
                 children: [
                   if (_focusMode)
-                    _FocusHeader(
-                      onClose: () => setState(() => _focusMode = false),
-                      onDisplay: _openDisplaySheet,
-                    )
-                  else
-                    _ReaderNav(
-                      surah: widget.surah,
-                      verse: _verse,
-                      content: content,
-                      onBack: () => Navigator.of(context).maybePop(),
-                      onJump: _jumpToVerse,
-                      onDisplay: () => unawaited(_openReadingMode(content)),
-                      onFocus: () => setState(() => _focusMode = true),
-                    ),
-                  if (!_focusMode)
-                    ReaderChips(
-                      languageLabel: _languageLabel,
-                      tajweed: _tajweed,
-                      onLanguage: () => unawaited(_openTranslations()),
-                      onTajweed: () => _toggleTajweed(content),
-                    ),
-                  if (!_focusMode &&
-                      _tajweed &&
-                      content.tajweed != null &&
-                      !SharedPreferencesService.getTajweedHintDone())
-                    TajweedHint(
-                      onClose: () {
-                        unawaited(
-                          SharedPreferencesService.setTajweedHintDone(),
-                        );
-                        setState(() {});
-                      },
-                    ),
-                  Expanded(
-                    child: Listener(
-                      onPointerDown: (_) => _tracker.interact(),
-                      child: ScrollablePositionedList.builder(
-                        itemScrollController: _scroll,
-                        itemPositionsListener: _positions,
-                        initialScrollIndex: _currentVerse == 1
-                            ? 0
-                            : _indexForVerse(_currentVerse),
-                        physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(
-                          _focusMode ? 22 : 10,
-                          8,
-                          _focusMode ? 22 : 10,
-                          _focusMode ? 20 : 28,
-                        ),
-                        itemCount: itemCount,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return _SurahPlate(
-                              surah: widget.surah,
-                              arabicName: content.arabicName,
-                              timerText: _timerText,
-                              tracker: _tracker,
-                              compact: _focusMode,
-                            );
-                          }
-                          if (_focusMode) {
-                            return _FocusBlock(
-                              verses: verses,
-                              first: (index - 1) * _focusChunk,
-                              count: _focusChunk,
-                              basmalah: content.basmalah,
-                              size: _arabicSize,
-                              lineHeight: _lineHeight,
-                            );
-                          }
-                          final number = index;
-                          final translation = content.translation;
-                          final second = _second;
-                          final secondVerses = _secondVerses;
-                          // Bahasa kedua yang belum tersimpan ditawarkan
-                          // sekali, di kartu pertama yang dibuka.
-                          final offerDownload =
-                              second != null &&
-                              secondVerses == null &&
-                              number == _firstCard;
-                          return _VerseCard(
-                            key: ValueKey('${widget.surah.number}:$number'),
-                            verseNumber: number,
-                            arabic: verses[number - 1],
-                            basmalah: number == 1 ? content.basmalah : 0,
-                            onTajweedTap: (rule, inBasmalah) => _openRule(
-                              content,
-                              number,
-                              rule,
-                              inBasmalah: inBasmalah,
-                            ),
-                            tajweed: _tajweed && content.tajweed != null
-                                ? content.tajweed![number - 1]
-                                : null,
-                            translation: _showTranslation && translation != null
-                                ? translation[number - 1]
-                                : null,
-                            secondCode: second == null
-                                ? null
-                                : translationCode(second),
-                            secondText: secondVerses?[number - 1],
-                            secondRtl: second?.direction == 'rtl',
-                            extra: offerDownload
-                                ? TranslationDownloadRow(
-                                    edition: second,
-                                    state: _download,
-                                    onDownload: () =>
-                                        unawaited(_downloadSecond()),
-                                  )
-                                : null,
-                            surahNumber: widget.surah.number,
-                            arabicSize: _arabicSize,
-                            lineHeight: _lineHeight,
-                            onPlay: _playVerse,
-                          );
-                        },
+                    Positioned.fill(
+                      child: GeometricPattern(
+                        tile: 56,
+                        opacity: .05,
+                        color: tokens.gold,
                       ),
                     ),
+                  Column(
+                    children: [
+                      if (_focusMode)
+                        _FocusHeader(
+                          onClose: () => _setFocusMode(false),
+                          onDisplay: _openDisplaySheet,
+                        ),
+                      Expanded(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: _onListScroll,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              _viewport = constraints.maxHeight;
+                              return _buildList(content, verses, itemCount);
+                            },
+                          ),
+                        ),
+                      ),
+                      if (_focusMode)
+                        _FocusBar(
+                          tracker: _tracker,
+                          onMurottal: () => unawaited(_openMurottal(content)),
+                          onTranslation: () {
+                            _showTranslation = true;
+                            _setFocusMode(false);
+                          },
+                        ),
+                      SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                          child: _audioError == null
+                              ? AudioMiniPlayer(
+                                  onOpen: (_, __) =>
+                                      unawaited(_openMurottal(content)),
+                                )
+                              : _AudioUnavailable(
+                                  message: _audioError!,
+                                  onRetry: () {
+                                    final ayah = _audioErrorVerse;
+                                    setState(() => _audioError = null);
+                                    if (ayah != null) {
+                                      unawaited(_playVerse(ayah));
+                                    }
+                                  },
+                                  onDismiss: () =>
+                                      setState(() => _audioError = null),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
-                  if (_focusMode)
-                    _FocusBar(
-                      tracker: _tracker,
-                      onMurottal: () => unawaited(_openMurottal(content)),
-                      onTranslation: () => setState(() {
-                        _focusMode = false;
-                        _showTranslation = true;
-                      }),
+                  if (!_focusMode)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: _ReaderNav(
+                        surah: widget.surah,
+                        verse: _verse,
+                        content: content,
+                        shown: _navShown,
+                        onRowHeight: (height) => _navRow.value = height,
+                        onBack: () => Navigator.of(context).maybePop(),
+                        onJump: _jumpToVerse,
+                        onDisplay: () => unawaited(_openReadingMode(content)),
+                        onFocus: () => _setFocusMode(true),
+                      ),
                     ),
-                  SafeArea(
-                    top: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                      child: _audioError == null
-                          ? AudioMiniPlayer(
-                              onOpen: (_, __) =>
-                                  unawaited(_openMurottal(content)),
-                            )
-                          : _AudioUnavailable(
-                              message: _audioError!,
-                              onRetry: () {
-                                final ayah = _audioErrorVerse;
-                                setState(() => _audioError = null);
-                                if (ayah != null) unawaited(_playVerse(ayah));
-                              },
-                              onDismiss: () =>
-                                  setState(() => _audioError = null),
-                            ),
-                    ),
-                  ),
                 ],
               ),
-            ],
+            ),
           );
         },
       ),
@@ -885,6 +1028,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 }
 
+/// Garis rambut di bawah nav pembaca.
+const _navHairline = .5;
+
 /// Navigasi kaca pembaca (Pembaca.html): kembali ke daftar surah, judul surah
 /// dengan posisi Juz/halaman, lalu tombol Tampilan dan Mode fokus.
 class _ReaderNav extends StatelessWidget {
@@ -892,6 +1038,8 @@ class _ReaderNav extends StatelessWidget {
     required this.surah,
     required this.verse,
     required this.content,
+    required this.shown,
+    required this.onRowHeight,
     required this.onBack,
     required this.onJump,
     required this.onDisplay,
@@ -901,6 +1049,12 @@ class _ReaderNav extends StatelessWidget {
   final SurahMeta surah;
   final ValueNotifier<int> verse;
   final _ReaderContent content;
+
+  /// 1 = baris nav tampil, 0 = dilipat sampai tinggal area status bar.
+  final Animation<double> shown;
+
+  /// Tinggi baris nav penuh, untuk ruang kosong di kepala daftar.
+  final ValueChanged<double> onRowHeight;
   final VoidCallback onBack;
   final VoidCallback onJump;
   final VoidCallback onDisplay;
@@ -909,116 +1063,180 @@ class _ReaderNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return GlassSurface(
+    final row = _NavRowSize(
+      onHeight: onRowHeight,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 8, 8),
+        child: _row(context, tokens),
+      ),
+    );
+    // Bilah menempel di tepi atas layar, jadi tanpa bayangan L0. Saat
+    // dilipat, baris nav bergeser ke atas di dalam kaca dan kacanya tinggal
+    // menutupi area status bar.
+    return LiquidGlass(
       borderRadius: BorderRadius.zero,
-      tint: tokens.glass,
-      child: SafeArea(
-        bottom: false,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(4, 4, 8, 8),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: tokens.sep, width: .5)),
+      shadow: false,
+      // Container, bukan DecoratedBox: garis rambut ikut menambah tinggi,
+      // sama seperti ruang kosong di kepala daftar (_navHairline).
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: tokens.sep, width: _navHairline),
           ),
-          child: Row(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: onBack,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      LineIcon(
-                        SacredIcons.chevronLeft,
-                        color: tokens.primaryText,
-                        size: 24,
-                        strokeWidth: 2.2,
-                      ),
-                      Text(
-                        'Surah',
-                        style: SacredText.backLabel.copyWith(
-                          color: tokens.primaryText,
-                        ),
-                      ),
-                    ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: MediaQuery.paddingOf(context).top),
+            ClipRect(
+              child: AnimatedBuilder(
+                animation: shown,
+                child: row,
+                builder: (context, child) => Align(
+                  alignment: Alignment.bottomCenter,
+                  heightFactor: shown.value,
+                  child: ExcludeSemantics(
+                    excluding: shown.value == 0,
+                    child: IgnorePointer(
+                      ignoring: shown.value < 1,
+                      child: FadeTransition(opacity: shown, child: child),
+                    ),
                   ),
                 ),
               ),
-              Expanded(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: onJump,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                surah.displayName,
-                                textAlign: TextAlign.center,
-                                maxLines:
-                                    MediaQuery.textScalerOf(context).scale(16) /
-                                            16 >=
-                                        1.6
-                                    ? 2
-                                    : 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: SacredText.navTitle.copyWith(
-                                  color: tokens.ink,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 3),
-                            LineIcon(
-                              SacredIcons.chevronDown,
-                              color: tokens.sec,
-                              size: 15,
-                              strokeWidth: 2.4,
-                            ),
-                          ],
-                        ),
-                        Text(
-                          'Kartu ayat · ${surah.ayahCount} ayat',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _row(BuildContext context, SacredTokens tokens) {
+    return Row(
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onBack,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LineIcon(
+                  SacredIcons.chevronLeft,
+                  color: tokens.primaryText,
+                  size: 24,
+                  strokeWidth: 2.2,
+                ),
+                Text(
+                  'Surah',
+                  style: SacredText.backLabel.copyWith(
+                    color: tokens.primaryText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: onJump,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          surah.displayName,
                           textAlign: TextAlign.center,
-                          // Teks besar: boleh dua baris, jangan terpotong.
                           maxLines:
                               MediaQuery.textScalerOf(context).scale(16) / 16 >=
                                   1.6
                               ? 2
                               : 1,
                           overflow: TextOverflow.ellipsis,
-                          style: SacredText.navSubtitle.copyWith(
-                            color: tokens.sec,
+                          style: SacredText.navTitle.copyWith(
+                            color: tokens.ink,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 3),
+                      LineIcon(
+                        SacredIcons.chevronDown,
+                        color: tokens.sec,
+                        size: 15,
+                        strokeWidth: 2.4,
+                      ),
+                    ],
                   ),
-                ),
+                  Text(
+                    'Kartu ayat · ${surah.ayahCount} ayat',
+                    textAlign: TextAlign.center,
+                    // Teks besar: boleh dua baris, jangan terpotong.
+                    maxLines:
+                        MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6
+                        ? 2
+                        : 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: SacredText.navSubtitle.copyWith(color: tokens.sec),
+                  ),
+                ],
               ),
-              _FillButton(
-                tooltip: 'Tampilan bacaan',
-                onTap: onDisplay,
-                paths: SacredIcons.textSize,
-              ),
-              _FillButton(
-                tooltip: 'Mode fokus',
-                onTap: onFocus,
-                paths: SacredIcons.moon,
-                iconSize: 19,
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+        _FillButton(
+          tooltip: 'Tampilan bacaan',
+          onTap: onDisplay,
+          paths: SacredIcons.textSize,
+        ),
+        _FillButton(
+          tooltip: 'Mode fokus',
+          onTap: onFocus,
+          paths: SacredIcons.moon,
+          iconSize: 19,
+        ),
+      ],
     );
+  }
+}
+
+/// Melaporkan tinggi baris nav setelah tata letak. Dipasang di dalam
+/// `Align` yang melipat nav, jadi yang dilaporkan selalu tinggi penuhnya.
+class _NavRowSize extends SingleChildRenderObjectWidget {
+  const _NavRowSize({required this.onHeight, super.child});
+
+  final ValueChanged<double> onHeight;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderNavRowSize(onHeight);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderNavRowSize render) {
+    render.onHeight = onHeight;
+  }
+}
+
+class _RenderNavRowSize extends RenderProxyBox {
+  _RenderNavRowSize(this.onHeight);
+
+  ValueChanged<double> onHeight;
+  double? _reported;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final height = size.height;
+    if (height == _reported) return;
+    _reported = height;
+    // Jangan mengubah state di tengah tata letak.
+    WidgetsBinding.instance.addPostFrameCallback((_) => onHeight(height));
   }
 }
 

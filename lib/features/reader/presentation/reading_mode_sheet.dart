@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/glass/glass_sheet.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -44,14 +45,10 @@ Future<void> showReadingModeSheet(
   ValueChanged<ReadingMode>? onMode,
 }) {
   final tokens = Theme.of(context).extension<SacredTokens>()!;
-  return showModalBottomSheet<void>(
+  return showGlassSheet<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    backgroundColor: tokens.bg,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-    ),
+    background: tokens.bg,
+    header: (_) => const _ReadingModeHeader(),
     builder: (sheetContext) => ReadingModeSheet(
       tajweed: tajweed,
       onTajweed: onTajweed,
@@ -69,6 +66,57 @@ Future<void> showReadingModeSheet(
             },
     ),
   );
+}
+
+/// Kepala kaca sheet Tampilan baca: judul dan tombol Selesai.
+class _ReadingModeHeader extends StatelessWidget {
+  const _ReadingModeHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text(
+                'Tampilan baca',
+                style: SacredText.headline.copyWith(
+                  color: tokens.ink,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ),
+          Semantics(
+            button: true,
+            excludeSemantics: true,
+            label: 'Selesai',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => Navigator.pop(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 10,
+                ),
+                child: Text(
+                  'Selesai',
+                  style: SacredText.headline.copyWith(
+                    color: tokens.primaryText,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ReadingModeSheet extends StatefulWidget {
@@ -120,7 +168,7 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
       return _ModeCard(
         icon: icon,
         title: title,
-        subtitle: open ? subtitle : '$subtitle · segera',
+        subtitle: subtitle,
         selected: widget.mode == value,
         available: open,
         onTap: open && widget.mode != value && widget.onMode != null
@@ -156,44 +204,6 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      'Tampilan baca',
-                      style: SacredText.headline.copyWith(
-                        color: tokens.ink,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                Semantics(
-                  button: true,
-                  excludeSemantics: true,
-                  label: 'Selesai',
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => Navigator.pop(context),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 10,
-                      ),
-                      child: Text(
-                        'Selesai',
-                        style: SacredText.headline.copyWith(
-                          color: tokens.primaryText,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 10),
             if (stacked)
               Column(
@@ -218,6 +228,14 @@ class _ReadingModeSheetState extends State<ReadingModeSheet> {
                   ],
                 ),
               ),
+            if (!widget.available.containsAll(ReadingMode.values)) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Tampilan halaman mushaf menyusul setelah izin tata letak '
+                'Mushaf Madinah keluar.',
+                style: SacredText.cardNote.copyWith(color: tokens.sec),
+              ),
+            ],
             const SizedBox(height: 14),
             GroupedList(
               children: [
@@ -319,38 +337,59 @@ class _ModeCard extends StatelessWidget {
           : open
           ? '$title, ketuk untuk memilih'
           : '$title, belum tersedia',
-      child: Opacity(
-        opacity: open ? 1 : .55,
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(8, 14, 8, 14),
-            decoration: BoxDecoration(
-              color: selected ? tokens.surf : tokens.bg,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: selected ? tokens.cta : tokens.sep,
-                width: selected ? 2 : 1,
-              ),
+      // Mode yang belum tersedia tidak dipudarkan (teks pudar sulit dibaca);
+      // ikonnya abu dan ada label "Segera"; alasannya di catatan bawah.
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 14, 8, 12),
+          decoration: BoxDecoration(
+            color: selected ? tokens.surf : tokens.bg,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected ? tokens.cta : tokens.sep,
+              width: selected ? 2 : 1,
             ),
-            child: Column(
-              children: [
-                LineIcon(icon, color: tokens.primaryText, size: 26),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: SacredText.buttonSmall.copyWith(color: tokens.ink),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+          ),
+          child: Column(
+            children: [
+              LineIcon(
+                icon,
+                color: open ? tokens.primaryText : tokens.sec,
+                size: 26,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: SacredText.buttonSmall.copyWith(color: tokens.ink),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: SacredText.cardNote.copyWith(color: tokens.sec),
+              ),
+              if (!open) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tokens.goldSoft,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Segera',
+                    textAlign: TextAlign.center,
+                    style: SacredText.cardNote.copyWith(color: tokens.goldText),
+                  ),
                 ),
               ],
-            ),
+            ],
           ),
         ),
       ),

@@ -38,6 +38,15 @@ Rules:
 - Onboarding tampil sekali (`onboarding.selesai.v1`). Rumus gerak di DESIGN v3 §5c adalah spesifikasi, bukan saran.
 - Semua font, paket, dan aset harus gratis dengan lisensi yang jelas (lihat `docs/design/v3/LISENSI_ASET.md`). Jangan menambah yang berbayar.
 
+## Liquid glass v4
+
+Acuan: `docs/design/v4-liquid-glass/LIQUID_GLASS.md`, rubrik `AUDIT_RUBRIK.md`.
+
+- Efek kaca hanya lewat `LiquidGlass` di `lib/app/glass/`. Layar tidak boleh memanggil `BackdropFilter` sendiri.
+- Kaca hanya untuk chrome mengambang (LIQUID_GLASS.md §2). Tidak pernah di item daftar, dan tidak pernah di belakang teks ayat.
+- Teks ayat dan terjemahan tidak diubah dan tanpa efek. Warna tajwid ≥ 4.5 : 1 di semua permukaan ayat.
+- Setiap perubahan kaca wajib: `bash tool/glass_audit.sh` 0 GAGAL, `flutter analyze` bersih, `flutter test` lulus, golden diperbarui lalu dilihat.
+
 ## Aturan konten
 
 - Ayat & terjemahan hanya dari dataset berlisensi, verbatim, dengan atribusi & versi. Tidak diketik ulang, tidak dari AI, tidak dari mockup.

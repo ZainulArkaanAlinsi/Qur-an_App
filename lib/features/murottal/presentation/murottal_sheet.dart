@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/glass_sheet.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
@@ -16,17 +17,42 @@ Future<void> showMurottalSheet(
   required SurahMeta surah,
   required String arabicName,
   required int verse,
-}) => showModalBottomSheet<void>(
+}) => showGlassSheet<void>(
   context: context,
-  isScrollControlled: true,
-  showDragHandle: true,
-  backgroundColor: Theme.of(context).extension<SacredTokens>()!.surf,
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-  ),
+  background: Theme.of(context).extension<SacredTokens>()!.surf,
+  header: (_) => const _MurottalHeader(),
   builder: (_) =>
       _MurottalSheet(surah: surah, arabicName: arabicName, verse: verse),
 );
+
+/// Kepala kaca sheet murottal: kualitas audio dan tombol tutup.
+class _MurottalHeader extends StatelessWidget {
+  const _MurottalHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final reciter = SharedPreferencesService.getReciter();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Per ayat · ${reciter.bitrate ?? 128} kbps',
+              style: SacredText.eyebrow.copyWith(color: tokens.sec),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Tutup',
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(CupertinoIcons.xmark, color: tokens.sec, size: 20),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _MurottalSheet extends StatefulWidget {
   const _MurottalSheet({
@@ -97,7 +123,6 @@ class _MurottalSheetState extends State<_MurottalSheet> {
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final audio = QuranAudioService.instance;
-    final reciter = SharedPreferencesService.getReciter();
 
     return SafeArea(
       top: false,
@@ -106,21 +131,6 @@ class _MurottalSheetState extends State<_MurottalSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Per ayat · ${reciter.bitrate ?? 128} kbps',
-                    style: SacredText.eyebrow.copyWith(color: tokens.sec),
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Tutup',
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(CupertinoIcons.xmark, color: tokens.sec, size: 20),
-                ),
-              ],
-            ),
             const SizedBox(height: 6),
             Center(
               child: ConstrainedBox(

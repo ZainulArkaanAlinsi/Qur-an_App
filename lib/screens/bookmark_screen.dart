@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
-import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
@@ -37,7 +36,8 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                 final surah = surahCatalog.firstWhere(
                   (item) => item.number == surahId,
                 );
-                return GlassSurface(
+                final tokens = Theme.of(context).extension<SacredTokens>()!;
+                return _SolidCard(
                   padding: const EdgeInsets.fromLTRB(15, 12, 10, 12),
                   child: Row(
                     children: [
@@ -45,12 +45,12 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: SacredTheme.gold.withValues(alpha: .28),
+                          color: tokens.goldSoft,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Icon(
                           Icons.bookmark_rounded,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: tokens.primaryText,
                         ),
                       ),
                       const SizedBox(width: 13),
@@ -87,11 +87,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                     verse,
                                   ),
                                   style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                      ),
+                                      ?.copyWith(color: tokens.primaryText),
                                 ),
                               ],
                             ),
@@ -147,7 +143,7 @@ class _EmptyBookmarks extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: Padding(
       padding: const EdgeInsets.all(28),
-      child: GlassSurface(
+      child: _SolidCard(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -157,11 +153,11 @@ class _EmptyBookmarks extends StatelessWidget {
               height: 58,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: SacredTheme.primary.withValues(alpha: .10),
+                color: Theme.of(context).extension<SacredTokens>()!.primarySoft,
               ),
               child: Icon(
                 Icons.bookmark_add_outlined,
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).extension<SacredTokens>()!.primaryText,
                 size: 28,
               ),
             ),
@@ -181,4 +177,27 @@ class _EmptyBookmarks extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Kartu padat untuk isi yang dibaca: `surf` + `cardShadows`. Kaca hanya
+/// untuk bagian yang mengambang, tidak untuk item daftar (LIQUID_GLASS.md §2).
+class _SolidCard extends StatelessWidget {
+  const _SolidCard({required this.child, required this.padding});
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: tokens.surf,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: tokens.cardShadows,
+      ),
+      child: child,
+    );
+  }
 }

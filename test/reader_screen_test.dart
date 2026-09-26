@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
@@ -77,5 +78,57 @@ void main() {
     await tester.tap(find.text('Terjemahan'));
     await tester.pump();
     expect(find.text(translation.first), findsOneWidget);
+
+    // Nav kaca (LIQUID_GLASS.md §6): menumpang di atas daftar, dilipat
+    // setelah gulir turun > 24 px tanpa menggeser ayat, muncul lagi saat
+    // gulir naik.
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await tester.runAsync(() => QuranTextRepository.instance.versesForSurah(2));
+    await tester.runAsync(() => TranslationRepository.instance.forSurah(2));
+    await tester.runAsync(() => TajweedRepository.instance.forSurah(2));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SacredTheme.themeFor(AppPalette.sacred, Brightness.light),
+        home: ReaderScreen(surah: surahCatalog[1]),
+      ),
+    );
+    await tester.pump();
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+
+    final back = find.text('Surah').hitTestable();
+    final list = find.byType(ScrollablePositionedList);
+    expect(back, findsOneWidget);
+    final listRect = tester.getRect(list);
+    // Daftar mulai dari tepi atas layar; nav menumpang di atasnya.
+    expect(listRect.top, 0);
+
+    Future<void> slowDrag(double dy) async {
+      final gesture = await tester.startGesture(tester.getCenter(list));
+      for (var i = 0; i < 10; i++) {
+        await gesture.moveBy(Offset(0, dy / 10));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      final card = find.byKey(const ValueKey('2:2'));
+      final before = tester.getTopLeft(card);
+      // Jari diam: daftar tidak bergerak meski nav masih beranimasi.
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.getTopLeft(card), before);
+      await gesture.up();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    await slowDrag(-300);
+    expect(back, findsNothing, reason: 'nav dilipat setelah gulir turun');
+    expect(tester.getRect(list), listRect);
+
+    await slowDrag(60);
+    expect(back, findsOneWidget, reason: 'nav muncul lagi saat gulir naik');
+    expect(tester.getRect(list), listRect);
   });
 }
