@@ -72,6 +72,7 @@ class DailySession {
     this.skipped = const {},
     this.rating,
     this.tomorrow,
+    this.imported = false,
   });
 
   /// Tanggal lokal yyyy-mm-dd saat sesi dimulai.
@@ -97,6 +98,10 @@ class DailySession {
   /// Judul materi berikutnya ("besok: …"), diisi saat sesi selesai.
   final String? tomorrow;
 
+  /// Tanda selesai ini datang dari sinkron cloud (hanya tanggal), bukan
+  /// dikerjakan di HP ini. Dibuang bila akun lain masuk.
+  final bool imported;
+
   DailySession copyWith({
     SessionStep? step,
     String? lessonId,
@@ -116,6 +121,7 @@ class DailySession {
     skipped: skipped ?? this.skipped,
     rating: rating ?? this.rating,
     tomorrow: tomorrow ?? this.tomorrow,
+    imported: imported,
   );
 
   Map<String, dynamic> toJson() => {
@@ -128,6 +134,7 @@ class DailySession {
     if (skipped.isNotEmpty) 'dilewati': [for (final step in skipped) step.name],
     if (rating != null) 'nilai': rating!.name,
     if (tomorrow != null) 'besok': tomorrow,
+    if (imported) 'awan': true,
   };
 
   /// Gagal tertutup: entri rusak dianggap tidak ada.
@@ -158,6 +165,7 @@ class DailySession {
       },
       rating: SelfRating.fromName(json['nilai']),
       tomorrow: tomorrow is String ? tomorrow : null,
+      imported: json['awan'] == true,
     );
   }
 

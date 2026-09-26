@@ -7,6 +7,8 @@ import 'package:quran_app_2025/data/sura_names_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
 import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/domain/session_plan.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
@@ -83,7 +85,9 @@ void main() {
 
     expect(find.text('MULAI MEMBACA'), findsOneWidget);
     expect(find.text(surahCatalog.first.displayName), findsOneWidget);
-    expect(find.text('Mulai'), findsOneWidget);
+    // "Mulai" di kartu hero dan di kartu Sesi hari ini.
+    expect(find.text('Mulai'), findsNWidgets(2));
+    expect(find.text('Lanjutkan'), findsNothing);
     // Belum ada hafalan: ajakan memulai, tanpa pill jumlah ayat.
     expect(find.text('Mulai hafalan'), findsOneWidget);
     expect(find.textContaining(RegExp(r'^\d+ ayat$')), findsNothing);
@@ -187,5 +191,74 @@ void main() {
     expect(day.hijriIndonesian, '13 Rabīʿ al-thānī 1448');
     expect(PrayerDay.hijriMonthsId, hasLength(12));
     expect(PrayerDay.hijriMonthsId[8], 'Ramadan');
+  });
+
+  group('kartu Sesi hari ini (SESI_HARIAN.md §4)', () {
+    double top(WidgetTester tester, String text) =>
+        tester.getTopLeft(find.text(text)).dy;
+
+    testWidgets('titik mulai nol: paling atas, di atas kartu hero', (
+      tester,
+    ) async {
+      await tester.runAsync(() => _prefs({'belajar.titikMulai': 'nol'}));
+      await _pumpHome(tester);
+      expect(
+        top(tester, 'Sesi hari ini'),
+        lessThan(top(tester, 'MULAI MEMBACA')),
+      );
+    });
+
+    testWidgets('titik mulai hafalan: di bawah kartu Lanjutkan membaca', (
+      tester,
+    ) async {
+      await tester.runAsync(() => _prefs({'belajar.titikMulai': 'hafalan'}));
+      await _pumpHome(tester);
+      expect(
+        top(tester, 'Sesi hari ini'),
+        greaterThan(top(tester, 'MULAI MEMBACA')),
+      );
+    });
+
+    testWidgets('sesi setengah jalan: Lanjutkan dari langkahnya', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        await _prefs({});
+        await SessionStore(SharedPreferencesService.instance!).saveDay(
+          const DailySession(date: '2026-09-24', step: SessionStep.findInVerse),
+        );
+      });
+      await _pumpHome(tester);
+      expect(
+        find.text('Lanjut dari langkah 3: Temukan di ayat'),
+        findsOneWidget,
+      );
+      expect(find.text('Lanjutkan'), findsOneWidget);
+    });
+
+    testWidgets('sesi selesai: Selesai hari ini dan saran besok', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        await _prefs({});
+        await SessionStore(SharedPreferencesService.instance!).saveDay(
+          const DailySession(
+            date: '2026-09-24',
+            step: SessionStep.done,
+            completed: true,
+            tomorrow: 'Bentuk sambung',
+          ),
+        );
+      });
+      await _pumpHome(tester);
+      expect(
+        find.textContaining(
+          RegExp(r'^Selesai hari ini .* · besok: Bentuk sambung$'),
+          findRichText: true,
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Lanjutkan'), findsNothing);
+    });
   });
 }

@@ -133,11 +133,33 @@ class SessionStore {
       if (!_date.hasMatch(date)) continue;
       final local = day(date);
       if (local?.completed ?? false) continue;
-      final session =
-          local?.copyWith(step: SessionStep.done, completed: true) ??
-          DailySession(date: date, step: SessionStep.done, completed: true);
+      final session = DailySession(
+        date: date,
+        step: SessionStep.done,
+        lessonId: local?.lessonId,
+        materialPage: local?.materialPage,
+        verse: local?.verse,
+        completed: true,
+        skipped: local?.skipped ?? const {},
+        imported: true,
+      );
       await _prefs.setString('$dayPrefix$date', jsonEncode(session.toJson()));
       changed = true;
+    }
+    if (changed) sessionRevision.value++;
+  }
+
+  /// Menghapus tanda selesai yang datang dari cloud (akun lain masuk di HP
+  /// ini, jadi riwayat akun sebelumnya tidak boleh ikut).
+  Future<void> removeImported() async {
+    var changed = false;
+    for (final key in _prefs.getKeys().toList()) {
+      final match = _dateKey.firstMatch(key);
+      if (match == null) continue;
+      if (day(match[1]!)?.imported ?? false) {
+        await _prefs.remove(key);
+        changed = true;
+      }
     }
     if (changed) sessionRevision.value++;
   }

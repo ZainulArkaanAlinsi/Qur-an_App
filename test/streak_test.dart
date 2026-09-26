@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/domain/session_plan.dart';
 import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -184,5 +186,84 @@ void main() {
     final progress = ReadingProgressService.read(now: DateTime(2026, 5, 4));
     expect(progress.todaySeconds, 0);
     expect(progress.currentStreak, 0);
+  });
+
+  group('Sesi hari ini dihitung istiqamah (SESI_HARIAN.md §5)', () {
+    ReadingProgress withSessions(
+      String today,
+      Map<String, int> seconds,
+      Set<String> sessions,
+    ) => StreakCalculator.compute(
+      today: today,
+      secondsByDate: seconds,
+      targetFor: (_) => 300,
+      sessionDates: sessions,
+    );
+
+    test('hari dengan sesi selesai memenuhi walau belum membaca', () {
+      final progress = withSessions('2026-05-04', const {}, {'2026-05-04'});
+      expect(progress.currentStreak, 1);
+      expect(progress.pendingToday, isFalse);
+      // Target baca hari itu tetap dihitung dari detik membaca.
+      expect(progress.completedToday, isFalse);
+      expect(progress.todaySeconds, 0);
+    });
+
+    test('sesi dan target baca bergantian menyambung istiqamah', () {
+      final progress = withSessions(
+        '2026-05-06',
+        {'2026-05-04': 300, '2026-05-06': 400},
+        {'2026-05-05'},
+      );
+      expect(progress.currentStreak, 3);
+      expect(progress.longestStreak, 3);
+      expect(progress.totalSeconds, 700);
+      expect(progress.recentDays.sublist(4), [true, true, true]);
+    });
+
+    test('hari tanpa sesi dan tanpa target tetap memutus', () {
+      final progress = withSessions(
+        '2026-05-07',
+        {'2026-05-04': 300},
+        {'2026-05-06', '2026-05-07'},
+      );
+      expect(progress.currentStreak, 2);
+      expect(progress.longestStreak, 2);
+    });
+
+    test('tanpa sesi, hasilnya sama persis dengan aturan lama', () {
+      final history = {'2026-05-04': 300, '2026-05-05': 100};
+      final old = _compute('2026-05-05', history);
+      final added = withSessions('2026-05-05', history, const {});
+      expect(added.currentStreak, old.currentStreak);
+      expect(added.pendingToday, old.pendingToday);
+      expect(added.recentDays, old.recentDays);
+    });
+
+    test('ReadingProgressService.read memakai tanggal sesi selesai', () async {
+      SharedPreferences.setMockInitialValues({});
+      await SharedPreferencesService.init();
+      final store = SessionStore(SharedPreferencesService.instance!);
+      await store.saveDay(
+        const DailySession(
+          date: '2026-05-04',
+          step: SessionStep.done,
+          completed: true,
+        ),
+      );
+      await store.saveDay(
+        const DailySession(date: '2026-05-05', step: SessionStep.listenRepeat),
+      );
+      expect(
+        ReadingProgressService.read(
+          now: DateTime(2026, 5, 4, 20),
+        ).currentStreak,
+        1,
+      );
+      // Sesi yang belum selesai tidak dihitung.
+      final next = ReadingProgressService.read(now: DateTime(2026, 5, 5, 20));
+      expect(next.currentStreak, 1);
+      expect(next.pendingToday, isTrue);
+    });
   });
 }

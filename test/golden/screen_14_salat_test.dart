@@ -50,7 +50,7 @@ void main() {
         PrayerScreen(
           loader: (date) async => _day(date ?? _date),
           clock: () => DateTime(2026, 9, 24, 9, 21),
-          scheduler: (_, _, _) async => true,
+          scheduler: (_, _, _, _) async => true,
         ),
         variant: variant,
       );
@@ -88,7 +88,7 @@ void main() {
         PrayerScreen(
           loader: loader,
           clock: () => now ?? DateTime(2026, 9, 24, 9, 21),
-          scheduler: scheduler ?? (_, _, _) async => true,
+          scheduler: scheduler ?? (_, _, _, _) async => true,
         ),
       );
       await _settle(tester);
@@ -100,7 +100,7 @@ void main() {
       await open(
         tester,
         loader: (date) async => _day(date ?? _date),
-        scheduler: (_, _, _) async => false,
+        scheduler: (_, _, _, _) async => false,
       );
       await tester.tap(find.bySemanticsLabel('Pengingat Subuh'));
       await _settle(tester);

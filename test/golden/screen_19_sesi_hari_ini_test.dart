@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/domain/session_plan.dart';
 import 'package:quran_app_2025/features/session/domain/verse_picker.dart';
+import 'package:quran_app_2025/features/session/presentation/session_card.dart';
 import 'package:quran_app_2025/features/session/presentation/session_screen.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_markup_parser.dart';
 import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
@@ -104,6 +106,47 @@ void main() {
   }
 
   for (final (variant, palette, suffix) in variants) {
+    testWidgets('19 sesi · kartu beranda · $suffix', (tester) async {
+      await pumpGolden(
+        tester,
+        Scaffold(
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                SessionTodayCard(session: null, onOpen: () {}),
+                const SizedBox(height: 16),
+                SessionTodayCard(
+                  session: const DailySession(
+                    date: '2026-09-26',
+                    step: SessionStep.findInVerse,
+                  ),
+                  onOpen: () {},
+                ),
+                const SizedBox(height: 16),
+                SessionTodayCard(
+                  session: const DailySession(
+                    date: '2026-09-26',
+                    step: SessionStep.done,
+                    completed: true,
+                    tomorrow: 'Bentuk sambung',
+                  ),
+                  onOpen: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+        variant: variant,
+        palette: palette,
+      );
+      expectNotTruncated(tester, ['Sesi hari ini', 'Mulai', 'Lanjutkan']);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/19_sesi_kartu_$suffix.png'),
+      );
+    });
+
     testWidgets('19 sesi · pemanasan · $suffix', (tester) async {
       await open(tester, variant, palette);
       expectNotTruncated(tester, ['Pemanasan', 'Lewati', 'Ulang', 'Tirukan']);

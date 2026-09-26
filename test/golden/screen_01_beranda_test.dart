@@ -145,44 +145,52 @@ void main() {
       await _settleAssets(tester);
 
       expect(tester.takeException(), isNull);
-      if (variant.textScale == 1) {
-        // Di 2× strip salat ada di bawah lipatan dan belum dirender.
-        expect(find.text('Dzuhur 11:45'), findsOneWidget);
-        expect(find.text('dalam 2 j 25 m'), findsOneWidget);
-        expect(find.text('10 ayat'), findsOneWidget);
-        expect(find.text('Lanjutkan belajar'), findsOneWidget);
-      }
+      // Titik mulai belum dipilih (= tajwid): kartu Sesi hari ini paling
+      // atas (docs/design/v5-sesi-harian/SESI_HARIAN.md §4).
+      expect(find.text('Sesi hari ini'), findsOneWidget);
       expect(find.text('13 Rabiulakhir 1448 H'), findsOneWidget);
-      expect(find.text('Al-Baqarah'), findsOneWidget);
-      expect(find.text('Halaman 2 · Juz 1 · Ayat 1'), findsOneWidget);
-      expect(find.text('MENUNGGU'), findsOneWidget);
       expectNotTruncated(tester, [
-        'Lanjutkan',
-        'Dzuhur 11:45',
-        'dalam 2 j 25 m',
         'Beranda',
         'Qur’an',
         'Belajar',
         'Hafalan',
         'Saya',
         '13 Rabiulakhir 1448 H',
+        'Mulai',
       ]);
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/01_beranda_${variant.suffix}.png'),
       );
 
-      if (variant.textScale != 1) {
-        // Bagian bawah di teks besar: HARI INI dan strip salat.
-        await tester.drag(find.byType(ListView), const Offset(0, -1400));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-        expectNotTruncated(tester, ['Dzuhur 11:45', 'dalam 2 j 25 m']);
-        await expectLater(
-          find.byType(MaterialApp),
-          matchesGoldenFile('goldens/01_beranda_${variant.suffix}_bawah.png'),
-        );
+      // Sisanya digulir sampai tampil; kartu sesi mendorongnya ke bawah.
+      final list = find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      for (final text in [
+        'Al-Baqarah',
+        'Halaman 2 · Juz 1 · Ayat 1',
+        'Lanjutkan',
+        'MENUNGGU',
+        '10 ayat',
+        'Lanjutkan belajar',
+        'Dzuhur 11:45',
+        'dalam 2 j 25 m',
+      ]) {
+        await tester.scrollUntilVisible(find.text(text), 120, scrollable: list);
+        expect(find.text(text), findsOneWidget, reason: text);
+        expectNotTruncated(tester, [text]);
       }
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      // Bagian bawah: HARI INI dan strip salat.
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/01_beranda_${variant.suffix}_bawah.png'),
+      );
     });
   }
 }

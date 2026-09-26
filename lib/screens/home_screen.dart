@@ -15,6 +15,10 @@ import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
 import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
+import 'package:quran_app_2025/features/onboarding/domain/start_point.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/presentation/session_card.dart';
+import 'package:quran_app_2025/features/session/presentation/session_screen.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/lesson_screen.dart';
@@ -32,6 +36,8 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 ///
 /// Urutan: tanggal + cari/bookmark, sapaan, kartu hero lanjut membaca,
 /// target & istiqamah, grup HARI INI (belajar, murajaah), strip salat.
+/// Kartu Sesi hari ini (docs/design/v5-sesi-harian/SESI_HARIAN.md §4) paling
+/// atas untuk titik mulai nol/tajwid, dan di bawah kartu hero untuk hafalan.
 /// Semua angka dari perangkat; tiap elemen membawa ke tempat yang diharapkan
 /// orang ketika mengetuknya.
 class HomeScreen extends StatefulWidget {
@@ -132,6 +138,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ? 1
         : SharedPreferencesService.getLastReadVerse(surah.number);
     final progress = ReadingProgressService.read(now: now);
+    // Belum pernah memilih titik mulai: sama dengan pilihan awal onboarding.
+    final sessionOnTop =
+        (StartPoint.saved ?? StartPoint.initial) != StartPoint.hafalan;
+    final sessionCard = ValueListenableBuilder<int>(
+      valueListenable: sessionRevision,
+      builder: (context, _, _) => SessionTodayCard(
+        session: SessionStore.app?.day(ReadingProgressService.localDate(now)),
+        onOpen: () => _push(SessionScreen(now: widget.now)),
+      ),
+    );
 
     return FutureBuilder<_HomeData>(
       future: _data,
@@ -158,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               const _Greeting(),
               const SizedBox(height: 14),
+              if (sessionOnTop) ...[sessionCard, const SizedBox(height: 12)],
               _HeroCard(
                 surah: surah,
                 verse: verse,
@@ -170,6 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onListen: () => _listen(surah, verse),
               ),
               const SizedBox(height: 12),
+              if (!sessionOnTop) ...[sessionCard, const SizedBox(height: 12)],
               _TargetAndStreak(
                 progress: progress,
                 now: now,

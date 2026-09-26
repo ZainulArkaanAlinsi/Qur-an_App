@@ -43,6 +43,7 @@ class ReminderService {
     required PrayerDay day,
     required Set<String> prayerNames,
     int? quranReminderMinutes,
+    int? sessionReminderMinutes,
     required String city,
     required String country,
   }) async {
@@ -93,25 +94,38 @@ class ReminderService {
       }
     }
     if (quranReminderMinutes != null) {
-      final now = tz.TZDateTime.now(tz.local);
-      var scheduled = tz.TZDateTime(
-        tz.local,
-        now.year,
-        now.month,
-        now.day,
-        quranReminderMinutes ~/ 60,
-        quranReminderMinutes % 60,
-      );
-      if (!scheduled.isAfter(now)) {
-        scheduled = scheduled.add(const Duration(days: 1));
-      }
       await _scheduleDaily(
         200,
-        scheduled,
+        _nextDaily(quranReminderMinutes),
         'Waktu tilawah',
         'Luangkan beberapa menit untuk membaca Al-Qur’an hari ini.',
       );
     }
+    if (sessionReminderMinutes != null) {
+      await _scheduleDaily(
+        sessionReminderId,
+        _nextDaily(sessionReminderMinutes),
+        'Sesi hari ini',
+        'Sekitar 10 menit: ulang, materi baru, lalu tirukan bacaan qari.',
+      );
+    }
+  }
+
+  /// ID pengingat harian Sesi hari ini (tilawah memakai 200).
+  static const sessionReminderId = 201;
+
+  /// Waktu [minutes] berikutnya hari ini, atau besok bila sudah lewat.
+  static tz.TZDateTime _nextDaily(int minutes) {
+    final now = tz.TZDateTime.now(tz.local);
+    final today = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      minutes ~/ 60,
+      minutes % 60,
+    );
+    return today.isAfter(now) ? today : today.add(const Duration(days: 1));
   }
 
   Future<void> _scheduleDaily(

@@ -629,6 +629,18 @@ class SharedPreferencesService {
     }
   }
 
+  /// Jam pengingat harian Sesi hari ini (menit sejak tengah malam), atau
+  /// null bila nonaktif.
+  static int? getSessionReminderMinutes() =>
+      _prefs?.getInt('sesi_pengingat_menit');
+  static Future<void> setSessionReminderMinutes(int? minutes) async {
+    if (minutes == null) {
+      await _prefs?.remove('sesi_pengingat_menit');
+    } else {
+      await _prefs?.setInt('sesi_pengingat_menit', minutes);
+    }
+  }
+
   static Set<int> getCompletedSurahs() =>
       (_prefs?.getStringList('completed_surahs') ?? const <String>[])
           .map(int.tryParse)

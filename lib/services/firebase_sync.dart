@@ -11,7 +11,8 @@ import 'package:quran_app_2025/services/reading_session_store.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 /// Firestore layout (security rules in `firestore.rules`):
-/// `users/{uid}/sessions/{sessionId}` and `users/{uid}/bookmarks/{s_a}`.
+/// `users/{uid}/sessions/{sessionId}`, `users/{uid}/bookmarks/{s_a}`, and
+/// `users/{uid}/sessionDays/{yyyy-mm-dd}` (the date only).
 class FirestoreSyncRemote implements SyncRemote {
   FirestoreSyncRemote(this._db);
 
@@ -184,9 +185,19 @@ class FirestoreSyncRemote implements SyncRemote {
       );
 
   @override
+  Future<void> pushSessionDays(String uid, List<String> dates) =>
+      _writeAll(uid, 'sessionDays', [
+        for (final date in dates) MapEntry(date, {'date': date}),
+      ]);
+
+  @override
+  Future<RemotePage<String>> pullSessionDays(String uid, int sinceMs) =>
+      _pull(uid, 'sessionDays', sinceMs, (d) => d['date'] as String);
+
+  @override
   Future<void> deleteAll(String uid) async {
     await _ensureNoPendingWrites();
-    for (final name in const ['sessions', 'bookmarks']) {
+    for (final name in const ['sessions', 'bookmarks', 'sessionDays']) {
       while (true) {
         final page = await _bounded(
           _col(uid, name).limit(_pageSize).get(_fromServer),

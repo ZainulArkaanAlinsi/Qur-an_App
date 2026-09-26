@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
 import 'package:quran_app_2025/services/reading_session_store.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,18 +35,25 @@ class ReadingProgress {
 
 /// Pure streak rules from the guide (section 6): one increment per qualifying
 /// day, today pending while yesterday qualified, reset after a missed day.
+///
+/// A day also qualifies when that day's "Sesi hari ini" was completed
+/// ([sessionDates], docs/design/v5-sesi-harian/SESI_HARIAN.md §5). This only
+/// adds qualifying days; the reading-target rule is unchanged.
 class StreakCalculator {
   static ReadingProgress compute({
     required String today,
     required Map<String, int> secondsByDate,
     required int Function(String date) targetFor,
+    Set<String> sessionDates = const {},
   }) {
     bool qualifies(String date) =>
-        (secondsByDate[date] ?? 0) >= targetFor(date);
+        (secondsByDate[date] ?? 0) >= targetFor(date) ||
+        sessionDates.contains(date);
 
-    final dates =
-        secondsByDate.keys.where((d) => d.compareTo(today) <= 0).toList()
-          ..sort();
+    final dates = {
+      ...secondsByDate.keys,
+      ...sessionDates,
+    }.where((d) => d.compareTo(today) <= 0).toList()..sort();
     var total = 0;
     var longest = 0;
     var run = 0;
@@ -186,6 +194,9 @@ class ReadingProgressService {
         date: SharedPreferencesService.getReadingSeconds(date),
     },
     targetFor: SharedPreferencesService.getTargetForDate,
+    sessionDates: SessionStore.completedDatesIn(
+      SharedPreferencesService.instance,
+    ),
   );
 }
 
