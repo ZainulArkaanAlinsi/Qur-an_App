@@ -13,6 +13,10 @@ import 'package:quran_app_2025/models/reciter.dart';
 class SharedPreferencesService {
   static SharedPreferences? _prefs;
 
+  /// Instans yang sudah dibuka [init], untuk penyimpanan fitur yang punya
+  /// kelasnya sendiri (mis. `SessionStore`). Null sebelum [init].
+  static SharedPreferences? get instance => _prefs;
+
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
@@ -367,8 +371,13 @@ class SharedPreferencesService {
     required bool isCorrect,
   }) async {
     final history = Map<String, QuizRecord>.from(getQuizHistory(lessonId));
+    final now = DateTime.now();
     history[quizId] = (history[quizId] ?? const QuizRecord()).answered(
       isCorrect: isCorrect,
+      on:
+          '${now.year.toString().padLeft(4, '0')}-'
+          '${now.month.toString().padLeft(2, '0')}-'
+          '${now.day.toString().padLeft(2, '0')}',
     );
     await _prefs?.setString(
       'belajar_kuis_$lessonId',
