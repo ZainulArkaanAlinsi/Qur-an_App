@@ -6,10 +6,15 @@ import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 /// Catatan jawaban satu soal.
 @immutable
 class QuizRecord {
-  const QuizRecord({this.correct = 0, this.wrong = 0});
+  const QuizRecord({this.correct = 0, this.wrong = 0, this.lastDate});
 
   final int correct;
   final int wrong;
+
+  /// Tanggal lokal (yyyy-mm-dd) terakhir dijawab, atau null untuk catatan
+  /// lama yang belum menyimpannya. Dipakai pemanasan Sesi hari ini: soal yang
+  /// paling lama tidak dijawab didahulukan.
+  final String? lastDate;
 
   bool get neverSeen => correct == 0 && wrong == 0;
 
@@ -17,12 +22,18 @@ class QuizRecord {
   /// dikuasai dan perlu lebih sering muncul.
   bool get shaky => wrong > 0 && wrong >= correct;
 
-  QuizRecord answered({required bool isCorrect}) => QuizRecord(
+  /// [on] (yyyy-mm-dd) menjadi [lastDate]; tanpa itu tanggal lama dipakai.
+  QuizRecord answered({required bool isCorrect, String? on}) => QuizRecord(
     correct: correct + (isCorrect ? 1 : 0),
     wrong: wrong + (isCorrect ? 0 : 1),
+    lastDate: on ?? lastDate,
   );
 
-  Map<String, dynamic> toJson() => {'b': correct, 's': wrong};
+  Map<String, dynamic> toJson() => {
+    'b': correct,
+    's': wrong,
+    if (lastDate != null) 't': lastDate,
+  };
 
   static QuizRecord? fromJson(Map<String, dynamic> json) {
     final correct = json['b'];
@@ -30,15 +41,25 @@ class QuizRecord {
     if (correct is! int || wrong is! int || correct < 0 || wrong < 0) {
       return null;
     }
-    return QuizRecord(correct: correct, wrong: wrong);
+    final last = json['t'];
+    return QuizRecord(
+      correct: correct,
+      wrong: wrong,
+      lastDate: last is String && _date.hasMatch(last) ? last : null,
+    );
   }
+
+  static final _date = RegExp(r'^\d{4}-\d{2}-\d{2}$');
 
   @override
   bool operator ==(Object other) =>
-      other is QuizRecord && other.correct == correct && other.wrong == wrong;
+      other is QuizRecord &&
+      other.correct == correct &&
+      other.wrong == wrong &&
+      other.lastDate == lastDate;
 
   @override
-  int get hashCode => Object.hash(correct, wrong);
+  int get hashCode => Object.hash(correct, wrong, lastDate);
 }
 
 /// Satu soal siap tampil: pilihannya sudah diacak, dan indeks jawaban benar
@@ -125,6 +146,11 @@ abstract final class QuizSession {
     if (start < 0 || start >= questions.length) return const [];
     return questions.sublist(start, min(start + perPage, questions.length));
   }
+
+  /// Satu soal siap tampil dengan pilihan teracak dari nomor [round]. Dipakai
+  /// Sesi hari ini, yang menyusun urutan soalnya sendiri.
+  static QuizQuestion ask(LessonQuiz quiz, int round) =>
+      _shuffleOptions(quiz, round);
 
   /// Mengacak urutan pilihan sambil menjaga jawaban benar tetap benar.
   static QuizQuestion _shuffleOptions(LessonQuiz quiz, int round) {

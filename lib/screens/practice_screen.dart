@@ -10,6 +10,7 @@ import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/sacred_shapes.dart';
+import 'package:quran_app_2025/app/widgets/step_dots.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/data/basmalah.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
@@ -497,77 +498,11 @@ class _Stepper extends StatelessWidget {
   final ValueChanged<_Step> onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
-      child: Row(
-        children: [
-          for (final step in _Step.values)
-            Expanded(
-              child: Semantics(
-                button: true,
-                selected: step == current,
-                label: 'Langkah ${step.index + 1}, ${step.label}',
-                excludeSemantics: true,
-                child: InkWell(
-                  onTap: () => onTap(step),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Column(
-                      children: [
-                        _dot(tokens, step),
-                        const SizedBox(height: 5),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            step.label,
-                            maxLines: 1,
-                            style:
-                                (step == current
-                                        ? SacredText.stepActive
-                                        : SacredText.stepIdle)
-                                    .copyWith(
-                                      color: step == current
-                                          ? tokens.ink
-                                          : tokens.sec,
-                                    ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dot(SacredTokens tokens, _Step step) {
-    final (Color bg, Color fg) = step == current
-        ? (tokens.cta, tokens.ctaInk)
-        : step.index < current.index
-        // Selesai = emas. Di tema gelap CTA juga emas, jadi pakai emas lembut
-        // supaya langkah aktif tetap terbedakan.
-        ? tokens.cta == tokens.artInk
-              ? (tokens.goldSoft, tokens.goldText)
-              : (tokens.artInk, tokens.onGold)
-        : (tokens.surf2, tokens.sec);
-    return Container(
-      width: 26,
-      height: 26,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: Text(
-        '${step.index + 1}',
-        textScaler: TextScaler.noScaling,
-        style: SacredText.stepNumber.copyWith(color: fg),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => StepDots(
+    labels: [for (final step in _Step.values) step.label],
+    current: current.index,
+    onTap: (index) => onTap(_Step.values[index]),
+  );
 }
 
 /// Ayat dengan kata tertutup: kotak surf2 radius 10 selebar katanya

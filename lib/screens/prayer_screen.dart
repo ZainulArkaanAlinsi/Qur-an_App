@@ -16,14 +16,20 @@ import 'package:timezone/timezone.dart' as tz;
 
 /// Menjadwalkan pengingat; mengembalikan false bila izin notifikasi ditolak.
 typedef ReminderScheduler =
-    Future<bool> Function(PrayerDay day, Set<String> prayers, int? quranAt);
+    Future<bool> Function(
+      PrayerDay day,
+      Set<String> prayers,
+      int? quranAt,
+      int? sessionAt,
+    );
 
 Future<bool> _scheduleWithService(
   PrayerDay day,
   Set<String> prayers,
   int? quranAt,
+  int? sessionAt,
 ) async {
-  final wantsAny = prayers.isNotEmpty || quranAt != null;
+  final wantsAny = prayers.isNotEmpty || quranAt != null || sessionAt != null;
   if (wantsAny && !await ReminderService.instance.requestPermission()) {
     return false;
   }
@@ -31,6 +37,7 @@ Future<bool> _scheduleWithService(
     day: day,
     prayerNames: prayers,
     quranReminderMinutes: quranAt,
+    sessionReminderMinutes: sessionAt,
     city: SharedPreferencesService.getPrayerCity(),
     country: SharedPreferencesService.getPrayerCountry(),
   );
@@ -102,6 +109,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
   late final Set<String> _enabled =
       SharedPreferencesService.getPrayerReminders();
   int? _quranMinutes = SharedPreferencesService.getQuranReminderMinutes();
+  int? _sessionMinutes = SharedPreferencesService.getSessionReminderMinutes();
 
   /// Jadwal besok, dimuat hanya setelah Isya untuk hitung mundur Subuh.
   Future<PrayerDay>? _tomorrow;
@@ -153,9 +161,16 @@ class _PrayerScreenState extends State<PrayerScreen> {
     PrayerDay day, {
     required Set<String> previous,
     required int? previousQuran,
+    int? previousSession,
+    bool sessionChanged = false,
   }) async {
     final schedule = widget.scheduler ?? _scheduleWithService;
-    final ok = await schedule(day, Set.of(_enabled), _quranMinutes);
+    final ok = await schedule(
+      day,
+      Set.of(_enabled),
+      _quranMinutes,
+      _sessionMinutes,
+    );
     if (!mounted) return;
     if (!ok) {
       setState(() {
@@ -163,6 +178,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
           ..clear()
           ..addAll(previous);
         _quranMinutes = previousQuran;
+        if (sessionChanged) _sessionMinutes = previousSession;
         _notice =
             'Izin notifikasi belum diberikan, jadi pengingat tidak '
             'diaktifkan. Izinkan notifikasi di pengaturan ponsel.';
@@ -171,6 +187,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
     }
     await SharedPreferencesService.setPrayerReminders(_enabled);
     await SharedPreferencesService.setQuranReminderMinutes(_quranMinutes);
+    await SharedPreferencesService.setSessionReminderMinutes(_sessionMinutes);
     if (mounted) setState(() => _notice = null);
   }
 
@@ -199,7 +216,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
     // Pengingat yang sudah aktif dijadwalkan ulang untuk kota baru.
     try {
       final day = await _day;
-      if (mounted && (_enabled.isNotEmpty || _quranMinutes != null)) {
+      if (mounted &&
+          (_enabled.isNotEmpty ||
+              _quranMinutes != null ||
+              _sessionMinutes != null)) {
         await _saveReminders(
           day,
           previous: Set.of(_enabled),
@@ -209,6 +229,66 @@ class _PrayerScreenState extends State<PrayerScreen> {
     } on Object {
       // Kota tidak ditemukan atau luring: pesan galat sudah tampil.
     }
+  }
+
+  /// Pengingat harian Sesi hari ini (docs/design/v5-sesi-harian §4): jam
+  /// sendiri, dijadwalkan bersama pengingat lain.
+  Future<void> _sessionReminder(PrayerDay day) async {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final active = _sessionMinutes != null;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: tokens.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: GroupedList(
+            label: 'Pengingat Sesi hari ini',
+            children: [
+              ListRow(
+                title: active ? 'Ubah jam' : 'Pilih jam',
+                subtitle: active
+                    ? 'Sekarang setiap hari pukul ${_format(_sessionMinutes!)}'
+                    : 'Sekitar 10 menit belajar setiap hari',
+                chevron: true,
+                onTap: () => Navigator.pop(context, 'time'),
+              ),
+              if (active)
+                ListRow(
+                  title: 'Matikan pengingat',
+                  titleColor: tokens.danger,
+                  onTap: () => Navigator.pop(context, 'off'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+    final previous = _sessionMinutes;
+    if (action == 'off') {
+      setState(() => _sessionMinutes = null);
+    } else {
+      final initial = previous ?? 7 * 60;
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay(hour: initial ~/ 60, minute: initial % 60),
+        helpText: 'Jam pengingat Sesi hari ini',
+      );
+      if (time == null || !mounted) return;
+      setState(() => _sessionMinutes = time.hour * 60 + time.minute);
+    }
+    await _saveReminders(
+      day,
+      previous: Set.of(_enabled),
+      previousQuran: _quranMinutes,
+      previousSession: previous,
+      sessionChanged: true,
+    );
   }
 
   Future<void> _quranReminder(PrayerDay day) async {
@@ -393,6 +473,18 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   ? 'Belum diaktifkan'
                   : 'Setiap hari',
               onTap: () => _quranReminder(day),
+            ),
+            SettingsRow(
+              icon: SacredIcons.cap,
+              chipColor: SacredBadge.green,
+              title: 'Sesi hari ini',
+              value: _sessionMinutes == null
+                  ? 'Nonaktif'
+                  : _format(_sessionMinutes!),
+              subtitle: _sessionMinutes == null
+                  ? 'Belum diaktifkan'
+                  : 'Setiap hari',
+              onTap: () => _sessionReminder(day),
             ),
           ],
         ),

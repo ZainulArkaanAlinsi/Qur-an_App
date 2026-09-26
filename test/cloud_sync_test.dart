@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/domain/session_plan.dart';
+import 'package:quran_app_2025/features/session/domain/verse_picker.dart';
 import 'package:quran_app_2025/services/cloud_sync_service.dart';
+import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/reading_session_store.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +14,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FakeRemote implements SyncRemote {
   final sessions = <String, Map<String, (ReadingSession, int)>>{};
   final bookmarks = <String, Map<String, (BookmarkRecord, int)>>{};
+
+  /// Tanggal Sesi hari ini per pengguna, dengan waktu server.
+  final sessionDays = <String, Map<String, int>>{};
+
+  /// Setiap argumen yang pernah dikirim ke pushSessionDays.
+  final sessionDayPushes = <List<String>>[];
+  bool failSessionDays = false;
   int clock = 1000;
   int sessionPushes = 0;
   bool fail = false;
@@ -70,10 +81,31 @@ class FakeRemote implements SyncRemote {
   }
 
   @override
+  Future<void> pushSessionDays(String uid, List<String> dates) async {
+    _check();
+    if (failSessionDays) throw StateError('permission-denied');
+    sessionDayPushes.add(List.of(dates));
+    for (final date in dates) {
+      (sessionDays[uid] ??= {})[date] = ++clock;
+    }
+  }
+
+  @override
+  Future<RemotePage<String>> pullSessionDays(String uid, int since) async {
+    _check();
+    if (failSessionDays) throw StateError('permission-denied');
+    final all = (sessionDays[uid] ?? {}).entries.where((e) => e.value > since);
+    return RemotePage([
+      for (final e in all) e.key,
+    ], all.fold<int>(since, (m, e) => e.value > m ? e.value : m));
+  }
+
+  @override
   Future<void> deleteAll(String uid) async {
     _check();
     sessions.remove(uid);
     bookmarks.remove(uid);
+    sessionDays.remove(uid);
   }
 }
 
@@ -512,6 +544,134 @@ void main() {
           ),
         ]),
         500,
+      );
+    });
+  });
+
+  group('Sesi hari ini: hanya tanggal yang ikut sinkron', () {
+    Future<SessionStore> completed(List<String> dates) async {
+      final store = SessionStore(SharedPreferencesService.instance!);
+      for (final date in dates) {
+        await store.saveDay(
+          DailySession(
+            date: date,
+            step: SessionStep.done,
+            lessonId: 'tanwin',
+            verse: const VerseChoice(surah: 112, ayah: 1, words: [4]),
+            completed: true,
+            rating: SelfRating.beda,
+          ),
+        );
+        await store.addRating(
+          RatingEntry(date: date, verseKey: '112:1', rating: SelfRating.beda),
+        );
+      }
+      return store;
+    }
+
+    test('yang dikirim hanya daftar tanggal selesai, sekali saja', () async {
+      await _fresh();
+      final store = await completed(['2026-05-04', '2026-05-05']);
+      await store.saveDay(
+        const DailySession(date: '2026-05-06', step: SessionStep.findInVerse),
+      );
+      final remote = FakeRemote();
+      final sync = CloudSyncService(remote);
+
+      await sync.sync('user-1');
+      expect(remote.sessionDayPushes, [
+        ['2026-05-04', '2026-05-05'],
+      ]);
+      expect(remote.sessionDays['user-1']!.keys, {'2026-05-04', '2026-05-05'});
+
+      await sync.sync('user-1');
+      expect(
+        remote.sessionDayPushes,
+        hasLength(1),
+        reason: 'tidak dikirim ulang',
+      );
+      // Nilai diri tetap di HP.
+      expect(store.ratings(), hasLength(2));
+    });
+
+    test('tanggal dari HP lain dihitung istiqamah', () async {
+      await _fresh();
+      final remote = FakeRemote();
+      await remote.pushSessionDays('user-1', ['2026-05-03', '2026-05-04']);
+      await CloudSyncService(remote).sync('user-1');
+
+      final store = SessionStore(SharedPreferencesService.instance!);
+      expect(store.completedDates(), {'2026-05-03', '2026-05-04'});
+      expect(store.day('2026-05-04')!.imported, isTrue);
+      expect(
+        ReadingProgressService.read(
+          now: DateTime(2026, 5, 4, 20),
+        ).currentStreak,
+        2,
+      );
+    });
+
+    test('sesi lokal tidak ditimpa tanggal dari cloud', () async {
+      await _fresh();
+      final store = SessionStore(SharedPreferencesService.instance!);
+      await store.saveDay(
+        const DailySession(
+          date: '2026-05-04',
+          step: SessionStep.listenRepeat,
+          lessonId: 'tanwin',
+        ),
+      );
+      final remote = FakeRemote();
+      await remote.pushSessionDays('user-1', ['2026-05-04']);
+      await CloudSyncService(remote).sync('user-1');
+      final day = store.day('2026-05-04')!;
+      expect(day.completed, isTrue);
+      expect(day.lessonId, 'tanwin');
+    });
+
+    test('akun lain masuk: tanggal impor akun lama dibuang', () async {
+      await _fresh();
+      final store = await completed(['2026-05-05']);
+      final remote = FakeRemote();
+      await remote.pushSessionDays('user-1', ['2026-05-01']);
+      final sync = CloudSyncService(remote);
+      await sync.sync('user-1');
+      expect(store.completedDates(), {'2026-05-01', '2026-05-05'});
+
+      await sync.sync('user-2');
+      expect(store.completedDates(), {'2026-05-05'});
+      expect(remote.sessionDays['user-2']!.keys, {'2026-05-05'});
+    });
+
+    test('gagal di tanggal sesi tidak menggagalkan sinkron lain', () async {
+      final sessions = await _fresh();
+      await completed(['2026-05-04']);
+      await sessions.save(_session('a'));
+      final remote = FakeRemote()..failSessionDays = true;
+      final sync = CloudSyncService(remote);
+
+      await sync.sync('user-1');
+      expect(sync.state.value, SyncState.done);
+      expect(remote.sessions['user-1']!.keys, ['a']);
+
+      remote.failSessionDays = false;
+      await sync.sync('user-1');
+      expect(remote.sessionDays['user-1']!.keys, {'2026-05-04'});
+    });
+
+    test('hapus akun ikut menghapus tanggal sesi di cloud', () async {
+      await _fresh();
+      await completed(['2026-05-04']);
+      final remote = FakeRemote();
+      final sync = CloudSyncService(remote);
+      await sync.sync('user-1');
+      await sync.deleteCloudData('user-1');
+      expect(remote.sessionDays['user-1'], isNull);
+      await sync.finishAccountDeletion('user-1');
+      // Riwayat di HP tetap ada.
+      expect(
+        SessionStore(SharedPreferencesService.instance!).completedDates(),
+        {'2026-05-04'},
       );
     });
   });

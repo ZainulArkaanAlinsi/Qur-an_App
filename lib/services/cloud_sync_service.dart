@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
 import 'package:quran_app_2025/services/reading_session_store.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,12 @@ abstract class SyncRemote {
   Future<RemotePage<ReadingSession>> pullSessions(String uid, int sinceMs);
   Future<void> pushBookmarks(String uid, List<BookmarkRecord> records);
   Future<RemotePage<BookmarkRecord>> pullBookmarks(String uid, int sinceMs);
+
+  /// Dates (yyyy-mm-dd) of completed "Sesi hari ini". Only the date is ever
+  /// sent: recordings and self-ratings never leave the phone
+  /// (docs/design/v5-sesi-harian/SESI_HARIAN.md §5).
+  Future<void> pushSessionDays(String uid, List<String> dates);
+  Future<RemotePage<String>> pullSessionDays(String uid, int sinceMs);
 
   /// Deletes every document the user owns.
   Future<void> deleteAll(String uid);
@@ -179,6 +186,9 @@ class CloudSyncService {
       ]);
       await _advance(prefs, sessionsKey, sessions.cursorMs);
 
+      _ensureTarget(uid);
+      await _syncSessionDays(prefs, uid);
+
       await prefs.setInt(
         _lastSuccessKey,
         DateTime.now().millisecondsSinceEpoch,
@@ -226,6 +236,35 @@ class CloudSyncService {
     }
   }
 
+  /// Completed "Sesi hari ini" dates, both ways. A failure here (e.g. rules
+  /// not deployed yet) never fails the rest of the sync: the dates stay on
+  /// the phone and are retried on the next pass.
+  Future<void> _syncSessionDays(SharedPreferences prefs, String uid) async {
+    final days = SessionStore(prefs);
+    final cursorKey = 'sync_session_days_cursor_$uid';
+    final sentKey = 'sync_session_days_sent_$uid';
+    try {
+      final pulled = await remote.pullSessionDays(
+        uid,
+        _since(prefs.getInt(cursorKey)),
+      );
+      _ensureTarget(uid);
+      await days.addCompletedDates(pulled.items);
+      final sent = {...?prefs.getStringList(sentKey), ...pulled.items};
+      final unsent = days.completedDates().difference(sent).toList()..sort();
+      if (unsent.isNotEmpty) {
+        await remote.pushSessionDays(uid, unsent);
+        sent.addAll(unsent);
+      }
+      await prefs.setStringList(sentKey, sent.toList()..sort());
+      await _advance(prefs, cursorKey, pulled.cursorMs);
+    } on _SyncCancelled {
+      rethrow;
+    } on Object catch (error) {
+      debugPrint('Tanggal sesi harian belum tersinkron: $error');
+    }
+  }
+
   static int _since(int? cursor) =>
       cursor == null ? 0 : (cursor - _cursorOverlapMs).clamp(0, cursor);
 
@@ -250,8 +289,11 @@ class CloudSyncService {
     if (owner != null) {
       await store.removeSynced();
       await SharedPreferencesService.clearSyncedBookmarks();
+      await SessionStore(prefs).removeImported();
       await prefs.remove('sync_sessions_cursor_$owner');
       await prefs.remove('sync_bookmarks_cursor_$owner');
+      await prefs.remove('sync_session_days_cursor_$owner');
+      await prefs.remove('sync_session_days_sent_$owner');
     }
     await prefs.setString(_ownerKey, uid);
   }
@@ -274,6 +316,8 @@ class CloudSyncService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('sync_sessions_cursor_$uid');
       await prefs.remove('sync_bookmarks_cursor_$uid');
+      await prefs.remove('sync_session_days_cursor_$uid');
+      await prefs.remove('sync_session_days_sent_$uid');
       await prefs.remove(_ownerKey);
       await prefs.remove(_lastSuccessKey);
       final store = ReadingSessionStore(prefs);
@@ -294,6 +338,8 @@ class CloudSyncService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('sync_sessions_cursor_$uid');
     await prefs.remove('sync_bookmarks_cursor_$uid');
+    await prefs.remove('sync_session_days_cursor_$uid');
+    await prefs.remove('sync_session_days_sent_$uid');
     final store = ReadingSessionStore(prefs);
     await store.saveAll([
       for (final s in store.all())

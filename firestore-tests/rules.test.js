@@ -181,3 +181,41 @@ describe('validasi bookmark', () => {
     });
   }
 });
+
+describe('tanggal Sesi hari ini (hanya tanggal)', () => {
+  const dayRef = (uid, owner = uid, id = '2026-09-26') =>
+    doc(db(uid), `users/${owner}/sessionDays/${id}`);
+  const day = (overrides = {}) => ({
+    date: '2026-09-26',
+    syncedAt: serverTimestamp(),
+    ...overrides,
+  });
+
+  test('pemilik dapat menulis, membaca, dan mengulang tanggalnya', async () => {
+    await assertSucceeds(setDoc(dayRef('alice'), day()));
+    await assertSucceeds(setDoc(dayRef('alice'), day()));
+    await assertSucceeds(getDoc(dayRef('alice')));
+    const q = query(collection(db('alice'), 'users/alice/sessionDays'), orderBy('syncedAt'));
+    await assertSucceeds(getDocs(q));
+  });
+
+  test('akun lain tidak dapat membaca atau menulis', async () => {
+    await setDoc(dayRef('alice'), day());
+    await assertFails(getDoc(dayRef('bob', 'alice')));
+    await assertFails(setDoc(dayRef('bob', 'alice'), day()));
+    await assertFails(setDoc(dayRef(null, 'alice'), day()));
+  });
+
+  const rejects = {
+    'rekaman ikut dikirim': ['2026-09-26', { recording: 'rekaman_sesi/112_1.m4a' }],
+    'penilaian diri ikut dikirim': ['2026-09-26', { rating: 'mirip' }],
+    'ayat ikut dikirim': ['2026-09-26', { verse: '112:1' }],
+    'tanggal tidak sama dengan dokumen': ['2026-09-26', { date: '2026-09-25' }],
+    'ID bukan tanggal': ['kemarin', { date: 'kemarin' }],
+  };
+  for (const [name, [id, change]] of Object.entries(rejects)) {
+    test(`ditolak: ${name}`, async () => {
+      await assertFails(setDoc(dayRef('alice', 'alice', id), day(change)));
+    });
+  }
+});

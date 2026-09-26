@@ -429,6 +429,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: tokens.sep,
               ),
               const _ReminderRow(),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              const _SessionReminderRow(),
             ],
           ),
         ),
@@ -1503,6 +1510,29 @@ class _Stat extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Pengingat Sesi hari ini: jamnya atau "Nonaktif". Diatur di layar Salat
+/// bersama pengingat lain, karena semua pengingat dijadwalkan sekaligus.
+class _SessionReminderRow extends StatelessWidget {
+  const _SessionReminderRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = SharedPreferencesService.getSessionReminderMinutes();
+    return SettingsRow(
+      icon: SacredIcons.cap,
+      chipColor: SacredBadge.green,
+      title: 'Pengingat Sesi hari ini',
+      value: minutes == null
+          ? 'Nonaktif'
+          : '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
+                '${(minutes % 60).toString().padLeft(2, '0')}',
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const PrayerScreen())),
     );
   }
 }

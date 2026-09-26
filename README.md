@@ -66,6 +66,7 @@ Gratis · tanpa iklan · tanpa pembelian · tetap bisa dipakai tanpa internet
 <td valign="top">
 
 ### 🎓 Belajar
+- **Sesi hari ini (±10 menit):** ulang soal lama, satu potong materi baru, temukan hurufnya di ayat asli, dengar qari lalu **rekam dan bandingkan dengan suaramu**. Aplikasi tidak menilai bacaan; kamu menilai sendiri dan dianjurkan disimak guru.
 - Jalur bertahap dari **huruf hijaiyah**, bentuk sambung, harakat, tanwin, hingga sukun & tasydid.
 - Latihan setiap langkah; soal yang salah diulang sampai benar.
 - Titik mulai bisa dipilih: dari nol, langsung tajwid, atau hafalan.
@@ -85,16 +86,16 @@ Gratis · tanpa iklan · tanpa pembelian · tetap bisa dipakai tanpa internet
 
 ### 🕌 Salat
 - **Jadwal salat** (AlAdhan, metode Kemenag RI).
-- **Pengingat tiap waktu salat** dan pengingat tilawah harian.
+- **Pengingat tiap waktu salat**, pengingat tilawah, dan pengingat Sesi hari ini.
 - **Arah kiblat** dengan GPS dan kompas.
 
 </td>
 <td valign="top">
 
 ### 📈 Progres & akun
-- **Target baca harian** (5–30 menit), istiqamah, heatmap, dan **rencana khatam**.
+- **Target baca harian** (5–30 menit), istiqamah (sesi harian yang selesai ikut dihitung), heatmap, dan **rencana khatam**.
 - **Penanda ayat** dengan koleksi Umum, Hafalan, dan Favorit.
-- **Masuk dengan Google (opsional)** untuk menyinkronkan sesi baca dan penanda. Akun dan data cloud bisa dihapus kapan saja.
+- **Masuk dengan Google (opsional)** untuk menyinkronkan sesi baca, penanda, dan tanggal sesi harian. Rekaman suara tidak pernah diunggah. Akun dan data cloud bisa dihapus kapan saja.
 - Tema **Terang/Gelap/Otomatis** dan palet **Hijau, Sepia, Kontras tinggi**.
 
 </td>
@@ -205,7 +206,7 @@ test/          tes unit, widget, dan golden
 - verse cards with colour-coded tajweed you can tap for an explanation;
 - translations in several languages (downloadable for offline use);
 - verse-by-verse recitation with repeat ranges, a sleep timer, and offline downloads;
-- a step-by-step reading course starting from the Arabic alphabet;
+- a step-by-step reading course starting from the Arabic alphabet, plus a 10-minute daily session (review, new material, find it in a real verse, listen to a reciter and compare with your own recording, which never leaves the phone);
 - a memorisation planner (ziyadah, murajaah, tasmi');
 - prayer times with reminders and a qibla compass;
 - reading goals, streaks, and optional Google sign-in sync.

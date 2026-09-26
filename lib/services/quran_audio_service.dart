@@ -417,6 +417,40 @@ class QuranAudioService {
     _sleepTimer = Timer(after, () => unawaited(stop()));
   }
 
+  /// Posisi murottal yang sedang dimuat, untuk dipulihkan setelah pemutar
+  /// dipinjam fitur lain (Sesi hari ini). Null bila pemutar tertutup.
+  AudioResumePoint? resumePoint() {
+    final q = queue.value;
+    final ayah = _currentAyah;
+    if (q == null || ayah == null) return null;
+    return AudioResumePoint(
+      surah: q.surah,
+      ayah: ayah,
+      lastAyah: q.lastAyah,
+      repeat: repeat.value == AudioRepeat.verse
+          ? AudioRepeat.verse
+          : AudioRepeat.off,
+      position: _player.position,
+      wasPlaying: isPlaying.value,
+    );
+  }
+
+  /// Memuat lagi [point] tanpa langsung memutar, supaya mini player kembali
+  /// seperti sebelum dipinjam. Gagal memuat (mis. offline) didiamkan:
+  /// pemutar tetap tertutup, tidak ada pesan galat yang tiba-tiba muncul.
+  Future<void> restore(AudioResumePoint point) async {
+    try {
+      await _load(
+        AudioQueue.from(point.surah, point.ayah, toAyah: point.lastAyah),
+        point.repeat,
+        position: point.position,
+        autoplay: false,
+      );
+    } on Object {
+      error.value = null;
+    }
+  }
+
   Future<void> stop() async {
     ++_generation;
     _loading = false;
@@ -442,6 +476,7 @@ class QuranAudioService {
     Duration? position,
     int? passTarget,
     int copies = 1,
+    bool autoplay = true,
   }) async {
     final generation = ++_generation;
     _loading = true;
@@ -522,7 +557,7 @@ class QuranAudioService {
       if (generation != _generation) return;
       _loading = false;
       _syncIndex(_player.currentIndex);
-      _play();
+      if (autoplay) _play();
     } catch (_) {
       // A newer request interrupted this load; its state is not ours to clear.
       if (generation != _generation) return;
@@ -530,6 +565,28 @@ class QuranAudioService {
       rethrow;
     }
   }
+}
+
+/// Titik pemutaran murottal yang disimpan sebelum pemutar dipinjam.
+@immutable
+class AudioResumePoint {
+  const AudioResumePoint({
+    required this.surah,
+    required this.ayah,
+    required this.lastAyah,
+    required this.repeat,
+    required this.position,
+    required this.wasPlaying,
+  });
+
+  final int surah;
+
+  /// Ayat yang sedang diputar saat disimpan.
+  final int ayah;
+  final int lastAyah;
+  final AudioRepeat repeat;
+  final Duration position;
+  final bool wasPlaying;
 }
 
 /// Mirrors [QuranAudioService] into the OS media session and routes its
