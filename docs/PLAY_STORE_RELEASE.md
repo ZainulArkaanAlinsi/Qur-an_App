@@ -1,4 +1,4 @@
-# Rilis ke Google Play — MyQuran 1.9.2 (19)
+# Rilis ke Google Play — MyQuran 1.10.0 (20)
 
 Panduan singkat untuk unggahan pertama ke Play Console. Butir bertanda **wajib** akan
 membuat aplikasi ditolak atau tidak bisa tayang bila dilewati.
@@ -19,7 +19,7 @@ flutter build appbundle --release
 - Ditandatangani kunci upload dari `android/key.properties`. **Jangan pernah** mengunggah
   build yang ditandatangani kunci debug (Gradle memberi peringatan bila `key.properties`
   tidak ada).
-- Package id `com.zainularkaan.quran`, versionCode 19, versionName 1.9.2,
+- Package id `com.zainularkaan.quran`, versionCode 20, versionName 1.10.0,
   targetSdk 36, minSdk 24.
 
 ### Catatan rilis (kolom "Yang baru" di Play Console)
@@ -27,13 +27,13 @@ flutter build appbundle --release
 Bahasa Indonesia:
 
 ```
-Warna tajwid kini lebih jelas di semua latar: kartu ayat, ayat yang sedang diputar, ayat bertanda, mode sepia, dan kontras tinggi. Idgham mimi dan idgham bilaghunnah juga lebih mudah dibedakan.
+Baru: Sesi hari ini. Sekitar 10 menit sehari: ulang soal lama, pelajari satu potong materi, temukan hurufnya di ayat asli, dengarkan qari, lalu rekam dan bandingkan dengan suaramu. Rekaman tetap di HP, dan aplikasi tidak menilai bacaan. Sesi yang selesai ikut dihitung istiqamah, dan ada pengingat hariannya.
 ```
 
 English:
 
 ```
-Tajweed colours are now easier to read on every background: verse cards, the playing verse, bookmarked verses, sepia, and high contrast. Idgham mimi and idgham bilaghunnah are also easier to tell apart.
+New: Today's session. About 10 minutes a day: review earlier questions, learn one small step, find it in a real verse, listen to a reciter, then record yourself and compare. Recordings stay on your phone and the app never grades your recitation. Completed sessions count towards your streak, with an optional daily reminder.
 ```
 
 ## 2. Wajib sebelum unggah
@@ -88,7 +88,7 @@ Tajweed colours are now easier to read on every background: verse cards, the pla
 | App activity (riwayat baca, bookmark) | Ya, opsional | Tidak | Sinkronisasi antar perangkat |
 | Device or other IDs | Ya, opsional | Tidak | ID perangkat acak untuk sesi baca yang disinkron |
 | Lokasi | Tidak dikumpulkan | — | Kiblat dihitung di perangkat, tidak dikirim |
-| Audio (rekaman) | Tidak dikumpulkan | — | Rekaman hafalan hanya di perangkat |
+| Audio (rekaman) | Tidak dikumpulkan | — | Rekaman hafalan dan Sesi hari ini hanya di perangkat, tidak pernah diunggah |
 
 Enkripsi saat transit: **Ya** (HTTPS). Pengguna bisa meminta penghapusan data: **Ya**
 (Saya › kartu profil › Hapus akun & data cloud).

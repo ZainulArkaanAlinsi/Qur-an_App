@@ -3,7 +3,7 @@ description: "A beautiful Quran app with complete features"
 
 publish_to: "none"
 
-version: 1.9.2+19
+version: 1.10.0+20
 
 environment:
   sdk: ">=3.9.2 <4.0.0"
