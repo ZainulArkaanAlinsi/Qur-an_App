@@ -24,6 +24,7 @@ abstract class SessionAudio {
   /// terunduh).
   Future<void> playQari(int surah, int ayah, {int times = 1, double speed = 1});
 
+  /// Menghentikan qari sesi. Murottal yang tidak dipinjam tidak disentuh.
   Future<void> stopQari();
 
   /// Menghentikan murottal yang sedang berjalan dengan menyimpan posisinya.
@@ -108,8 +109,12 @@ class DeviceSessionAudio implements SessionAudio {
     }
   }
 
+  /// Hanya menghentikan pemutar yang sedang dipinjam sesi. Murottal pengguna
+  /// yang berjalan sebelum sesi memakai suara tidak disentuh.
   @override
-  Future<void> stopQari() => _audio.stop();
+  Future<void> stopQari() async {
+    if (_borrowed) await _audio.stop();
+  }
 
   @override
   Future<void> borrow() async {
