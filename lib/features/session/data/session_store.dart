@@ -196,7 +196,9 @@ class SessionStore {
     final directory = Directory(
       '${root.path}${Platform.pathSeparator}$recordingsFolder',
     );
-    if (!directory.existsSync()) await directory.create(recursive: true);
+    // Operasi berkas di sini kecil dan jarang; versi sinkron menjaga urutan
+    // tulis-hapus tetap pasti.
+    if (!directory.existsSync()) directory.createSync(recursive: true);
     return directory;
   }
 
@@ -246,7 +248,7 @@ class SessionStore {
         continue;
       }
       try {
-        await file.delete();
+        file.deleteSync();
         removed++;
       } on FileSystemException {
         continue;
@@ -256,7 +258,7 @@ class SessionStore {
   }
 
   Future<void> deleteRecording(File file) async {
-    if (file.existsSync()) await file.delete();
+    if (file.existsSync()) file.deleteSync();
     await setPinned(fileName(file), false);
   }
 
@@ -264,7 +266,7 @@ class SessionStore {
   Future<void> deleteAllRecordings() async {
     for (final file in await recordings()) {
       try {
-        await file.delete();
+        file.deleteSync();
       } on FileSystemException {
         continue;
       }

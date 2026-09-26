@@ -25,6 +25,29 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 /// (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`).
 bool get showDraftLessons => kDebugMode;
 
+/// Widget blok bacaan pelajaran, sama persis dengan halaman bacaan di
+/// [LessonScreen]. Dipakai juga Sesi hari ini supaya materinya tampil sama.
+List<Widget> lessonBlockWidgets(List<LessonBlock> blocks) =>
+    _LessonScreenState._blocksOf(blocks);
+
+/// Kartu satu soal latihan, sama dengan di [LessonScreen].
+Widget lessonQuizCard({
+  required QuizQuestion question,
+  required int index,
+  required int count,
+  required int? picked,
+  required ValueChanged<int> onPick,
+}) => _PracticeCard(
+  question: question,
+  index: index,
+  count: count,
+  picked: picked,
+  onPick: onPick,
+);
+
+/// Lencana DRAF (debug saja), sama dengan di [LessonScreen].
+Widget lessonDraftBadge() => const _DraftBadge();
+
 /// Pelajaran v2 (docs/design/v2/screens/09-pelajaran.md, V2-Pelajaran.png):
 /// paham → dengar → coba, satu bagian per halaman.
 ///

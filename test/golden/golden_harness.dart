@@ -60,6 +60,7 @@ Future<void> pumpGolden(
   Widget child, {
   GoldenVariant variant = const GoldenVariant(Brightness.light, 1),
   Size size = phone,
+  AppPalette palette = AppPalette.sacred,
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
@@ -78,7 +79,7 @@ Future<void> pumpGolden(
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: SacredTheme.themeFor(AppPalette.sacred, variant.brightness),
+      theme: SacredTheme.themeFor(palette, variant.brightness),
       builder: (context, app) => MediaQuery(
         data: MediaQuery.of(
           context,

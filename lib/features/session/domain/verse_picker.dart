@@ -145,7 +145,8 @@ final class LetterFocus extends VerseFocus {
   String get label => 'huruf ${letter.letter} (${letter.name})';
 
   @override
-  String get question => 'Ketuk kata yang memuat huruf ${letter.letter}.';
+  String get question =>
+      'Ketuk kata yang memuat huruf ${letter.letter} (${letter.name}).';
 
   @override
   bool operator ==(Object other) =>
