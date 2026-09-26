@@ -70,8 +70,8 @@ tertulis (lisensi, Pasal 80) agar penggunaannya jelas dan tidak menimbulkan kera
 - **Pasal 7 — Tidak mengaku resmi.** Aplikasi tidak mengaku sebagai produk resmi atau
   produk yang disahkan Kementerian Agama, dan tidak memakai logo Kementerian Agama.
 
-**Demo aplikasi** (ketuk untuk langsung mengunduh APK, Android 7.0 ke atas, ±46 MB):
-https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+**Demo aplikasi** (ketuk untuk langsung mengunduh APK versi terbaru, Android 7.0 ke atas, ±46 MB):
+https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 - Kebijakan privasi: https://quran-app-zainularkaan.web.app/privacy
 - Kode sumber: https://github.com/ZainulArkaanAlinsi/Qur-an_App

@@ -6,15 +6,15 @@ import 'package:quran_app_2025/features/tajweed/domain/tajweed_rule.dart';
 /// Tidak ada skema warna tajwid yang universal. Preset ini dipilih agar setiap
 /// warna berkontras >= 4.5:1 terhadap SEMUA permukaan ayat: kartu, latar,
 /// ayat aktif, ayat bertanda, sepia, dan kontras tinggi, di terang dan gelap
-/// (LIQUID_GLASS.md §5, `test/tajweed_widget_test.dart`). Statusnya draft
+/// (`test/tajweed_widget_test.dart`). Statusnya draft
 /// sampai direview guru tajwid. Warna tidak pernah menjadi satu-satunya
 /// penanda: nama hukum selalu tersedia lewat chip, legend, dan ketukan segmen.
 ///
-/// Revisi v4 (25 September 2026): abu, mad thabi'i, tiga idgham, iqlab, dan
+/// Revisi 1.9.1 (25 September 2026): abu, mad thabi'i, tiga idgham, iqlab, dan
 /// ghunnah terang digelapkan; mad wajib gelap digeser ke biru langit; idgham
 /// mimi digeser ke hijau-kuning di kedua tema supaya tidak kembar dengan
-/// idgham bilaghunnah. Hubungan antarwarna dijaga (tabel ΔE2000 di
-/// docs/design/v4-liquid-glass/HASIL_AUDIT.md).
+/// idgham bilaghunnah. Hubungan antarwarna dijaga (tabel kontras dan ΔE2000
+/// di docs/WARNA_TAJWID.md).
 class TajweedPalette {
   const TajweedPalette({
     required this.id,

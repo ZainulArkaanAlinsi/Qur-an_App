@@ -27,7 +27,7 @@
 
 نرجو تأكيد أن هذا الاستخدام مسموح، وإفادتنا بأي شروط إضافية.
 
-للتجربة (تنزيل مباشر): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+للتجربة (تنزيل مباشر لأحدث إصدار): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 جزاكم الله خيرًا على هذا المشروع المبارك.
 زين الأركان (Zainul Arkaan)
@@ -54,7 +54,7 @@ API to their own phone and shows them unchanged, next to the Arabic text.
 
 Could you confirm this use is permitted and tell us about any further conditions?
 
-Try the app (direct download): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+Try the app (direct download, latest version): https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 JazakAllahu khairan for this blessed project,
 Zainul Arkaan

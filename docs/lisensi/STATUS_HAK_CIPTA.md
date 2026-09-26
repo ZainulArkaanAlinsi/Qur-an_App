@@ -29,6 +29,7 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 | AlAdhan | Jadwal salat | API gratis | ✅ Aman | Atribusi sudah ada |
 | GDELT | Daftar judul berita + tautan | Data terbuka; isi berita milik penerbitnya | ✅ Aman (hanya judul + tautan) | — |
 | Font Plus Jakarta Sans, EB Garamond, Amiri, Amiri Quran | Tampilan | SIL OFL 1.1 | ✅ Aman | Teks lisensi ikut di halaman lisensi aplikasi |
+| Kode aplikasi | Seluruh `lib/`, tes, tool | **MIT** (`LICENSE`), hanya untuk kode & dokumen buatan pemilik | ✅ | Pengecualian (data, font, logo) tercantum di `NOTICE` |
 | Logo MyQuran | Brand | Milik pemilik (dibuat dengan alat gambar) | ⚠️ Simpan bukti | Simpan bukti akun/tanggal/prompt dan cek ketentuan alatnya (LISENSI_ASET §1) |
 | Materi tajwid tahap 6–16 | Belajar | Teks orisinal (draf); ayat hanya rujukan | ✅ Aman | Tetap draf sampai 2 ustadz meninjau |
 
@@ -42,10 +43,9 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 
 ## Yang perlu diperhatikan
 
-- **Onboarding halaman 2** menyebut "Pilih 1 halaman, 2 halaman, atau kartu per ayat",
-  padahal mode mushaf masih "segera" di rilis. Teks ini dari paket desain v3 (ditulis
-  persis). Sebaiknya diubah sampai lisensi keluar, atau pastikan listing toko tidak
-  menjanjikannya. Listing di `docs/play-store/listing/` sudah **tidak** menyebut mode mushaf.
+- **Onboarding halaman 2** sudah diubah di 1.9.2 menjadi "Baca ayat demi ayat" (kartu ayat,
+  terjemahan, tajwid). Onboarding dan listing toko tidak lagi menjanjikan mode mushaf
+  sebelum izin tata letak keluar.
 - Jangan menambah iklan, langganan, atau fitur berbayar sebelum izin Kemenag dan penyedia
   audio keluar.
 - Kalau ada pihak yang menolak atau meminta berhenti, hapus sumbernya paling lambat

@@ -254,7 +254,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     primary: Color(0xFF00301F),
     primaryText: Color(0xFF00301F),
     // Sama dengan palet hijau: latar ayat aktif yang lebih pekat membuat
-    // warna tajwid di bawah 4.5 : 1 (HASIL_AUDIT.md, Prompt 3).
+    // warna tajwid di bawah 4.5 : 1 (docs/WARNA_TAJWID.md).
     primarySoft: Color(0xFFE0ECE5),
     gold: Color(0xFF7A5A0E),
     goldText: Color(0xFF5A420A),

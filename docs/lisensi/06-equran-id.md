@@ -35,8 +35,8 @@ Saya memohon izin penggunaan tersebut dengan **ketentuan** berikut:
 - **Pasal 5 — Nonkomersial.** Aplikasi tetap gratis. Bila berubah, saya meminta izin baru lebih dahulu.
 - **Pasal 6 — Pencabutan.** Bila diminta berhenti, sumber ini dihapus paling lambat 14 hari.
 
-**Demo aplikasi** (ketuk untuk langsung mengunduh APK, Android 7.0+, ±46 MB):
-https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+**Demo aplikasi** (ketuk untuk langsung mengunduh APK versi terbaru, Android 7.0+, ±46 MB):
+https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 - Kode sumber: https://github.com/ZainulArkaanAlinsi/Qur-an_App
 - Kebijakan privasi: https://quran-app-zainularkaan.web.app/privacy

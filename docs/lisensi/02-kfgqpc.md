@@ -38,8 +38,8 @@
 - **المادة 6 — سحب الإذن:** نزيل البيانات خلال 14 يومًا إن سُحب الإذن.
 - **المادة 7 — عدم الادّعاء:** لا ندّعي أن التطبيق صادر عن المجمع أو معتمد منه، ولا نستخدم شعاره.
 
-**لتجربة التطبيق** (يبدأ التنزيل مباشرة بالضغط على الرابط، أندرويد 7.0 فأعلى، نحو 46 ميغابايت):
-https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+**لتجربة التطبيق** (يبدأ تنزيل أحدث إصدار مباشرة بالضغط على الرابط، أندرويد 7.0 فأعلى، نحو 46 ميغابايت):
+https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 - سياسة الخصوصية: https://quran-app-zainularkaan.web.app/privacy
 - الشيفرة المصدرية: https://github.com/ZainulArkaanAlinsi/Qur-an_App
@@ -83,8 +83,8 @@ page and line, so the app can arrange the Qur'an text the way the printed mushaf
 - **Article 7 — No endorsement:** we never claim the app is issued or endorsed by the
   Complex, and we do not use its logo.
 
-**Try the app** (the link downloads the APK directly, Android 7.0+, about 46 MB):
-https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/download/v1.9.0/myquran-1.9.0.apk
+**Try the app** (the link downloads the latest APK directly, Android 7.0+, about 46 MB):
+https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk
 
 - Privacy policy: https://quran-app-zainularkaan.web.app/privacy
 - Source code: https://github.com/ZainulArkaanAlinsi/Qur-an_App
