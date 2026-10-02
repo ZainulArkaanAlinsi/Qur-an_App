@@ -40,6 +40,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     required this.successSoft,
     required this.danger,
     required this.dangerSoft,
+    required this.teal,
+    required this.tealSoft,
+    required this.heroA,
+    required this.heroB,
+    required this.onHero,
+    required this.onHeroSec,
+    required this.goldLine,
+    required this.goldButton,
+    required this.onGoldButton,
+    required this.skyHorizon,
   });
 
   final Color bg;
@@ -101,6 +111,35 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   /// Jawaban salah dan latar lembutnya; juga tombol "Salah" di sesi hafalan.
   final Color danger;
   final Color dangerSoft;
+
+  // Token v6 (docs/design/v6/DESIGN.md §3). Kontrasnya dikunci di
+  // test/sacred_tokens_test.dart.
+
+  /// Cincin & titik Murajaah (elemen grafis, ≥ 3:1 di `surf`). Teks memakai
+  /// `ink`, bukan `teal`.
+  final Color teal;
+
+  /// Latar ikon murajaah.
+  final Color tealSoft;
+
+  /// Gradien kartu "Langkah berikutnya", dari [heroA] ke [heroB]. Kontras
+  /// tinggi: keduanya sama (padat, tanpa gradien).
+  final Color heroA;
+  final Color heroB;
+
+  /// Teks utama dan sekunder di kartu hijau.
+  final Color onHero;
+  final Color onHeroSec;
+
+  /// Eyebrow & garis mihrab di kartu hijau (teks kecil, ≥ 4.5:1 di heroA).
+  final Color goldLine;
+
+  /// Tombol CTA utama di kartu hijau dan tintanya.
+  final Color goldButton;
+  final Color onGoldButton;
+
+  /// Ujung gradien kartu horizon salat. Kontras tinggi: sama dengan `surf`.
+  final Color skyHorizon;
 
   /// Tema gelap (latar gelap). Dipakai memilih berkas logo gelap, bukan
   /// mewarnai ulang logo (docs/design/v3/DESIGN.md §2).
@@ -166,6 +205,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     successSoft: Color(0xFFE3F2E8),
     danger: Color(0xFF9B1C1C),
     dangerSoft: Color(0xFFFBE3E3),
+    teal: Color(0xFF1F6F78),
+    tealSoft: Color(0xFFDCEEEF),
+    heroA: Color(0xFF0D5843),
+    heroB: Color(0xFF063B2D),
+    onHero: Color(0xFFFBF7EC),
+    onHeroSec: Color(0xC7FBF7EC),
+    goldLine: Color(0xFFE2C36A),
+    goldButton: Color(0xFFF4CF5D),
+    onGoldButton: Color(0xFF1F1A08),
+    skyHorizon: Color(0xFFE3EEF2),
   );
 
   static const dark = SacredTokens(
@@ -206,6 +255,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     successSoft: Color(0x1F6FD890),
     danger: Color(0xFFFF9B9B),
     dangerSoft: Color(0x1FFF7B7B),
+    teal: Color(0xFF7CCFD6),
+    tealSoft: Color(0x247CCFD6),
+    heroA: Color(0xFF0F4A39),
+    heroB: Color(0xFF082A20),
+    onHero: Color(0xFFF3F1E8),
+    onHeroSec: Color(0xBDF3F1E8),
+    goldLine: Color(0xFFD6B04A),
+    goldButton: Color(0xFFF4CF5D),
+    onGoldButton: Color(0xFF1F1A08),
+    skyHorizon: Color(0xFF132733),
   );
 
   /// Sepia memakai kaca dan aksen tema terang, sesuai spesifikasi.
@@ -247,6 +306,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     successSoft: Color(0xFFE3F2E8),
     danger: Color(0xFF9B1C1C),
     dangerSoft: Color(0xFFFBE3E3),
+    teal: Color(0xFF1F6F78),
+    tealSoft: Color(0xFFDCEEEF),
+    heroA: Color(0xFF0D5843),
+    heroB: Color(0xFF063B2D),
+    onHero: Color(0xFFFBF7EC),
+    onHeroSec: Color(0xC7FBF7EC),
+    goldLine: Color(0xFFE2C36A),
+    goldButton: Color(0xFFF4CF5D),
+    onGoldButton: Color(0xFF1F1A08),
+    skyHorizon: Color(0xFFEFE6CF),
   );
 
   /// Kontras tinggi: hitam/putih penuh, aksen tetap dapat dibedakan.
@@ -290,6 +359,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     successSoft: Color(0xFFD9EFE0),
     danger: Color(0xFF7A0F0F),
     dangerSoft: Color(0xFFF7D6D6),
+    teal: Color(0xFF00474F),
+    tealSoft: Color(0xFFDCEEEF),
+    heroA: Color(0xFF00301F),
+    heroB: Color(0xFF00301F),
+    onHero: Color(0xFFFFFFFF),
+    onHeroSec: Color(0xFFFFFFFF),
+    goldLine: Color(0xFFFFE27A),
+    goldButton: Color(0xFFFFE27A),
+    onGoldButton: Color(0xFF000000),
+    skyHorizon: Color(0xFFFFFFFF),
   );
 
   static const highContrastDark = SacredTokens(
@@ -331,6 +410,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     successSoft: Color(0x338FF0AE),
     danger: Color(0xFFFFB3B3),
     dangerSoft: Color(0x33FFB3B3),
+    teal: Color(0xFFA6E6EC),
+    tealSoft: Color(0x33A6E6EC),
+    heroA: Color(0xFF00301F),
+    heroB: Color(0xFF00301F),
+    onHero: Color(0xFFFFFFFF),
+    onHeroSec: Color(0xFFFFFFFF),
+    goldLine: Color(0xFFFFE27A),
+    goldButton: Color(0xFFFFE27A),
+    onGoldButton: Color(0xFF000000),
+    skyHorizon: Color(0xFF0A0A0A),
   );
 
   @override
@@ -367,6 +456,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     Color? successSoft,
     Color? danger,
     Color? dangerSoft,
+    Color? teal,
+    Color? tealSoft,
+    Color? heroA,
+    Color? heroB,
+    Color? onHero,
+    Color? onHeroSec,
+    Color? goldLine,
+    Color? goldButton,
+    Color? onGoldButton,
+    Color? skyHorizon,
   }) => SacredTokens(
     bg: bg ?? this.bg,
     surf: surf ?? this.surf,
@@ -400,6 +499,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     successSoft: successSoft ?? this.successSoft,
     danger: danger ?? this.danger,
     dangerSoft: dangerSoft ?? this.dangerSoft,
+    teal: teal ?? this.teal,
+    tealSoft: tealSoft ?? this.tealSoft,
+    heroA: heroA ?? this.heroA,
+    heroB: heroB ?? this.heroB,
+    onHero: onHero ?? this.onHero,
+    onHeroSec: onHeroSec ?? this.onHeroSec,
+    goldLine: goldLine ?? this.goldLine,
+    goldButton: goldButton ?? this.goldButton,
+    onGoldButton: onGoldButton ?? this.onGoldButton,
+    skyHorizon: skyHorizon ?? this.skyHorizon,
   );
 
   @override
@@ -442,6 +551,16 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
       successSoft: mix(successSoft, other.successSoft),
       danger: mix(danger, other.danger),
       dangerSoft: mix(dangerSoft, other.dangerSoft),
+      teal: mix(teal, other.teal),
+      tealSoft: mix(tealSoft, other.tealSoft),
+      heroA: mix(heroA, other.heroA),
+      heroB: mix(heroB, other.heroB),
+      onHero: mix(onHero, other.onHero),
+      onHeroSec: mix(onHeroSec, other.onHeroSec),
+      goldLine: mix(goldLine, other.goldLine),
+      goldButton: mix(goldButton, other.goldButton),
+      onGoldButton: mix(onGoldButton, other.onGoldButton),
+      skyHorizon: mix(skyHorizon, other.skyHorizon),
     );
   }
 }
