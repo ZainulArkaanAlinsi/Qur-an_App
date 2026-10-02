@@ -17,8 +17,23 @@ Rules:
 1. `QURAN_APP_GUIDE_DAN_PROMPT_CODEX.md` + `docs/RELIGIOUS_CONTENT_GOVERNANCE.md` — konten, data, streak, audio, keamanan. Selalu menang.
 2. `docs/design/v2/DESIGN.md` — sistem desain (token, komponen, aturan tata letak).
    `docs/design/v3/DESIGN.md` — tambahan v3: logo MyQuran, ikon, splash, onboarding, materi nun sukun. Berlaku bersama v2.
+2b. `docs/design/v6/DESIGN.md` + `screens/19–23` — Beranda, dock, Murottal, pengaturan salat, qari. Menang atas v2 untuk layar-layar itu.
+   `docs/design/v4-liquid-glass/LIQUID_GLASS.md` — efek kaca.
 3. `docs/design/v2/screens/NN-*.md` + `.png` dan `docs/design/v3/screens/15–18-*.md` + `.png` — spesifikasi & gambar acuan per layar. **Gambar acuan adalah target visual.** Kalau ragu, cocokkan ke PNG-nya.
 4. `docs/revisi-v2/SPESIFIKASI_REVISI_V2.md`, `docs/revisi-v2/RISET_SUMBER.md` — fitur & sumber data.
+
+## Dokumen produk
+
+@docs/PRD.md
+@docs/DATA.md
+@docs/decisions.md
+
+## Cara kerja fitur
+
+- Satu fitur per sesi. Mulai dengan rencana; tunggu persetujuan pemilik.
+- Kebutuhan berubah → perbarui PRD/DATA/decisions dulu, baru kode.
+- Kriteria "Selesai jika" di `screens/NN-*.md` dan PRD §4 adalah checklist laporan akhir. Tulis tiap butir: lulus/gagal + bukti (berkas:baris, nama tes, nama golden).
+- Logika keputusan = fungsi murni di `domain/`, waktu dioper sebagai parameter, dites tabel.
 
 ## Aturan UI yang tidak boleh dilanggar
 

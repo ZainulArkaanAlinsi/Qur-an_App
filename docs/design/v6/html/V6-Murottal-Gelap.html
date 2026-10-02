@@ -1,0 +1,86 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><style>@font-face{font-family:'AmiriQuran';src:url(../../../../assets/fonts/AmiriQuran-Regular.ttf);}@font-face{font-family:'Jakarta';src:url(../../../../assets/fonts/PlusJakartaSans-wght-Latin.ttf);font-weight:200 800;}@font-face{font-family:'Garamond';src:url(../../../../assets/fonts/EBGaramond-wght-Latin.ttf);font-weight:400 800;}:root{--bg:#08110E;--surf:#111C18;--surf2:#1A2823;--ink:#ECEFEA;--sec:#9DA79F;--ter:#646D67;--hair:rgba(236,239,234,.08);--primary:#8FD7B8;--primaryText:#9ADDBF;--primarySoft:rgba(143,215,184,.14);--gold:#FED65B;--goldText:#F4D679;--goldSoft:rgba(254,214,91,.12);--goldBtn:#F4CF5D;--onGoldBtn:#1F1A08;--heroA:#0F4A39;--heroB:#082A20;--onHero:#F3F1E8;--onHeroSec:rgba(243,241,232,.74);--goldLine:#D6B04A;--teal:#7CCFD6;--tealSoft:rgba(124,207,214,.14);--sky1:#111C18;--sky2:#132733;--glass:rgba(17,28,24,.46);--glassRim1:rgba(255,255,255,.22);--glassRim2:rgba(255,255,255,.04);--lens:rgba(143,215,184,.20);--shadow:0 12px 34px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35);--cardShadow:0 1px 0 rgba(255,255,255,.03) inset;--statusInk:#ECEFEA;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Jakarta',sans-serif;word-spacing:.12em;-webkit-font-smoothing:antialiased}
+.phone{width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)}
+.phone.tall{height:auto;min-height:844px;padding-bottom:150px}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font-weight:700;font-size:15px;color:var(--statusInk)}
+.status .r{display:flex;gap:6px;align-items:center;font-size:12px}
+.status .bat{border:1.5px solid var(--statusInk);border-radius:5px;padding:0 4px;font-size:11px;line-height:15px}
+.ic{display:block;flex:none}
+.px{padding:0 20px}
+.row{display:flex;align-items:center}
+.circle{width:40px;height:40px;border-radius:50%;background:var(--surf);display:grid;place-items:center;color:var(--ink);box-shadow:var(--cardShadow);border:1px solid var(--hair)}
+.serif{font-family:'Garamond',serif}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+.tab{font-variant-numeric:tabular-nums}
+.mihrab{position:relative;flex:none}
+.mihrab svg{position:absolute;inset:0;width:100%;height:100%}
+.mh-ar{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:'AmiriQuran';color:var(--goldLine);direction:rtl;line-height:1.6}
+.mh-num{position:absolute;left:0;right:0;bottom:16%;text-align:center;color:var(--goldLine);font-weight:800;font-size:12px}
+.home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.85}
+/* ---- dock (tab bar + now playing), satu permukaan kaca ---- */
+.dock{position:absolute;left:12px;right:12px;bottom:26px;border-radius:32px;overflow:hidden;
+  background:var(--glass);backdrop-filter:blur(18px) saturate(1.7);-webkit-backdrop-filter:blur(18px) saturate(1.7);
+  box-shadow:var(--shadow)}
+.dock::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(170deg,var(--glassRim1),var(--glassRim2) 55%,var(--glassRim1));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.dock::after{content:'';position:absolute;left:0;right:0;top:0;height:55%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0))}
+.tabs{display:flex;height:64px;padding:4px;position:relative;z-index:1}
+.tabs .t{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink);font-size:11px;font-weight:600;border-radius:26px;position:relative}
+.tabs .t.on{color:var(--primaryText);font-weight:800;background:var(--lens);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 1px 3px rgba(0,0,0,.06)}
+.np{position:relative;z-index:1;display:flex;align-items:center;gap:12px;padding:10px 10px 6px 12px;height:62px}
+.np .meta{flex:1;min-width:0}
+.np .meta b{display:block;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np .meta span{display:block;font-size:12px;color:var(--sec);font-weight:600;margin-top:1px}
+.np .btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.np .btn.main{background:var(--primary);color:var(--surf)}
+.npTrack{position:relative;z-index:1;display:flex;gap:3px;padding:0 16px 2px}
+.npTrack i{flex:1;height:3px;border-radius:2px;background:var(--hair)}
+.npTrack i.done{background:var(--primaryText)}
+.npTrack i.cur{background:linear-gradient(90deg,var(--gold) var(--p),var(--hair) var(--p))}
+.npSep{position:relative;z-index:1;height:1px;margin:6px 14px 0;background:var(--hair)}
+
+.ptop{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 0}
+.ptop .c{text-align:center}
+.ptop .c .eyebrow{color:var(--sec);font-size:10.5px}
+.ptop .c b{display:block;font-size:17px;font-weight:800;margin-top:1px}
+.chips{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 4px}
+.qari{white-space:nowrap;display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;background:var(--surf);border:1px solid var(--hair);font-weight:800;font-size:13px;box-shadow:var(--cardShadow)}
+.qari .av{width:28px;height:28px;border-radius:50%;background:var(--primary);color:var(--surf);display:grid;place-items:center;font-size:12px;font-weight:800}
+.qari em{font-style:normal;color:var(--sec);font-weight:600}
+.seg{display:flex;padding:3px;border-radius:999px;background:var(--surf2);font-size:12.5px;font-weight:800}
+.seg span{padding:6px 12px;border-radius:999px;color:var(--sec)}
+.seg span.on{background:var(--surf);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.list{position:absolute;left:0;right:0;top:150px;bottom:0;overflow:hidden;padding:0 20px}
+.list .fadeTop{position:absolute;left:0;right:0;top:0;height:34px;background:linear-gradient(var(--bg),rgba(0,0,0,0));z-index:2}
+.ay{padding:14px 16px;border-radius:22px;margin-bottom:6px;position:relative}
+.ay .ar{font-family:'AmiriQuran';direction:rtl;text-align:right;font-size:25px;line-height:2.15;color:var(--sec)}
+.ay .tr{font-size:13.5px;line-height:1.55;color:var(--sec);margin-top:4px;font-weight:500}
+.ay .no{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1.6px solid var(--ter);font-size:11px;font-weight:800;color:var(--sec);margin-bottom:2px}
+.ay.on{background:var(--surf);box-shadow:var(--cardShadow);border:1.5px solid var(--primarySoft)}
+.ay.on .ar{color:var(--ink);font-size:29px}
+.ay.on .tr{color:var(--ink);font-size:14px}
+.ay.on .no{border-color:var(--gold);color:var(--goldText);background:var(--goldSoft)}
+.ay .now{position:absolute;left:16px;top:16px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--primaryText);letter-spacing:.6px}
+.panel{position:absolute;left:0;right:0;bottom:0;background:var(--surf);border-radius:30px 30px 0 0;padding:16px 22px 34px;z-index:3;
+  box-shadow:0 -10px 30px rgba(0,0,0,.08);border-top:1px solid var(--hair)}
+.panel .lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:800}
+.panel .lbl span{color:var(--sec);font-weight:600;font-variant-numeric:tabular-nums}
+.segs{display:flex;gap:4px;margin:10px 0 4px}
+.segs i{flex:1;height:7px;border-radius:4px;background:var(--surf2)}
+.segs i.done{background:var(--primaryText)}
+.segs i.cur{background:linear-gradient(90deg,var(--gold) var(--p),var(--surf2) var(--p));box-shadow:0 0 0 3px var(--goldSoft)}
+.tp{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.sm{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:var(--sec);width:66px;white-space:nowrap}
+.sm .b{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--ink);position:relative}
+.sm .b.on{background:var(--goldSoft);color:var(--goldText)}
+.sm .b sup{position:absolute;right:2px;top:2px;min-width:17px;height:17px;border-radius:9px;background:var(--gold);color:#1F1A08;font-size:10px;font-weight:800;display:grid;place-items:center;padding:0 4px}
+.nav{width:52px;height:52px;display:grid;place-items:center;color:var(--ink)}
+.play{width:78px;height:78px;border-radius:50%;background:var(--primary);color:var(--surf);display:grid;place-items:center;box-shadow:0 10px 24px rgba(0,53,39,.28),inset 0 1px 0 rgba(255,255,255,.18)}
+.acts{display:flex;gap:8px;margin-top:16px}
+.acts div{flex:1;height:44px;border-radius:22px;border:1px solid var(--hair);background:var(--bg);display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap}
+.acts div em{font-style:normal;color:var(--sec);font-weight:700}
+</style></head><body><div class="phone"><div class="status"><span>10:32</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><span class="bat">91</span></span></div><div class="ptop"><div class="circle"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><div class="c"><div class="eyebrow">Murottal · per ayat</div><b>Al-Fatihah</b></div><div class="circle"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div></div><div class="chips"><div class="qari"><span class="av">H</span>Hudhaify<svg class="ic " width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><div class="seg"><span class="on">Teks</span><span>Sampul</span></div></div><div class="list"><div class="fadeTop"></div><div class="ay"><div style="text-align:right"><span class="no">4</span></div><div class="ar">مَٰلِكِ يَوْمِ ٱلدِّينِ</div><div class="tr">Yang menguasai di Hari Pembalasan.</div></div><div class="ay on"><div class="now"><svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="9" width="3" height="10" rx="1.2"/><rect x="10.5" y="4" width="3" height="15" rx="1.2"/><rect x="17" y="11" width="3" height="8" rx="1.2"/></svg> DIPUTAR</div><div style="text-align:right"><span class="no">5</span></div><div class="ar">إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ</div><div class="tr">Hanya Engkaulah yang kami sembah, dan hanya kepada Engkaulah kami meminta pertolongan.</div></div><div class="ay"><div style="text-align:right"><span class="no">6</span></div><div class="ar">ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ</div><div class="tr">Tunjukilah kami jalan yang lurus,</div></div><div class="ay"><div style="text-align:right"><span class="no">7</span></div><div class="ar">صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ</div><div class="tr">(yaitu) Jalan orang-orang yang telah Engkau beri nikmat kepada mereka; bukan (jalan) mereka yang dimurkai dan bukan (pula jalan) mereka yang sesat.</div></div></div><div class="panel"><div class="lbl">Ayat 5 dari 7<span>0:01 / 0:06</span></div><div class="segs"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur" style="--p:20%"></i><i></i><i></i></div><div class="tp"><div class="sm"><div class="b"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2.5 3 3-3 3"/><path d="M4 11V9.5a4 4 0 0 1 4-4h12"/><path d="m7 21.5-3-3 3-3"/><path d="M20 13v1.5a4 4 0 0 1-4 4H4"/></svg></div>Ulang</div><div class="nav"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5.6v12.8a.9.9 0 0 1-1.4.75l-9.3-6.4a.9.9 0 0 1 0-1.5l9.3-6.4A.9.9 0 0 1 19 5.6z"/><rect x="4.2" y="4.5" width="2.6" height="15" rx="1.2"/></svg></div><div class="play"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4.2" height="15" rx="1.3"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.3"/></svg></div><div class="nav"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5.6v12.8a.9.9 0 0 0 1.4.75l9.3-6.4a.9.9 0 0 0 0-1.5L6.4 4.85A.9.9 0 0 0 5 5.6z"/><rect x="17.2" y="4.5" width="2.6" height="15" rx="1.2"/></svg></div><div class="sm"><div class="b" style="font-weight:800;font-size:14px">1×</div>Kecepatan</div></div><div class="acts"><div><svg class="ic " width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 1.8M9.5 2.5h5"/></svg> Timer</div><div><svg class="ic " width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11.5M7 10.5l5 5 5-5M4.5 20.5h15"/></svg> Unduh</div><div><svg class="ic " width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12h17M7.5 8l-4 4 4 4M16.5 8l4 4-4 4"/></svg> 1–7</div></div></div><div class="home-ind" style="z-index:4"></div></div></body></html>
