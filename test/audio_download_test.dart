@@ -241,8 +241,61 @@ void main() {
     expect(find.byTooltip('Hapus murottal offline surah ini'), findsOneWidget);
     expect(await downloader.isComplete(_reciter, _surah), isTrue);
 
+    // Hapus ditanyakan dulu; Batal tidak menyentuh berkas.
     await tester.tap(find.byType(IconButton));
     await tester.pumpAndSettle();
+    expect(find.text('Hapus murottal Al-Ikhlas?'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+    expect(await downloader.isComplete(_reciter, _surah), isTrue);
+
+    await tester.tap(find.byType(IconButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus'));
+    await tester.pumpAndSettle();
     expect(await downloader.isComplete(_reciter, _surah), isFalse);
+  });
+
+  testWidgets('builder: pil Unduh → Tersimpan memakai pengunduh yang sama', (
+    tester,
+  ) async {
+    final downloader = service(okClient());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SurahDownloadButton(
+            surah: _surah,
+            service: downloader,
+            builder: (context, view) => TextButton(
+              onPressed: view.onTap,
+              child: Text(switch (view.status) {
+                SurahDownloadStatus.notSaved => 'Pil Unduh',
+                SurahDownloadStatus.checking => 'Pil Menghitung',
+                SurahDownloadStatus.downloading =>
+                  'Pil ${(view.fraction * 100).round()}%',
+                SurahDownloadStatus.saved => 'Pil Tersimpan',
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Pil Unduh'), findsOneWidget);
+
+    await tester.tap(find.text('Pil Unduh'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Unduh'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pil Tersimpan'), findsOneWidget);
+    expect(await downloader.isComplete(_reciter, _surah), isTrue);
+
+    // Pil Tersimpan menawarkan hapus lewat dialog yang sama dengan ikon.
+    await tester.tap(find.text('Pil Tersimpan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hapus'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pil Unduh'), findsOneWidget);
   });
 }

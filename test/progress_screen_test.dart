@@ -7,48 +7,50 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('progres memakai catatan perangkat dan mengaku soal murottal', (
-    tester,
-  ) async {
-    final today = ReadingProgressService.localDate(DateTime.now());
-    SharedPreferences.setMockInitialValues({
-      'reading_seconds_$today': 420,
-      'daily_target_seconds': 300,
-      // Al-Fatihah dan Al-Baqarah selesai: juz 1 dan 2 ikut selesai.
-      'completed_surahs': ['1', '2'],
-    });
-    await SharedPreferencesService.init();
+  testWidgets(
+    'progres memakai catatan perangkat tanpa mengarang angka murottal',
+    (tester) async {
+      final today = ReadingProgressService.localDate(DateTime.now());
+      SharedPreferences.setMockInitialValues({
+        'reading_seconds_$today': 420,
+        'daily_target_seconds': 300,
+        // Al-Fatihah dan Al-Baqarah selesai: juz 1 dan 2 ikut selesai.
+        'completed_surahs': ['1', '2'],
+      });
+      await SharedPreferencesService.init();
 
-    await tester.binding.setSurfaceSize(const Size(420, 2400));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: SacredTheme.themeFor(AppPalette.sacred, Brightness.light),
-        home: const Scaffold(body: ProgressScreen()),
-      ),
-    );
-    await tester.pump();
-    // Batas juz dibaca dari aset, yang hanya jalan di luar waktu semu.
-    for (var i = 0; i < 6; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      await tester.binding.setSurfaceSize(const Size(420, 2400));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: SacredTheme.themeFor(AppPalette.sacred, Brightness.light),
+          home: const Scaffold(body: ProgressScreen()),
+        ),
       );
       await tester.pump();
-    }
+      // Batas juz dibaca dari aset, yang hanya jalan di luar waktu semu.
+      for (var i = 0; i < 6; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+      }
 
-    // Menit membaca berasal dari detik yang tercatat, bukan angka contoh.
-    expect(find.text('Baca 7 m'), findsOneWidget);
-    expect(find.text('Target hari ini tercapai.'), findsOneWidget);
+      // Menit membaca berasal dari detik yang tercatat, bukan angka contoh.
+      expect(find.text('Baca 7 m'), findsOneWidget);
+      expect(find.text('Target hari ini tercapai.'), findsOneWidget);
 
-    // Waktu mendengar memang belum pernah dicatat; jangan dikarang.
-    expect(find.text('Dengar belum dicatat'), findsOneWidget);
+      // Waktu mendengar belum dicatat, jadi tidak ditampilkan sama sekali:
+      // tidak dikarang, dan tidak ada kalimat developer di layar (PRD R4).
+      expect(find.textContaining('Dengar'), findsNothing);
 
-    expect(find.text('Juz 2 dari 30 selesai'), findsOneWidget);
-    expect(find.text('Lanjut di Juz 3'), findsOneWidget);
-    // Rentang halamannya dihitung dari metadata mushaf, bukan ditulis tangan.
-    expect(find.textContaining('Halaman '), findsOneWidget);
-    expect(find.bySemanticsLabel('Juz 1: selesai'), findsOneWidget);
-    expect(find.bySemanticsLabel('Juz 3: berikutnya'), findsOneWidget);
-    expect(find.bySemanticsLabel('Juz 30: belum'), findsOneWidget);
-  });
+      expect(find.text('Juz 2 dari 30 selesai'), findsOneWidget);
+      expect(find.text('Lanjut di Juz 3'), findsOneWidget);
+      // Rentang halamannya dihitung dari metadata mushaf, bukan ditulis tangan.
+      expect(find.textContaining('Halaman '), findsOneWidget);
+      expect(find.bySemanticsLabel('Juz 1: selesai'), findsOneWidget);
+      expect(find.bySemanticsLabel('Juz 3: berikutnya'), findsOneWidget);
+      expect(find.bySemanticsLabel('Juz 30: belum'), findsOneWidget);
+    },
+  );
 }

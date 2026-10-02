@@ -234,11 +234,6 @@ class _MurottalSheetState extends State<_MurottalSheet> {
                 SurahDownloadButton(surah: widget.surah.number),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              'Waktu mendengar dicatat terpisah dari menit membaca.',
-              style: SacredText.footnote.copyWith(color: tokens.sec),
-            ),
           ],
         ),
       ),

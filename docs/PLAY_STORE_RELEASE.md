@@ -1,4 +1,4 @@
-# Rilis ke Google Play — MyQuran 1.10.0 (20)
+# Rilis ke Google Play — MyQuran 1.10.1 (21)
 
 Panduan singkat untuk unggahan pertama ke Play Console. Butir bertanda **wajib** akan
 membuat aplikasi ditolak atau tidak bisa tayang bila dilewati.
@@ -19,21 +19,45 @@ flutter build appbundle --release
 - Ditandatangani kunci upload dari `android/key.properties`. **Jangan pernah** mengunggah
   build yang ditandatangani kunci debug (Gradle memberi peringatan bila `key.properties`
   tidak ada).
-- Package id `com.zainularkaan.quran`, versionCode 20, versionName 1.10.0,
+- Package id `com.zainularkaan.quran`, versionCode 21, versionName 1.10.1,
   targetSdk 36, minSdk 24.
 
+### Hasil cek build 1.10.1 (2 Oktober 2026, Flutter 3.44.8)
+
+- `app-release.aab` 67,6 MB, ditandatangani kunci rilis `CN=Ruang Tilawah`
+  (SHA-256 `3A:F7:E6:FD:…:24:D8:FE:AA`), bukan kunci debug.
+- Manifest gabungan (`bundletool dump manifest`): targetSdk 36, minSdk 24.
+- Izin di AAB: `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_COARSE_LOCATION`,
+  `ACCESS_FINE_LOCATION`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`,
+  `RECORD_AUDIO`, `WAKE_LOCK`, `VIBRATE`, `FOREGROUND_SERVICE`,
+  `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `USE_BIOMETRIC`, `USE_FINGERPRINT`, `READ_GSERVICES`,
+  dan `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` milik aplikasi sendiri.
+  - **Tidak ada** `REQUEST_INSTALL_PACKAGES` dan tidak ada FileProvider pembaruan.
+  - Asal izin tambahan menurut `build/app/outputs/logs/manifest-merger-release-report.txt`:
+    `USE_BIOMETRIC`/`USE_FINGERPRINT` dari `androidx.biometric:biometric:1.1.0`
+    (dependensi transitif), dan `READ_GSERVICES` dari
+    `com.google.android.recaptcha:recaptcha:18.6.1` (ikut `firebase-auth`). Kode MyQuran
+    tidak memakai biometrik.
+- 16 KB page size:
+  - semua `.so` 64-bit (`arm64-v8a`, `x86_64`) punya segmen LOAD dengan alignment
+    ≥ 16384;
+  - `zipalign -c -P 16 -v 4` lulus untuk 86 APK split hasil `bundletool build-apks`.
+
 ### Catatan rilis (kolom "Yang baru" di Play Console)
+
+1.10.1 adalah unggahan Play pertama, jadi catatannya menyebut fitur utama 1.10.0 dan
+perbaikan 1.10.1. Maksimal 500 karakter (ID 372, EN 412).
 
 Bahasa Indonesia:
 
 ```
-Baru: Sesi hari ini. Sekitar 10 menit sehari: ulang soal lama, pelajari satu potong materi, temukan hurufnya di ayat asli, dengarkan qari, lalu rekam dan bandingkan dengan suaramu. Rekaman tetap di HP, dan aplikasi tidak menilai bacaan. Sesi yang selesai ikut dihitung istiqamah, dan ada pengingat hariannya.
+Sesi hari ini: sekitar 10 menit sehari untuk mengulang, belajar satu materi kecil, menemukannya di ayat, lalu menirukan qari. Rekaman tetap di HP dan aplikasi tidak menilai bacaan. Perbaikan 1.10.1: tombol Unduh di layar Murottal kini berfungsi, hapus unduhan ditanyakan dulu, catatan internal dihapus dari layar, dan akun bisa dihapus lewat email tanpa memasang aplikasi.
 ```
 
 English:
 
 ```
-New: Today's session. About 10 minutes a day: review earlier questions, learn one small step, find it in a real verse, listen to a reciter, then record yourself and compare. Recordings stay on your phone and the app never grades your recitation. Completed sessions count towards your streak, with an optional daily reminder.
+Today's session: about 10 minutes a day to review, learn one small step, find it in a real verse, then repeat after a reciter. Recordings stay on your phone and the app never grades your recitation. Fixes in 1.10.1: the Download button on the Murottal screen now works, deleting a download asks first, internal notes are gone from the screens, and you can delete your account by email without installing the app.
 ```
 
 ## 2. Wajib sebelum unggah
@@ -55,13 +79,58 @@ New: Today's session. About 10 minutes a day: review earlier questions, learn on
   `google-services.json`. Tanpa ini, **Masuk dengan Google gagal** di aplikasi yang
   diunduh dari Play (kunci Play berbeda dari kunci upload). Tambahkan SHA yang sama ke
   pembatasan API key Android di Google Cloud Console.
-- [ ] **Kebijakan privasi**: deploy `hosting/public/privacy.html` yang sudah diperbarui
-  (nama MyQuran, mikrofon, semua layanan pihak ketiga):
-  `firebase deploy --only hosting`, lalu cantumkan
-  `https://quran-app-zainularkaan.web.app/privacy` di Play Console.
+- [ ] **Kebijakan privasi & halaman hapus akun**: deploy `hosting/public/` yang sudah
+  diperbarui (privasi versi 2 Oktober 2026 + halaman baru `hapus-akun.html`):
+  `firebase deploy --only hosting`. Lalu cantumkan di Play Console:
+  - Privacy policy: `https://quran-app-zainularkaan.web.app/privacy`
+  - Data safety › *Delete account URL*: `https://quran-app-zainularkaan.web.app/hapus-akun`
+    (bisa dipakai tanpa memasang aplikasi, lewat email `zainaril13@gmail.com`)
+- [ ] **Verifikasi developer Android** (lihat bagian 2a). APK MyQuran juga dibagikan
+  lewat GitHub Releases, jadi package-nya wajib didaftarkan manual.
 - [x] **Backup keystore** `C:/Users/USER/keystores/ruang-tilawah-release.jks` dan
   `android/key.properties` (sudah di OneDrive sejak 23 September 2026). Kunci ini menjadi
   kunci upload Play; kehilangannya berarti harus mengajukan reset kunci ke Google.
+
+## 2a. Verifikasi developer Android
+
+Sumber: https://developer.android.com/developer-verification (dicek 2 Oktober 2026).
+
+- Mulai **30 September 2026**, perangkat Android tersertifikasi (Android 7+) di
+  **Brasil, Indonesia, Singapura, dan Thailand** hanya memasang aplikasi dari developer
+  yang terverifikasi. Pemberlakuan global menyusul pada 2027.
+- Google Play mendaftarkan otomatis sebagian besar aplikasi yang **hanya** ada di Play.
+  Aplikasi yang **juga dibagikan di luar Play**, termasuk APK di GitHub Releases, harus
+  didaftarkan manual di Play Console.
+- Langkah pemilik:
+  1. Selesaikan verifikasi identitas akun developer di Play Console.
+  2. Daftarkan package `com.zainularkaan.quran` di bagian *Android developer
+     verification* Play Console, dengan kunci penandatanganan yang sama dengan APK
+     GitHub.
+  3. Setelah terdaftar, uji pasang APK GitHub di HP Android Indonesia. Pemasangan harus
+     berjalan tanpa peringatan "developer tidak terverifikasi".
+
+## 2b. Closed testing: 12 penguji × 14 hari berturut-turut
+
+Wajib untuk akun developer pribadi baru sebelum bisa mengajukan Production.
+
+1. Play Console › Testing › **Closed testing** › buat track (mis. "Penguji awal").
+2. Tambahkan penguji: daftar email (minimal 12 akun Google) atau satu Google Group.
+3. Unggah `app-release.aab` 1.10.1 (21) ke track itu, isi catatan rilis, kirim untuk
+   ditinjau.
+4. Setelah disetujui, bagikan *opt-in link* ke penguji. Setiap penguji harus menekan
+   "Become a tester", lalu memasang aplikasi dari Play Store.
+5. **Saat mengajukan Production, minimal 12 penguji harus sedang ikut dan sudah ikut
+   tanpa putus selama 14 hari sebelumnya.** Penguji yang ikut kurang dari 14 hari lalu
+   keluar tidak dihitung. Siapkan cadangan 2–3 orang.
+6. Pembaruan selama masa tes (mis. 1.11.0 = v6) diunggah ke track yang sama. Panduan
+   Play tidak menyebut bahwa pembaruan mengulang hitungan; syaratnya hanya pada penguji
+   yang ikut tanpa putus.
+7. Setelah syarat terpenuhi: Dashboard › **Apply for production**. Isi tiga bagian:
+   "About your closed test", "About your app/game", dan "About your production
+   readiness".
+
+Sumber: https://support.google.com/googleplay/android-developer/answer/14151465
+(dicek 2 Oktober 2026).
 
 ## 3. App content (Play Console › Policy › App content)
 
@@ -85,13 +154,15 @@ New: Today's session. About 10 minutes a day: review earlier questions, learn on
 | --- | --- | --- | --- |
 | Email, nama (Personal info) | Ya, **opsional** (hanya bila masuk Google) | Tidak | Akun & sinkronisasi (Firebase Auth) |
 | User IDs | Ya, opsional | Tidak | ID pengguna Firebase |
-| App activity (riwayat baca, bookmark) | Ya, opsional | Tidak | Sinkronisasi antar perangkat |
+| App activity (riwayat baca, bookmark, tanggal Sesi hari ini selesai) | Ya, opsional | Tidak | Sinkronisasi antar perangkat |
 | Device or other IDs | Ya, opsional | Tidak | ID perangkat acak untuk sesi baca yang disinkron |
 | Lokasi | Tidak dikumpulkan | — | Kiblat dihitung di perangkat, tidak dikirim |
 | Audio (rekaman) | Tidak dikumpulkan | — | Rekaman hafalan dan Sesi hari ini hanya di perangkat, tidak pernah diunggah |
 
 Enkripsi saat transit: **Ya** (HTTPS). Pengguna bisa meminta penghapusan data: **Ya**
-(Saya › kartu profil › Hapus akun & data cloud).
+(Saya › kartu profil › Hapus akun & data cloud). Penghapusan juga bisa diminta tanpa
+aplikasi, lewat https://quran-app-zainularkaan.web.app/hapus-akun (email ke
+`zainaril13@gmail.com`, diproses paling lambat 30 hari).
 
 ## 4. Store listing (7 bahasa)
 

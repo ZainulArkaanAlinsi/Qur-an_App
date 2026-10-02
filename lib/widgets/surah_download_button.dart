@@ -4,16 +4,57 @@ import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
+/// Keadaan unduhan satu surah, untuk tampilan selain ikon bawaan.
+enum SurahDownloadStatus {
+  /// Belum tersimpan di perangkat.
+  notSaved,
+
+  /// Sedang menghitung perkiraan ukuran sebelum dialog konfirmasi.
+  checking,
+
+  /// Sedang mengunduh; ketuk untuk membatalkan.
+  downloading,
+
+  /// Sudah tersimpan; ketuk untuk menawarkan hapus.
+  saved,
+}
+
+/// Yang dibutuhkan [SurahDownloadButton.builder] untuk menggambar tombolnya.
+class SurahDownloadView {
+  const SurahDownloadView({
+    required this.status,
+    required this.onTap,
+    this.fraction = 0,
+  });
+
+  final SurahDownloadStatus status;
+
+  /// 0..1, hanya bermakna saat [SurahDownloadStatus.downloading].
+  final double fraction;
+
+  /// Null saat tombol sedang tidak bisa diketuk (menghitung ukuran).
+  final VoidCallback? onTap;
+}
+
 /// Tombol unduh murottal satu surah untuk qari yang sedang dipilih.
 /// Menampilkan kemajuan, dapat dibatalkan, dan menawarkan hapus bila sudah
 /// tersedia offline.
 class SurahDownloadButton extends StatefulWidget {
-  const SurahDownloadButton({super.key, required this.surah, this.service});
+  const SurahDownloadButton({
+    super.key,
+    required this.surah,
+    this.service,
+    this.builder,
+  });
 
   final int surah;
 
   /// Diisi pada tes; produksi memakai layanan bawaan.
   final AudioDownloadService? service;
+
+  /// Tampilan pengganti ikon bawaan (mis. pil di layar Murottal). Logika
+  /// unduh, batal, dan hapus tetap di sini supaya hanya ada satu pengunduh.
+  final Widget Function(BuildContext context, SurahDownloadView view)? builder;
 
   @override
   State<SurahDownloadButton> createState() => _SurahDownloadButtonState();
@@ -113,7 +154,30 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
     );
   }
 
+  /// Hapus selalu ditanyakan dulu: mengunduh ulang butuh kuota dan waktu.
   Future<void> _delete() async {
+    final meta = surahCatalog[widget.surah - 1];
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hapus murottal ${meta.displayName}?'),
+        content: Text(
+          'Berkas ${_reciter.displayName} untuk surah ini dihapus dari '
+          'perangkat. Murottal tetap bisa diputar saat online.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (approved != true || !mounted) return;
     await _service.delete(_reciter, widget.surah);
     await _refresh();
   }
@@ -121,6 +185,32 @@ class _SurahDownloadButtonState extends State<SurahDownloadButton> {
   @override
   Widget build(BuildContext context) {
     final progress = _progress;
+    final builder = widget.builder;
+    if (builder != null) {
+      return builder(
+        context,
+        progress != null
+            ? SurahDownloadView(
+                status: SurahDownloadStatus.downloading,
+                fraction: progress.fraction,
+                onTap: () => _service.cancel(_reciter, widget.surah),
+              )
+            : _busy
+            ? const SurahDownloadView(
+                status: SurahDownloadStatus.checking,
+                onTap: null,
+              )
+            : _downloaded
+            ? SurahDownloadView(
+                status: SurahDownloadStatus.saved,
+                onTap: _delete,
+              )
+            : SurahDownloadView(
+                status: SurahDownloadStatus.notSaved,
+                onTap: _download,
+              ),
+      );
+    }
     if (progress != null) {
       return IconButton(
         tooltip: 'Batalkan unduhan (${(progress.fraction * 100).round()}%)',

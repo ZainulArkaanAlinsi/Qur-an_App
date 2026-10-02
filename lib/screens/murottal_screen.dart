@@ -6,6 +6,7 @@ import 'package:quran_app_2025/data/sura_names_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
+import 'package:quran_app_2025/widgets/surah_download_button.dart';
 
 /// Plakat mihrab pada Murottal.html (270×330), verbatim.
 const _platePath =
@@ -169,13 +170,7 @@ class _MurottalScreenState extends State<MurottalScreen> {
                 const SizedBox(height: 12),
                 _Transport(onSpeed: _cycleSpeed, speed: audio.speed.value),
                 const SizedBox(height: 18),
-                _Chips(onTimer: _chooseSleepTimer),
-                const SizedBox(height: 12),
-                Text(
-                  'Waktu mendengar belum dicatat terpisah dari streak membaca.',
-                  textAlign: TextAlign.center,
-                  style: SacredText.cardNote.copyWith(color: tokens.sec),
-                ),
+                _Chips(surah: surah.number, onTimer: _chooseSleepTimer),
               ],
             );
           },
@@ -459,8 +454,9 @@ class _Transport extends StatelessWidget {
 
 /// Pil di bawah tombol putar.
 class _Chips extends StatelessWidget {
-  const _Chips({required this.onTimer});
+  const _Chips({required this.surah, required this.onTimer});
 
+  final int surah;
   final VoidCallback onTimer;
 
   @override
@@ -479,13 +475,39 @@ class _Chips extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        const Expanded(
-          child: _Chip(
-            icon: SacredIcons.download,
-            label: 'Unduh',
-            // Aturan desainnya: tombol tanpa fungsi dinonaktifkan beserta
-            // alasannya. Unduhan murottal dilakukan dari daftar surah.
-            reason: 'Unduhan murottal dilakukan dari daftar surah.',
+        Expanded(
+          // Pengunduh yang sama dengan daftar surah; kunci per surah supaya
+          // statusnya dibaca ulang saat antrean pindah ke surah lain.
+          child: SurahDownloadButton(
+            key: ValueKey('unduh-$surah'),
+            surah: surah,
+            builder: (context, view) => switch (view.status) {
+              SurahDownloadStatus.notSaved => _Chip(
+                icon: SacredIcons.download,
+                label: 'Unduh',
+                semanticsLabel: 'Unduh murottal surah ini',
+                onTap: view.onTap,
+              ),
+              SurahDownloadStatus.checking => const _Chip(
+                icon: SacredIcons.download,
+                label: 'Unduh',
+                reason: 'Menghitung ukuran unduhan.',
+              ),
+              SurahDownloadStatus.downloading => _Chip(
+                icon: SacredIcons.close,
+                label: '${(view.fraction * 100).round()}%',
+                semanticsLabel:
+                    'Mengunduh ${(view.fraction * 100).round()}%. '
+                    'Ketuk untuk membatalkan.',
+                onTap: view.onTap,
+              ),
+              SurahDownloadStatus.saved => _Chip(
+                icon: SacredIcons.checkCircle,
+                label: 'Tersimpan',
+                semanticsLabel: 'Tersimpan di perangkat. Ketuk untuk hapus.',
+                onTap: view.onTap,
+              ),
+            },
           ),
         ),
       ],
@@ -499,12 +521,16 @@ class _Chip extends StatelessWidget {
     required this.label,
     this.onTap,
     this.reason,
+    this.semanticsLabel,
   });
 
   final List<String> icon;
   final String label;
   final VoidCallback? onTap;
   final String? reason;
+
+  /// Label pembaca layar bila teks pil terlalu singkat (mis. "45%").
+  final String? semanticsLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -557,7 +583,7 @@ class _Chip extends StatelessWidget {
       button: true,
       container: true,
       excludeSemantics: true,
-      label: label,
+      label: semanticsLabel ?? label,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
