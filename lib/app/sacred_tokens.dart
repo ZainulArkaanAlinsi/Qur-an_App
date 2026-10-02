@@ -64,7 +64,12 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
   /// Latar kartu hero/sampul.
   final Color art;
   final Color artInk;
+
+  /// Lama (sebelum v4). Kaca sekarang memakai `GlassTokens.tint`; nilainya
+  /// disamakan supaya pemanggil yang tertinggal tetap lolos kontras §5.
+  @Deprecated('Pakai GlassTokens.tint (lib/app/glass/glass_tokens.dart).')
   final Color glass;
+  @Deprecated('Pakai GlassTokens.rimStart/rimEnd.')
   final Color glassBorder;
 
   /// Empat tingkat heatmap istiqamah, dari kosong ke penuh.
@@ -142,7 +147,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF0E6A4C),
     art: Color(0xFF064E3B),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC2FCF9F8),
+    glass: Color(0x61FCF9F8),
     glassBorder: Color(0xD9FFFFFF),
     heatmap: [
       Color(0xFFE6E2D8),
@@ -182,7 +187,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF2F9E75),
     art: Color(0xFF0B3D2F),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC214201C),
+    glass: Color(0x6B111C18),
     glassBorder: Color(0x17FFFFFF),
     heatmap: [
       Color(0xFF1A2823),
@@ -223,7 +228,7 @@ class SacredTokens extends ThemeExtension<SacredTokens> {
     toggleOn: Color(0xFF0E6A4C),
     art: Color(0xFF064E3B),
     artInk: Color(0xFFFED65B),
-    glass: Color(0xC2FBF4E4),
+    glass: Color(0x7AFBF4E4),
     glassBorder: Color(0xD9FFFFFF),
     heatmap: [
       Color(0xFFE6E2D8),

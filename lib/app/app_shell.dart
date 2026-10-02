@@ -116,45 +116,49 @@ class _AppShellState extends State<AppShell> {
       // 12-saya.md). Progres lengkap dibuka dari baris di dalamnya.
       const SettingsScreen(),
     ];
-    return Scaffold(
-      backgroundColor: tokens.bg,
-      // Tab bar mengambang di atas isi layar; tiap halaman menyisakan ruang
-      // kosong di bawah daftarnya sendiri supaya tidak ada yang tertutup.
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: SafeArea(
-              bottom: false,
-              child: IndexedStack(index: _index, children: pages),
+    // Satu BackdropGroup per rute: semua kaca di shell berbagi satu
+    // backdrop (LIQUID_GLASS.md §7).
+    return BackdropGroup(
+      child: Scaffold(
+        backgroundColor: tokens.bg,
+        // Tab bar mengambang di atas isi layar; tiap halaman menyisakan ruang
+        // kosong di bawah daftarnya sendiri supaya tidak ada yang tertutup.
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: SafeArea(
+                bottom: false,
+                child: IndexedStack(index: _index, children: pages),
+              ),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: AudioMiniPlayer(
-                    onOpen: (surah, ayah) => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ReaderScreen(surah: surah, initialVerse: ayah),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: AudioMiniPlayer(
+                      onOpen: (surah, ayah) => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ReaderScreen(surah: surah, initialVerse: ayah),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                FloatingTabBar(
-                  tabs: _tabs,
-                  currentIndex: _index,
-                  onSelected: (value) => setState(() => _index = value),
-                ),
-              ],
+                  FloatingTabBar(
+                    tabs: _tabs,
+                    currentIndex: _index,
+                    onSelected: (value) => setState(() => _index = value),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

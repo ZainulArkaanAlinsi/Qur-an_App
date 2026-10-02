@@ -43,3 +43,34 @@ Commit 5b661f4 berisi kode MyQuran 1.10.0 ditambah dokumen v6. Penilaian dilakuk
 Nilainya sama dengan audit awal di rubrik (commit 9a8b258). Yang berbeda hanya alasan G7. Masalah tajwid (abu `#7A7A7A` 3.54 di ayat aktif) sudah diperbaiki di 1.9.1 (#33). Yang masih kurang tinggal nav pembaca yang tidak menyingkir.
 
 Urutan perbaikan: G8 → G1/G2 → G6 → G4 → G3 → G9 → G5/G10.
+
+## Audit 2 Oktober 2026 — setelah fondasi (v6 Prompt 2 = v4 Prompt 0 + 1)
+
+Dinilai dari kode, tes, dan golden. Tes kinerja belum dijalankan di HP.
+
+`bash tool/glass_audit.sh`: **4 GAGAL, 1 CEK** (dari 12). Yang lulus: A1, A2, A3, A4, B1, B4, C1, C2. Masih gagal: B2 (scrim tab bar) dan B3 (warna mentah mini player), keduanya dikerjakan di Prompt 3 (Dock); C3 (pengawas frame) dan C4 (tes kinerja), keduanya di Prompt 9.
+
+| # | Nilai | Bukti |
+| --- | --- | --- |
+| G1 | 2 | `lib/app/glass/liquid_glass.dart`: L0 bayangan digambar di luar bentuk (`_OutsideShadowPainter`), L1 `BackdropFilter.grouped` + `glassFilter`, L2/L3 `_FillPainter`, L4/L5 `_RimPainter` di `RepaintBoundary`. |
+| G2 | 1 | Tint ≤ 60% dan backdrop terlihat 12,4% / 10,4% / 17,4% (terang/sepia/gelap; tes "backdrop yang terlihat 10–18%" di `test/glass_contrast_test.dart`). Scrim padat di belakang tab bar masih ada (B2, `sacred_controls.dart:311`). |
+| G3 | 0 | Lensa tab belum meluncur, `InkWell` masih ada, nav pembaca belum menyingkir (Prompt 3 / jadwal terpisah). |
+| G4 | 0 | Tab bar dan nav pembaca sudah `LiquidGlass`. Mini player (warna mentah, B3), tombol mengambang, dan kepala sheet belum. |
+| G5 | 1 | `GlassTokens` untuk 5 palet, lengkap dengan `lerp` (`glass_tokens.dart`); kontras tinggi selalu padat (tes "kontras tinggi selalu padat"). Golden kaca sepia dan kontras tinggi belum ada. |
+| G6 | 2 | `test/glass_contrast_test.dart`: 5 palet × 3 tingkat × 3 ukuran × 9 latar terburuk. ink ≥ 7, sec ≥ 4.5, primaryText ≥ 4.5 semuanya lulus. Tes penjaga: tint −10 poin → gagal. |
+| G7 | 1 | Ayat tetap di permukaan padat dan tajwid ≥ 4.5 di semua permukaan. Nav pembaca belum menyingkir. |
+| G8 | 1 | Audit bagian A lulus semua. Kaca terlihat: 1 di tab (tab bar), 1 di pembaca (nav). Anggaran kinerja §7: BELUM DIUKUR DI HP. |
+| G9 | 1 | `GlassTier`/`GlassPreference`/`GlassScope` (`glass_tier.dart`); kontras tinggi (palet & sistem) → padat; kurangi gerak → paling tinggi ringan. Pengawas frame dan pengaturan "Efek kaca" belum ada. |
+| G10 | 1 | Tes kontras kaca ada dan dijalankan (`flutter test`: 646 lulus). Audit masih 4 GAGAL. Golden kaca khusus dan tes kinerja belum ada. |
+
+**Total: 10/20. Belum lulus.**
+
+Golden yang diperbarui di langkah ini: 27 PNG dari 7 berkas tes (`components`, `01_beranda`, `02_mode_baca`, `05_kartu`, `08_belajar`, `10_hafalan`, `12_saya`). Semua PNG lama dan baru dibandingkan per piksel. Perubahannya hanya di zona tab bar (89,6–97,2% tinggi layar) atau nav pembaca (0–12,4%; teks 2.0 sampai 25,6% karena nav lebih tinggi). Tata letak, teks, dan ayat tidak berubah.
+
+### Angka yang diganti dari LIQUID_GLASS.md §4
+
+- **Tint sepia: 48%, bukan 42%.** Dengan 42%, `sec` sepia di atas kaca berlatar hitam hanya 4.41 (< 4.5). Dengan 48% hasilnya ink 8.93, sec 4.54, primaryText 6.71, persis baris sepia di tabel §5. Artinya tabel §5 memang dihitung dengan 48%, sedangkan 42% di tabel §4 tidak konsisten dengannya. Backdrop yang terlihat tetap 10,4%. Dikunci oleh tes "angka tabel §5 tingkat penuh".
+- **Kontras tinggi: warna tepi.** `SacredTokens` tidak punya token `outline`, jadi dipakai warna outline tema kontras tinggi (`#3A3A3A` terang / `#9A9A9A` gelap, `sacred_theme.dart` `_recolor`), tebal 1.5 px.
+- **Token lama `glass`/`glassBorder`**: ditandai `@Deprecated`, tidak dipakai lagi, dan nilainya disamakan dengan tint v4 supaya B1 lulus.
+
+Perbaikan berikutnya: G3/G4/B2/B3 di Prompt 3 (Dock); nav pembaca menyingkir dan kepala sheet perlu dijadwalkan; G8/G9/G10 (pengawas frame, pengaturan Efek kaca, tes kinerja) di Prompt 9.

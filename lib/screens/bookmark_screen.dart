@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
@@ -37,7 +37,9 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                 final surah = surahCatalog.firstWhere(
                   (item) => item.number == surahId,
                 );
-                return GlassSurface(
+                // Item daftar tidak pernah berkaca (LIQUID_GLASS.md §2):
+                // tiap item akan menjadi satu blur saat digulir.
+                return _SolidCard(
                   padding: const EdgeInsets.fromLTRB(15, 12, 10, 12),
                   child: Row(
                     children: [
@@ -140,6 +142,28 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
   }
 }
 
+/// Kartu padat `surf` + `cardShadows` (pengganti kaca di daftar penanda).
+class _SolidCard extends StatelessWidget {
+  const _SolidCard({required this.padding, required this.child});
+
+  final EdgeInsetsGeometry padding;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: tokens.surf,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: tokens.cardShadows,
+      ),
+      child: child,
+    );
+  }
+}
+
 class _EmptyBookmarks extends StatelessWidget {
   const _EmptyBookmarks();
 
@@ -147,7 +171,7 @@ class _EmptyBookmarks extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: Padding(
       padding: const EdgeInsets.all(28),
-      child: GlassSurface(
+      child: _SolidCard(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,

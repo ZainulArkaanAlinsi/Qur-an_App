@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
@@ -278,6 +279,19 @@ class SharedPreferencesService {
 
   static Future<void> setPalette(AppPalette palette) async {
     await _prefs?.setString('palette', palette.name);
+  }
+
+  /// Saya → Tampilan → Efek kaca (LIQUID_GLASS.md §4); bawaan Otomatis.
+  static GlassPreference getGlassPreference() {
+    final value = _prefs?.getString('glass_preference');
+    return GlassPreference.values.firstWhere(
+      (preference) => preference.name == value,
+      orElse: () => GlassPreference.auto,
+    );
+  }
+
+  static Future<void> setGlassPreference(GlassPreference value) async {
+    await _prefs?.setString('glass_preference', value.name);
   }
 
   /// Tinggi baris teks Arab di Reader.

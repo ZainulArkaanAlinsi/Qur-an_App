@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:quran_app_2025/app/glass_surface.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -682,7 +682,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
         : _paper?.theme ?? Theme.of(context);
     return Theme(
       data: theme,
-      child: Builder(builder: _buildBody),
+      // Satu BackdropGroup untuk kaca di rute pembaca (LIQUID_GLASS.md §7).
+      child: BackdropGroup(child: Builder(builder: _buildBody)),
     );
   }
 
@@ -909,9 +910,10 @@ class _ReaderNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return GlassSurface(
+    // Menempel di tepi atas layar: tanpa bayangan mengambang.
+    return LiquidGlass(
       borderRadius: BorderRadius.zero,
-      tint: tokens.glass,
+      shadow: false,
       child: SafeArea(
         bottom: false,
         child: Container(
