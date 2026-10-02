@@ -45,6 +45,13 @@ Rules:
 - Teks Arab: `SacredText.quran`, RTL, tanpa tinggi tetap, line-height ≥ 2.0, tidak pernah di-clip.
 - Setiap layar punya versi terang & gelap yang lolos kontras (teks 4.5:1; teks Arab besar & warna tajwid 3:1).
 
+## Liquid glass v4
+
+- Efek kaca hanya lewat `LiquidGlass` di `lib/app/glass/`. Layar tidak boleh memanggil `BackdropFilter` sendiri.
+- Kaca hanya untuk chrome yang mengambang (`LIQUID_GLASS.md` §2). Tidak pernah di item daftar dan tidak pernah di belakang teks ayat.
+- Teks ayat dan terjemahan tidak diubah dan tanpa efek. Warna tajwid ≥ 4.5:1 di semua permukaan ayat.
+- Setiap perubahan kaca wajib: `bash tool/glass_audit.sh` 0 GAGAL (untuk butir yang sudah menjadi target), `flutter analyze` bersih, `flutter test` lulus, golden diperbarui lalu dilihat.
+
 ## Aturan brand & onboarding (v3)
 
 - Logo hanya dari `assets/brand/` lewat `Image.asset`, **utuh**: tidak digambar ulang, dipotong, diregangkan, atau diberi filter warna. Versi gelap dipilih lewat berkasnya sendiri. `logo_utama_asli*.png` hanya arsip.
