@@ -4,6 +4,7 @@ import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/data/sura_names_repository.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
+import 'package:quran_app_2025/features/murottal/presentation/now_playing_row.dart';
 import 'package:quran_app_2025/models/surah_meta.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 
@@ -109,11 +110,15 @@ class _MurottalScreenState extends State<MurottalScreen> {
                 _TopBar(onClose: () => Navigator.of(context).pop()),
                 const SizedBox(height: 26),
                 Center(
-                  child: _Plate(
-                    names: _arabicNames,
-                    surah: surah,
-                    onRetry: () => setState(
-                      () => _arabicNames = SuraNamesRepository.load(),
+                  // Mihrab mini di dock terbang ke plakat ini (21-dock.md).
+                  child: Hero(
+                    tag: NowPlayingRow.murottalHeroTag,
+                    child: _Plate(
+                      names: _arabicNames,
+                      surah: surah,
+                      onRetry: () => setState(
+                        () => _arabicNames = SuraNamesRepository.load(),
+                      ),
                     ),
                   ),
                 ),

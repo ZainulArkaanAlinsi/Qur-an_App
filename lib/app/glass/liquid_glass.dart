@@ -23,6 +23,7 @@ class LiquidGlass extends StatelessWidget {
     this.interactive = false,
     this.sheenOffset = 0,
     this.shadow = true,
+    this.tint,
   });
 
   final Widget child;
@@ -40,13 +41,22 @@ class LiquidGlass extends StatelessWidget {
   /// L0. Matikan bila kaca menempel di tepi layar (mis. nav pembaca).
   final bool shadow;
 
+  /// Pengganti tint token (L2), mis. lensa tab `primarySoft` 92%. Di tingkat
+  /// ringan alfanya naik 10 poin dan di tingkat padat menjadi penuh, sama
+  /// seperti tint token.
+  final Color? tint;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final glass = theme.extension<GlassTokens>() ?? GlassTokens.light;
     final sacred = theme.extension<SacredTokens>();
     final tier = GlassScope.tierOf(context);
-    final spec = GlassSpec.resolve(glass, size, tier);
+    final spec = GlassSpec.resolve(
+      tint == null ? glass : glass.copyWith(tint: tint),
+      size,
+      tier,
+    );
     final shift = interactive && tier == GlassTier.full
         ? sheenOffset.clamp(-1.0, 1.0) * .16
         : 0.0;

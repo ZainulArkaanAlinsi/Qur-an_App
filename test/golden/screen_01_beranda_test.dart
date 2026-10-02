@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -105,11 +106,7 @@ class _Shell extends StatelessWidget {
             left: 0,
             right: 0,
             bottom: 0,
-            child: FloatingTabBar(
-              tabs: _tabs,
-              currentIndex: 0,
-              onSelected: (_) {},
-            ),
+            child: AppDock(tabs: _tabs, currentIndex: 0, onSelected: (_) {}),
           ),
         ],
       ),

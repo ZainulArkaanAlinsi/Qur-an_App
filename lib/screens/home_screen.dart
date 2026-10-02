@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -162,8 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
             ),
-            // Ruang untuk tab bar mengambang.
-            padding: const EdgeInsets.only(bottom: 120),
+            // Ruang untuk dock; bertambah saat murottal diputar.
+            padding: EdgeInsets.only(bottom: AppDock.reservedHeightOf(context)),
             children: [
               _Header(
                 now: now,

@@ -2,21 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/features/murottal/application/now_playing_audio.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
 import 'package:quran_app_2025/screens/learn_screen.dart';
 import 'package:quran_app_2025/screens/memorization_screen.dart';
+import 'package:quran_app_2025/screens/murottal_screen.dart';
 import 'package:quran_app_2025/screens/quran_library_screen.dart';
-import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/screens/settings_screen.dart';
-import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/services/auto_update_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:quran_app_2025/widgets/audio_mini_player.dart';
 
 const _tabs = [
   SacredTab(icon: SacredIcons.home, label: 'Beranda'),
@@ -39,6 +39,16 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late int _index = widget.initialIndex.clamp(0, _tabs.length - 1);
+
+  /// Ruang bawah yang disisakan halaman tab, diisi AppDock.
+  final _reserved = ValueNotifier<double>(AppDock.defaultReserved);
+  late final _nowPlaying = QuranNowPlayingAudio();
+
+  @override
+  void dispose() {
+    _reserved.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -121,43 +131,39 @@ class _AppShellState extends State<AppShell> {
     return BackdropGroup(
       child: Scaffold(
         backgroundColor: tokens.bg,
-        // Tab bar mengambang di atas isi layar; tiap halaman menyisakan ruang
-        // kosong di bawah daftarnya sendiri supaya tidak ada yang tertutup.
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: SafeArea(
-                bottom: false,
-                child: IndexedStack(index: _index, children: pages),
+        // Dock mengambang di atas isi tanpa scrim padat: isi yang digulir
+        // terlihat samar di baliknya. Tiap halaman menyisakan ruang sebesar
+        // AppDock.reservedHeightOf(context), yang ikut bertambah saat dock
+        // memanjang (docs/design/v6/screens/21-dock.md).
+        body: AppDockScope(
+          reserved: _reserved,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: SafeArea(
+                  bottom: false,
+                  child: IndexedStack(index: _index, children: pages),
+                ),
               ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: AudioMiniPlayer(
-                      onOpen: (surah, ayah) => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              ReaderScreen(surah: surah, initialVerse: ayah),
-                        ),
-                      ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: AppDock(
+                  tabs: _tabs,
+                  currentIndex: _index,
+                  onSelected: (value) => setState(() => _index = value),
+                  audio: _nowPlaying,
+                  reserved: _reserved,
+                  onOpenPlayer: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const MurottalScreen(),
                     ),
                   ),
-                  FloatingTabBar(
-                    tabs: _tabs,
-                    currentIndex: _index,
-                    onSelected: (value) => setState(() => _index = value),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

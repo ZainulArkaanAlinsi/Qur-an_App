@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
@@ -36,9 +37,6 @@ import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-/// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
-const _bottomInset = 132.0;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -292,7 +290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: _bottomInset),
+      padding: EdgeInsets.only(bottom: AppDock.reservedHeightOf(context)),
       children: [
         // Judul besar sekali saja (bug lama: "Pengaturan" tampil dobel).
         const ScreenHeader(title: 'Saya'),

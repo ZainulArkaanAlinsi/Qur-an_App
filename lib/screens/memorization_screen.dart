@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -271,8 +272,8 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
 
     return ListView(
       physics: const BouncingScrollPhysics(),
-      // Ruang untuk tab bar mengambang.
-      padding: const EdgeInsets.only(bottom: 120),
+      // Ruang untuk dock; bertambah saat murottal diputar.
+      padding: EdgeInsets.only(bottom: AppDock.reservedHeightOf(context)),
       children: [
         ScreenHeader(
           title: 'Hafalan',

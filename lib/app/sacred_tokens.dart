@@ -790,6 +790,9 @@ abstract final class SacredText {
   static TextStyle get button => _font(ui, 15, 20, 800);
   static TextStyle get buttonSmall => _font(ui, 14, 18, 800);
 
+  /// Judul baris "sedang diputar" di dock (docs/design/v6/screens/21-dock.md).
+  static TextStyle get nowPlayingTitle => _font(ui, 14, 18, 800);
+
   /// Beranda v2: nama pengguna 38/44 dan judul surah kartu hero 30/34.
   static TextStyle get homeName => _font(serif, 38, 44, 500);
   static TextStyle get heroTitleV2 => _font(serif, 30, 34, 500);

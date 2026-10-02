@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
@@ -265,161 +264,12 @@ class IosToggle extends StatelessWidget {
   }
 }
 
-/// Satu tujuan pada [FloatingTabBar]: ikon garis (path SVG mockup) + label.
+/// Satu tujuan pada `AppDock`: ikon garis (path SVG mockup) + label.
 class SacredTab {
   const SacredTab({required this.icon, required this.label});
 
   final List<String> icon;
   final String label;
-}
-
-/// Tab bar v2 (DESIGN.md §3): kapsul kaca tinggi 64, 12 dari kiri/kanan dan
-/// 24 dari bawah, 5 tab sama lebar, ikon 22 + label 11, tab aktif berupa
-/// kapsul primarySoft. Scrim gradien setinggi 140 di belakangnya.
-///
-/// Tidak ada tombol cari terpisah lagi; cari ada di header Beranda & Qur'an.
-/// Dulu tombol itu membuat label terpotong ("Beran…", "Penga…").
-class FloatingTabBar extends StatelessWidget {
-  const FloatingTabBar({
-    super.key,
-    required this.tabs,
-    required this.currentIndex,
-    required this.onSelected,
-  });
-
-  final List<SacredTab> tabs;
-  final int currentIndex;
-  final ValueChanged<int> onSelected;
-
-  /// Tinggi yang harus disisakan isi layar di bawahnya: 64 + 24 + jeda.
-  static const reservedHeight = 104.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        IgnorePointer(
-          child: Container(
-            height: 140 + bottomInset,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [tokens.bg, tokens.bg, tokens.bg.withValues(alpha: 0)],
-                stops: const [0, .36, 1],
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          // 24 dari bawah layar, atau di atas bilah gestur bila lebih tinggi.
-          padding: EdgeInsets.fromLTRB(
-            12,
-            0,
-            12,
-            bottomInset > 24 ? bottomInset : 24,
-          ),
-          // Label tab kecil; penskalaannya dibatasi seperti tab bar iOS.
-          child: MediaQuery.withClampedTextScaling(
-            maxScaleFactor: 1.3,
-            // Bayangan mengambang ikut digambar LiquidGlass (L0), di luar
-            // bentuk kapsul.
-            child: LiquidGlass(
-              borderRadius: BorderRadius.circular(32),
-              child: SizedBox(
-                height: 64,
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < tabs.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 2),
-                        Expanded(
-                          child: _TabButton(
-                            tab: tabs[i],
-                            selected: i == currentIndex,
-                            onTap: () => onSelected(i),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TabButton extends StatelessWidget {
-  const _TabButton({
-    required this.tab,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final SacredTab tab;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    final color = selected ? tokens.primaryText : tokens.ink;
-    return Semantics(
-      selected: selected,
-      button: true,
-      label: tab.label,
-      child: ExcludeSemantics(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(28),
-          child: Container(
-            height: 56,
-            decoration: selected
-                ? BoxDecoration(
-                    color: tokens.primarySoft,
-                    borderRadius: BorderRadius.circular(28),
-                  )
-                : null,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                LineIcon(
-                  tab.icon,
-                  color: color,
-                  size: 22,
-                  strokeWidth: selected
-                      ? SacredIcons.strokeNavActive
-                      : SacredIcons.strokeNav,
-                ),
-                const SizedBox(height: 3),
-                // Label utuh, tidak pernah dielipsis; kalau sangat sempit ia
-                // diperkecil, bukan dipotong.
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    tab.label,
-                    maxLines: 1,
-                    softWrap: false,
-                    style:
-                        (selected ? SacredText.tabActive : SacredText.tabIdle)
-                            .copyWith(color: color),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// Tombol lingkaran 40 px seperti di mockup, dengan target sentuh 44 px supaya

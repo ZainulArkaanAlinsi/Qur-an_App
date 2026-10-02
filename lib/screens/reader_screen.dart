@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
@@ -37,7 +38,8 @@ import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
-import 'package:quran_app_2025/widgets/audio_mini_player.dart';
+import 'package:quran_app_2025/features/murottal/application/now_playing_audio.dart';
+import 'package:quran_app_2025/features/murottal/presentation/now_playing_row.dart';
 
 /// Mode halaman mushaf memakai data QF langsung hanya di build debug di
 /// perangkat, bukan di rilis dan bukan saat `flutter test` (golden mewakili
@@ -63,6 +65,37 @@ class _ReaderScreenState extends State<ReaderScreen> {
   late Future<_ReaderContent> _content;
   late ReadingSessionTracker _tracker;
   bool _focusMode = false;
+
+  /// Tinggi header (nav + chip + petunjuk) yang menumpang di atas daftar.
+  double _headerHeight = 0;
+
+  /// Header menyingkir saat gulir turun > 24 px dan muncul saat gulir naik
+  /// (LIQUID_GLASS.md §6).
+  bool _headerHidden = false;
+  double _scrollRun = 0;
+  late final _nowPlaying = QuranNowPlayingAudio();
+
+  bool _onReaderScroll(ScrollNotification notification) {
+    if (notification.depth != 0 || notification is! ScrollUpdateNotification) {
+      return false;
+    }
+    final delta = notification.scrollDelta ?? 0;
+    final metrics = notification.metrics;
+    if (metrics.pixels <= metrics.minScrollExtent + 1) {
+      _scrollRun = 0;
+      if (_headerHidden) setState(() => _headerHidden = false);
+      return false;
+    }
+    // Arah berganti: hitungan mulai lagi dari nol.
+    _scrollRun = (delta > 0) == (_scrollRun > 0) ? _scrollRun + delta : delta;
+    if (_scrollRun > 24 && !_headerHidden) {
+      setState(() => _headerHidden = true);
+    } else if (_scrollRun < -4 && _headerHidden) {
+      setState(() => _headerHidden = false);
+    }
+    return false;
+  }
+
   bool _showTranslation = SharedPreferencesService.getShowIndonesian();
   double _arabicSize = SharedPreferencesService.getArabicFontSize();
   double _lineHeight = SharedPreferencesService.getArabicLineHeight();
@@ -721,124 +754,180 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 ),
               Column(
                 children: [
-                  if (_focusMode)
-                    _FocusHeader(
-                      onClose: () => setState(() => _focusMode = false),
-                      onDisplay: _openDisplaySheet,
-                    )
-                  else
-                    _ReaderNav(
-                      surah: widget.surah,
-                      verse: _verse,
-                      content: content,
-                      onBack: () => Navigator.of(context).maybePop(),
-                      onJump: _jumpToVerse,
-                      onDisplay: () => unawaited(_openReadingMode(content)),
-                      onFocus: () => setState(() => _focusMode = true),
-                    ),
-                  if (!_focusMode)
-                    ReaderChips(
-                      languageLabel: _languageLabel,
-                      tajweed: _tajweed,
-                      onLanguage: () => unawaited(_openTranslations()),
-                      onTajweed: () => _toggleTajweed(content),
-                    ),
-                  if (!_focusMode &&
-                      _tajweed &&
-                      content.tajweed != null &&
-                      !SharedPreferencesService.getTajweedHintDone())
-                    TajweedHint(
-                      onClose: () {
-                        unawaited(
-                          SharedPreferencesService.setTajweedHintDone(),
-                        );
-                        setState(() {});
-                      },
-                    ),
                   Expanded(
-                    child: Listener(
-                      onPointerDown: (_) => _tracker.interact(),
-                      child: ScrollablePositionedList.builder(
-                        itemScrollController: _scroll,
-                        itemPositionsListener: _positions,
-                        initialScrollIndex: _currentVerse == 1
-                            ? 0
-                            : _indexForVerse(_currentVerse),
-                        physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(
-                          _focusMode ? 22 : 10,
-                          8,
-                          _focusMode ? 22 : 10,
-                          _focusMode ? 20 : 28,
-                        ),
-                        itemCount: itemCount,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return _SurahPlate(
-                              surah: widget.surah,
-                              arabicName: content.arabicName,
-                              timerText: _timerText,
-                              tracker: _tracker,
-                              compact: _focusMode,
-                            );
-                          }
-                          if (_focusMode) {
-                            return _FocusBlock(
-                              verses: verses,
-                              first: (index - 1) * _focusChunk,
-                              count: _focusChunk,
-                              basmalah: content.basmalah,
-                              size: _arabicSize,
-                              lineHeight: _lineHeight,
-                            );
-                          }
-                          final number = index;
-                          final translation = content.translation;
-                          final second = _second;
-                          final secondVerses = _secondVerses;
-                          // Bahasa kedua yang belum tersimpan ditawarkan
-                          // sekali, di kartu pertama yang dibuka.
-                          final offerDownload =
-                              second != null &&
-                              secondVerses == null &&
-                              number == _firstCard;
-                          return _VerseCard(
-                            key: ValueKey('${widget.surah.number}:$number'),
-                            verseNumber: number,
-                            arabic: verses[number - 1],
-                            basmalah: number == 1 ? content.basmalah : 0,
-                            onTajweedTap: (rule, inBasmalah) => _openRule(
-                              content,
-                              number,
-                              rule,
-                              inBasmalah: inBasmalah,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: _onReaderScroll,
+                            child: Listener(
+                              onPointerDown: (_) => _tracker.interact(),
+                              child: ScrollablePositionedList.builder(
+                                itemScrollController: _scroll,
+                                itemPositionsListener: _positions,
+                                initialScrollIndex: _currentVerse == 1
+                                    ? 0
+                                    : _indexForVerse(_currentVerse),
+                                physics: const BouncingScrollPhysics(),
+                                // Header menumpang di atas daftar (LIQUID_GLASS.md §6):
+                                // ruangnya disisakan di sini supaya ayat tidak bergeser
+                                // saat header menyingkir atau muncul lagi.
+                                padding: EdgeInsets.fromLTRB(
+                                  _focusMode ? 22 : 10,
+                                  _headerHeight + 8,
+                                  _focusMode ? 22 : 10,
+                                  _focusMode ? 20 : 28,
+                                ),
+                                itemCount: itemCount,
+                                itemBuilder: (context, index) {
+                                  if (index == 0) {
+                                    return _SurahPlate(
+                                      surah: widget.surah,
+                                      arabicName: content.arabicName,
+                                      timerText: _timerText,
+                                      tracker: _tracker,
+                                      compact: _focusMode,
+                                    );
+                                  }
+                                  if (_focusMode) {
+                                    return _FocusBlock(
+                                      verses: verses,
+                                      first: (index - 1) * _focusChunk,
+                                      count: _focusChunk,
+                                      basmalah: content.basmalah,
+                                      size: _arabicSize,
+                                      lineHeight: _lineHeight,
+                                    );
+                                  }
+                                  final number = index;
+                                  final translation = content.translation;
+                                  final second = _second;
+                                  final secondVerses = _secondVerses;
+                                  // Bahasa kedua yang belum tersimpan ditawarkan
+                                  // sekali, di kartu pertama yang dibuka.
+                                  final offerDownload =
+                                      second != null &&
+                                      secondVerses == null &&
+                                      number == _firstCard;
+                                  return _VerseCard(
+                                    key: ValueKey(
+                                      '${widget.surah.number}:$number',
+                                    ),
+                                    verseNumber: number,
+                                    arabic: verses[number - 1],
+                                    basmalah: number == 1
+                                        ? content.basmalah
+                                        : 0,
+                                    onTajweedTap: (rule, inBasmalah) =>
+                                        _openRule(
+                                          content,
+                                          number,
+                                          rule,
+                                          inBasmalah: inBasmalah,
+                                        ),
+                                    tajweed: _tajweed && content.tajweed != null
+                                        ? content.tajweed![number - 1]
+                                        : null,
+                                    translation:
+                                        _showTranslation && translation != null
+                                        ? translation[number - 1]
+                                        : null,
+                                    secondCode: second == null
+                                        ? null
+                                        : translationCode(second),
+                                    secondText: secondVerses?[number - 1],
+                                    secondRtl: second?.direction == 'rtl',
+                                    extra: offerDownload
+                                        ? TranslationDownloadRow(
+                                            edition: second,
+                                            state: _download,
+                                            onDownload: () =>
+                                                unawaited(_downloadSecond()),
+                                          )
+                                        : null,
+                                    surahNumber: widget.surah.number,
+                                    arabicSize: _arabicSize,
+                                    lineHeight: _lineHeight,
+                                    onPlay: _playVerse,
+                                  );
+                                },
+                              ),
                             ),
-                            tajweed: _tajweed && content.tajweed != null
-                                ? content.tajweed![number - 1]
-                                : null,
-                            translation: _showTranslation && translation != null
-                                ? translation[number - 1]
-                                : null,
-                            secondCode: second == null
-                                ? null
-                                : translationCode(second),
-                            secondText: secondVerses?[number - 1],
-                            secondRtl: second?.direction == 'rtl',
-                            extra: offerDownload
-                                ? TranslationDownloadRow(
-                                    edition: second,
-                                    state: _download,
-                                    onDownload: () =>
-                                        unawaited(_downloadSecond()),
-                                  )
-                                : null,
-                            surahNumber: widget.surah.number,
-                            arabicSize: _arabicSize,
-                            lineHeight: _lineHeight,
-                            onPlay: _playVerse,
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: IgnorePointer(
+                            ignoring: _headerHidden,
+                            child: AnimatedSlide(
+                              offset: _headerHidden
+                                  ? const Offset(0, -1)
+                                  : Offset.zero,
+                              duration: MediaQuery.disableAnimationsOf(context)
+                                  ? Duration.zero
+                                  : const Duration(milliseconds: 220),
+                              curve: const Cubic(.22, 1, .36, 1),
+                              child: _MeasureHeight(
+                                onHeight: (height) {
+                                  if (height != _headerHeight) {
+                                    setState(() => _headerHeight = height);
+                                  }
+                                },
+                                // Perataan bawaan (tengah) sama dengan Column
+                                // lama, supaya chip tetap di tengah.
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (_focusMode)
+                                      _FocusHeader(
+                                        onClose: () =>
+                                            setState(() => _focusMode = false),
+                                        onDisplay: _openDisplaySheet,
+                                      )
+                                    else
+                                      _ReaderNav(
+                                        surah: widget.surah,
+                                        verse: _verse,
+                                        content: content,
+                                        onBack: () =>
+                                            Navigator.of(context).maybePop(),
+                                        onJump: _jumpToVerse,
+                                        onDisplay: () => unawaited(
+                                          _openReadingMode(content),
+                                        ),
+                                        onFocus: () =>
+                                            setState(() => _focusMode = true),
+                                      ),
+                                    if (!_focusMode)
+                                      ReaderChips(
+                                        languageLabel: _languageLabel,
+                                        tajweed: _tajweed,
+                                        onLanguage: () =>
+                                            unawaited(_openTranslations()),
+                                        onTajweed: () =>
+                                            _toggleTajweed(content),
+                                      ),
+                                    if (!_focusMode &&
+                                        _tajweed &&
+                                        content.tajweed != null &&
+                                        !SharedPreferencesService.getTajweedHintDone())
+                                      TajweedHint(
+                                        onClose: () {
+                                          unawaited(
+                                            SharedPreferencesService.setTajweedHintDone(),
+                                          );
+                                          setState(() {});
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   if (_focusMode)
@@ -855,9 +944,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
                       child: _audioError == null
-                          ? AudioMiniPlayer(
-                              onOpen: (_, __) =>
-                                  unawaited(_openMurottal(content)),
+                          ? _ReaderNowPlaying(
+                              audio: _nowPlaying,
+                              onOpen: () => unawaited(_openMurottal(content)),
                             )
                           : _AudioUnavailable(
                               message: _audioError!,
@@ -2056,4 +2145,62 @@ class _AudioUnavailable extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Melaporkan tinggi anaknya setelah tata letak, untuk padding atas daftar.
+class _MeasureHeight extends SingleChildRenderObjectWidget {
+  const _MeasureHeight({required this.onHeight, required super.child});
+
+  final ValueChanged<double> onHeight;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderMeasureHeight(onHeight);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderMeasureHeight renderObject,
+  ) => renderObject.onHeight = onHeight;
+}
+
+class _RenderMeasureHeight extends RenderProxyBox {
+  _RenderMeasureHeight(this.onHeight);
+
+  ValueChanged<double> onHeight;
+  double? _last;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final height = size.height;
+    if (height == _last) return;
+    _last = height;
+    WidgetsBinding.instance.addPostFrameCallback((_) => onHeight(height));
+  }
+}
+
+/// Baris "sedang diputar" pembaca: [NowPlayingRow] yang sama dengan dock,
+/// dalam satu [LiquidGlass] (maks 2 kaca terlihat di pembaca: nav + ini).
+class _ReaderNowPlaying extends StatelessWidget {
+  const _ReaderNowPlaying({required this.audio, required this.onOpen});
+
+  final NowPlayingAudio audio;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: audio,
+    builder: (context, _) {
+      if (audio.queue == null ||
+          NowPlayingAudio.ayahOf(audio.playingVerse) == null) {
+        return const SizedBox.shrink();
+      }
+      return LiquidGlass(
+        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.fromLTRB(10, 4, 6, 0),
+        child: NowPlayingRow(audio: audio, onOpen: onOpen),
+      );
+    },
+  );
 }

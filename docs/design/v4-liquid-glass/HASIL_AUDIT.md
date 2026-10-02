@@ -74,3 +74,31 @@ Golden yang diperbarui di langkah ini: 27 PNG dari 7 berkas tes (`components`, `
 - **Token lama `glass`/`glassBorder`**: ditandai `@Deprecated`, tidak dipakai lagi, dan nilainya disamakan dengan tint v4 supaya B1 lulus.
 
 Perbaikan berikutnya: G3/G4/B2/B3 di Prompt 3 (Dock); nav pembaca menyingkir dan kepala sheet perlu dijadwalkan; G8/G9/G10 (pengawas frame, pengaturan Efek kaca, tes kinerja) di Prompt 9.
+
+## Audit 2 Oktober 2026 — setelah Dock (v6 Prompt 3)
+
+`bash tool/glass_audit.sh`: **2 GAGAL, 1 CEK**. B2 (scrim) dan B3 (warna mentah mini player) sekarang lulus. Yang masih gagal: C3 (pengawas frame) dan C4 (tes kinerja), keduanya di Prompt 9. C5: 6 pemakaian kaca di luar `lib/app/glass/`, semuanya chrome mengambang: kapsul dock, lensa tab, nav pembaca, baris sedang diputar di pembaca, dan pembungkus `GlassSurface`.
+
+Kaca yang terlihat bersamaan: Beranda/tab lain 2 (dock + lensa), pembaca 2 (nav + baris sedang diputar).
+
+| # | Nilai | Bukti |
+| --- | --- | --- |
+| G1 | 2 | Tetap: `lib/app/glass/liquid_glass.dart` enam lapis. |
+| G2 | 2 | Scrim padat dihapus (B2 lulus). Golden `21_dock_diam_light.png`: hijau hero dan garis warna terlihat samar lewat dock. |
+| G3 | 1 | Lensa tab meluncur dengan pegas 420/32, regangan ≤ 1.12, tekan 0.94, dan geser jari (`lib/app/widgets/app_dock.dart` `_DockTabsState`). Nav pembaca menyingkir saat gulir turun > 24 px (`reader_screen.dart` `_onReaderScroll`). Masih ada `InkWell` di tombol nav pembaca. |
+| G4 | 1 | Dock, nav pembaca, dan baris sedang diputar memakai `LiquidGlass`; mini player lama dihapus. Tombol bulat mengambang dan kepala sheet belum (kepala sheet di Prompt 7). |
+| G5 | 2 | Golden dock untuk empat palet: `21_dock_diputar_{light,dark,sepia,kontras_tinggi}.png`; kontras tinggi = padat dengan tepi `outline`. |
+| G6 | 2 | Tetap (`test/glass_contrast_test.dart`). |
+| G7 | 2 | Ayat di permukaan padat, tajwid ≥ 4.5 di semua permukaan, dan nav pembaca menyingkir saat membaca. Golden pembaca tidak berubah piksel setelah header dipindah ke lapisan atas. |
+| G8 | 1 | Audit A lulus, kaca terlihat ≤ 2. Anggaran §7: BELUM DIUKUR DI HP. |
+| G9 | 1 | Tetap. Pengawas frame dan pengaturan "Efek kaca" di Prompt 9. |
+| G10 | 1 | Audit 2 GAGAL. Golden kaca dock ada. Tes kinerja belum. |
+
+**Total: 15/20. Belum lulus** (G8 butuh HP; G3/G4/G9/G10 sisa kecil).
+
+Selisih golden dock vs acuan V6 yang ditemukan lalu diperbaiki:
+1. Lensa tab gelap sempat mint pekat karena `primarySoft` gelap transparan. Sekarang dikomposit di atas `surf` dulu, baru alfa 92%.
+2. Ikon Berikutnya 18 → 20.
+3. Chip pembaca sempat rata kiri setelah header dipindah ke lapisan atas. Sekarang di tengah lagi.
+
+Selisih yang tersisa hanya karena data dan latar uji.
