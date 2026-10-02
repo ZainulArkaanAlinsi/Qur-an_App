@@ -16,7 +16,7 @@ Berkas: `lib/features/home/domain/home_snapshot.dart`. Dibangun oleh `HomeContro
 | Field | Tipe | Sumber (kode yang sudah ada) |
 | --- | --- | --- |
 | `now` | `DateTime` | dioper dari luar (tes memakai jam palsu, seperti `HomeScreen.now`) |
-| `lastRead` | `LastRead?` (`surah`, `ayah`, `started`) | `SharedPreferencesService.getLastReadSurah()` + `getLastReadVerse()` |
+| `lastRead` | `LastRead?` (`surah`, `ayah`, `page?`) | `SharedPreferencesService.getLastReadSurah()` + `getLastReadVerse()` |
 | `reading` | `ReadingProgress` | `ReadingProgressService.read(now:)` → `todaySeconds`, `targetSeconds`, `currentStreak`, `recentDays` |
 | `session` | `DailySession?` | `SessionStore.app?.day(ReadingProgressService.localDate(now))` |
 | `sessionAvailable` | `bool` | kurikulum punya ≥ 1 pelajaran `published` (atau draf bila `showDraftLessons`) |
@@ -24,7 +24,7 @@ Berkas: `lib/features/home/domain/home_snapshot.dart`. Dibangun oleh `HomeContro
 | `murajaahDue` | `List<AyahMemorization>` | `dueForReview(all, now)` |
 | `murajaahDoneToday` | `int` | **baru**: kunci `murajaah.selesai.<yyyy-mm-dd>` (§4) |
 | `startPoint` | `StartPoint` | `StartPoint.saved ?? StartPoint.initial` |
-| `nextLesson` | `LessonRef?` | `curriculum.nextAfter(done, includeDrafts: showDraftLessons)` (judul untuk "Sesi besok") |
+| `nextLesson` | `Lesson?` | `curriculum.nextAfter(done, includeDrafts: showDraftLessons)` (judul untuk "Sesi besok") |
 | `prayer` | `PrayerDay?` + status | `PrayerService.fetch(city, country)`; status `ok / belumDiatur / luring / memuat` |
 | `nowPlaying` | `AudioQueue?` + `playingVerse` | `QuranAudioService.instance.queue`, `.playingVerse` |
 
@@ -88,7 +88,7 @@ Eyebrow pilihan lain: BACA / MURAJAAH / SESI HARI INI / DENGAR / SESI BESOK. Saa
 | Kind | Aksi |
 | --- | --- |
 | resumeSession / startSession | `SessionScreen(now:)` (layar yang sudah ada) |
-| murajaah | tab Hafalan → layar murajaah dengan antrean `murajaahDue` |
+| murajaah | buka tab Hafalan (tanpa layar antrean baru; keputusan 2026-10-02) |
 | reading | `ReaderScreen(surah, initialVerse)`; `lastRead == null` → Al-Fatihah ayat 1 |
 
 ---
@@ -118,7 +118,7 @@ Kalimat di layar tidak boleh menyebut keutamaan/pahala tertentu (aturan konten).
 
 | Kunci | Isi | Ditulis oleh |
 | --- | --- | --- |
-| `murajaah.selesai.<yyyy-mm-dd>` | `int` jumlah ayat yang ditandai sudah dimurajaah pada tanggal itu | titik yang sama dengan pencatatan hasil murajaah di layar Hafalan (cari pemanggil yang memperbarui `AyahMemorization.dueOn`). Hapus kunci yang lebih tua dari 14 hari saat menulis. |
+| `murajaah.selesai.<yyyy-mm-dd>` | `int` jumlah ayat yang ditandai sudah dimurajaah pada tanggal itu | `PracticeScreen` (`lib/screens/practice_screen.dart`), tepat setelah `setAyahMemorization`. Hanya dihitung bila ayat itu memang jatuh tempo (`dueOn` ≤ hari ini): hafalan baru dan ulangan kedua di hari yang sama tidak dihitung. Hapus kunci yang lebih tua dari 14 hari saat menulis. |
 | `murottal.tampilan` | `"teks"` / `"sampul"` | `MurottalScreen` |
 | `murottal.terjemahan` | `bool` (bawaan `true`) | menu ⋯ Murottal |
 
@@ -138,9 +138,9 @@ class HorizonModel {
   final int nextIndex;             // 0..4, atau 0 dengan isTomorrow = true setelah Isya
   final bool isTomorrow;
   final double nowPosition;        // 0..1 di sepanjang lintasan (titik berjarak sama)
-  final Duration untilNext;
+  final Duration? untilNext;       // null bila jam Subuh besok belum diketahui
 }
-HorizonModel? buildHorizon(PrayerDay day, DateTime now);
+HorizonModel? buildHorizon(PrayerDay day, DateTime now, {PrayerDay? tomorrow});
 ```
 
 - Label & jam dari `PrayerDay.timeFor(label)` / `nextLabelAt(now)` (sudah ada). Imsak/Terbit tidak masuk lintasan.
@@ -193,7 +193,7 @@ Posisi di-*throttle* ke 10 Hz sebelum masuk widget.
 | Teks & terjemahan | `assets/quran/raw/*` (Tanzil Uthmani 1.0.2, `id.indonesian` 2010-06-04) | `docs/DATA_SOURCES_AND_LICENSES.md` |
 | Tajwid | `tajweed_cpfair_tanzil_v1.0.2.json`, palet di `tajweed_palette.dart` | `docs/TAJWEED_CONTENT.md`, `docs/WARNA_TAJWID.md` |
 | Kurikulum | `assets/learn/curriculum.json` (draf terkunci di rilis) | `docs/LEARN_CONTENT.md`, `docs/RELIGIOUS_CONTENT_GOVERNANCE.md` |
-| Sesi harian | `sesi.hari.<tanggal>`, `sesi.riwayatAyat`, `sesi.nilaiDiri`, `<documents>/rekaman_sesi/` | `docs/design/v5-sesi-harian/SESI_HARIAN.md §5` |
+| Sesi harian | `sesi.hari.<tanggal>`, `sesi.riwayatAyat`, `sesi.nilaiDiri`, `sesi.rekamanSemat`, `<documents>/rekaman_sesi/` | `docs/design/v5-sesi-harian/SESI_HARIAN.md §5` |
 | Istiqamah & target | `StreakCalculator`, `ReadingProgressService` | `QURAN_APP_GUIDE_DAN_PROMPT_CODEX.md` |
 | Hafalan | `AyahMemorization` (`surah`, `ayah`, `interval`, `dueOn`) | `lib/features/hafalan/domain/murajaah_schedule.dart` |
 | Sinkron cloud | Firestore (hanya bila masuk) | `docs/CLOUD_SYNC.md`, `firestore.rules` |

@@ -180,6 +180,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
       _ayah,
       before.reviewed(outcome, today),
     );
+    // Hitungan "Murajaah hari ini" di Beranda (docs/DATA.md §4): hanya ayat
+    // yang memang jatuh tempo. Hafalan baru dan ulangan kedua di hari yang
+    // sama (dueOn sudah maju) tidak dihitung.
+    if (existing != null && existing.isDue(today)) {
+      await SharedPreferencesService.addMurajaahDone(today);
+    }
     if (SharedPreferencesService.getMemorizationStatus(surah) ==
         MemorizationStatus.notStarted) {
       await SharedPreferencesService.setMemorizationStatus(

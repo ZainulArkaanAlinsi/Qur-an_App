@@ -453,6 +453,46 @@ class SharedPreferencesService {
     return items;
   }
 
+  /// Awalan kunci hitungan murajaah harian (docs/DATA.md §4).
+  static const murajaahDonePrefix = 'murajaah.selesai.';
+
+  /// Kunci murajaah lebih tua dari ini dibersihkan saat menulis.
+  static const murajaahDoneKeepDays = 14;
+
+  /// Jumlah ayat jatuh tempo yang dimurajaah pada tanggal lokal [day].
+  static int getMurajaahDone(DateTime day) =>
+      _prefs?.getInt('$murajaahDonePrefix${_dateKey(day)}') ?? 0;
+
+  /// Menambah satu ayat ke hitungan [today], lalu membersihkan kunci yang
+  /// lebih tua dari [murajaahDoneKeepDays] hari. Tidak ikut sinkron cloud.
+  static Future<void> addMurajaahDone(DateTime today) async {
+    final prefs = _prefs;
+    if (prefs == null) return;
+    final key = '$murajaahDonePrefix${_dateKey(today)}';
+    await prefs.setInt(key, (prefs.getInt(key) ?? 0) + 1);
+    for (final stale in staleMurajaahKeys(prefs.getKeys(), today)) {
+      await prefs.remove(stale);
+    }
+  }
+
+  /// Kunci `murajaah.selesai.<tanggal>` yang tanggalnya lebih dari
+  /// [murajaahDoneKeepDays] hari sebelum [today].
+  @visibleForTesting
+  static List<String> staleMurajaahKeys(Iterable<String> keys, DateTime today) {
+    final limit = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(const Duration(days: murajaahDoneKeepDays));
+    return [
+      for (final key in keys)
+        if (key.startsWith(murajaahDonePrefix))
+          if (DateTime.tryParse(key.substring(murajaahDonePrefix.length))
+              case final date? when date.isBefore(limit))
+            key,
+    ];
+  }
+
   /// Menyimpan satu ayat; [item] null menghapus catatannya.
   static Future<void> setAyahMemorization(
     int surah,

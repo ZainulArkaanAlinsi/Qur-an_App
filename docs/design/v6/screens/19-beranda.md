@@ -42,7 +42,7 @@ Isi ditentukan `NextStepEngine` (`docs/DATA.md §2`). Satu kartu hijau, radius 2
 | Eyebrow | "LANGKAH BERIKUTNYA" `goldLine` + pill kanan (durasi/jumlah/halaman dari `NextStep.badge`) |
 | Judul | `NextStep.title` EB Garamond 31 `onHero`, maks 2 baris |
 | Subjudul | `NextStep.subtitle` 14 `onHeroSec`, maks 2 baris |
-| Progres | Hanya untuk sesi: `Lintasan` 5 langkah dengan label Ulang · Baru · Ayat · Tirukan · Selesai |
+| Progres | Hanya untuk sesi: `Lintasan` 5 langkah dengan label Ulang · Materi · Temukan · Tirukan · Selesai (sama dengan `SessionStep.shortLabel`; keputusan 2026-10-02) |
 | CTA | Tombol `goldButton` tinggi 52, ikon putar + `NextStep.cta` |
 | Pilihan lain | Maks 2 baris di dalam kartu (latar putih 7%, pemisah putih 10%): ikon 32×38 + eyebrow + teks 14/700 + chevron. Tinggi baris ≥ 56. |
 

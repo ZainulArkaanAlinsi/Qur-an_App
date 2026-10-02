@@ -21,3 +21,5 @@ Satu baris per keputusan: tanggal · keputusan · alasan · rujukan. Keputusan d
 | 2026-10-02 | Waktu salat bisa otomatis dari lokasi; koordinat dibulatkan 2 desimal sebelum dikirim ke AlAdhan; Kemenag RI tetap bawaan | Permintaan pemilik; privasi | `22-pengaturan-salat.md` |
 | 2026-10-02 | Qari baru (termasuk yang populer/viral) hanya dari sumber berizin; registri `granted/pending` | Hak cipta rekaman; risiko penghapusan dari Play | `23-qari.md` |
 | 2026-10-02 | Tidak ada paket pub baru untuk v6 | Semua kebutuhan dipenuhi paket yang ada | `docs/design/v6/DESIGN.md §8` |
+| 2026-10-02 | Aksi "Murajaah" di Beranda membuka tab Hafalan, tanpa layar antrean murajaah baru | Keputusan pemilik; layar latihan per surah sudah ada | `docs/DATA.md §2.4` |
+| 2026-10-02 | Label langkah sesi di Lintasan memakai label kode: Ulang · Materi · Temukan · Tirukan · Selesai | Keputusan pemilik; satu sumber label dengan layar Sesi | `lib/features/session/domain/session_plan.dart`, `19-beranda.md §4` |
