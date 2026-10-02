@@ -105,7 +105,7 @@ void main() {
       ),
     );
     expect(result.primary.kind, NextStepKind.murajaah);
-    expect(result.primary.title, 'Murajaah An-Naba’ 1–10');
+    expect(result.primary.title, 'Murajaah An-Naba’ 1⁠–⁠10');
     expect(result.primary.badge, '10 ayat');
     expect(result.primary.cta, 'Mulai murajaah');
     // Keputusan 2026-10-02: murajaah membuka tab Hafalan.
@@ -188,6 +188,16 @@ void main() {
     final read = result.alternatives.first;
     expect(read.eyebrow, 'DIPUTAR');
     expect(read.action, NextStepAction.openPlayer);
+  });
+
+  test('surah bacaan diputar → DIPUTAR saja, tanpa DENGAR yang sama', () {
+    final result = decideNextStep(
+      _snap(
+        lastRead: const LastRead(surah: 1, ayah: 3),
+        nowPlaying: const NowPlaying(surah: 1, ayah: 3),
+      ),
+    );
+    expect(result.alternatives.map((a) => a.eyebrow), ['DIPUTAR']);
   });
 
   test('murottal lain diputar → pilihan DENGAR mengisi slot kosong', () {

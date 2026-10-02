@@ -78,7 +78,7 @@ Tidak ada aturan berdasarkan jam (pagi/malam) atau acak. Hasil harus sama untuk 
 ### 2.3 Pilihan lain (maks 2, urutan tetap)
 
 Dari kandidat yang tersisa, ambil sesuai urutan `[reading, murajaah, startSession/resumeSession]`, lalu bila masih kurang dari 2:
-- `nowPlaying != null` dan utama bukan `reading` → "DENGAR · Murottal {surah} ayat {a}" (buka pemutar).
+- `nowPlaying != null`, utama bukan `reading`, dan pilihan bacaan belum menjadi DIPUTAR (surah yang sama) → "DENGAR · Murottal {surah} ayat {a}" (buka pemutar). Tanpa syarat ketiga, DIPUTAR dan DENGAR menunjuk murottal yang sama dua kali (ditemukan saat verifikasi golden 2026-10-02).
 - Sesi hari ini sudah selesai dan `nextLesson != null` → "SESI BESOK · {judul pelajaran}" (buka tab Belajar, tidak memulai sesi baru).
 
 Eyebrow pilihan lain: BACA / MURAJAAH / SESI HARI INI / DENGAR / SESI BESOK. Saat surah bacaan terakhir sedang diputar, eyebrow BACA menjadi **DIPUTAR** dan aksinya membuka pemutar.

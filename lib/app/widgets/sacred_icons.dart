@@ -34,6 +34,9 @@ abstract final class SacredIcons {
 
   static const chart = ['M5 20v-6', 'M12 20V5', 'M19 20v-10'];
 
+  /// Empat batang equalizer: murottal sedang diputar.
+  static const equalizer = ['M5 19v-6', 'M10 19V7', 'M15 19v-9', 'M20 19v-4'];
+
   static const sliders = [
     'M4 7h9',
     'M19 7h1',

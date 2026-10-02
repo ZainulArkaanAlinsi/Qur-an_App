@@ -75,16 +75,16 @@ class Lintasan extends StatelessWidget {
     if (names == null) return track;
     final base =
         labelStyle ??
-        SacredText.legend.copyWith(
-          color: onHero ? tokens.onHeroSec : tokens.sec,
-          fontWeight: FontWeight.w700,
-        );
+        SacredText.withWeight(
+          SacredText.legend,
+          700,
+        ).copyWith(color: onHero ? tokens.onHeroSec : tokens.sec);
     final strong =
         currentLabelStyle ??
-        base.copyWith(
-          color: onHero ? tokens.onHero : tokens.ink,
-          fontWeight: FontWeight.w800,
-        );
+        SacredText.withWeight(
+          base,
+          800,
+        ).copyWith(color: onHero ? tokens.onHero : tokens.ink);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,

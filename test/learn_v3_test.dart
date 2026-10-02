@@ -195,7 +195,12 @@ void main() {
       await seed({'belajar.titikMulai': 'tajwid'});
       await pump(tester, const LearnScreen(includeDrafts: true));
       expect(find.text('Nun sukun dan tanwin'), findsOneWidget);
-      expect(find.text('Mulai'), findsOneWidget, reason: 'kartu tahap aktif');
+      // Kartu Sesi hari ini (pindah dari Beranda, v6) + kartu tahap aktif.
+      expect(
+        find.text('Mulai'),
+        findsNWidgets(2),
+        reason: 'sesi + tahap aktif',
+      );
       expect(find.text('Materi sedang ditinjau'), findsNothing);
     });
 
@@ -205,7 +210,7 @@ void main() {
       await seed({'belajar.titikMulai': 'nol'});
       await pump(tester, const LearnScreen(includeDrafts: false));
       final active = find.ancestor(
-        of: find.text('Mulai'),
+        of: find.text('Mulai').last,
         matching: find.byType(Column),
       );
       expect(

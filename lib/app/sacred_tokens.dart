@@ -795,6 +795,33 @@ abstract final class SacredText {
 
   /// Beranda v2: nama pengguna 38/44 dan judul surah kartu hero 30/34.
   static TextStyle get homeName => _font(serif, 38, 44, 500);
+
+  // Beranda v6 (docs/design/v6/DESIGN.md §4, screens/19-beranda.md).
+  static TextStyle get homeNameV6 => _font(serif, 34, 37, 500);
+  static TextStyle get nextStepTitle => _font(serif, 31, 35, 500);
+  static TextStyle get nextStepBody => _font(ui, 14, 19, 500);
+  static TextStyle get nextStepAlt => _font(ui, 14, 18, 700);
+  static TextStyle get horizonLabel => _font(ui, 13, 17, 600);
+  static TextStyle get horizonNext => _font(ui, 15, 19, 800);
+  static TextStyle get dotName => _font(ui, 11, 14, 700);
+  static TextStyle get dotTime => _font(ui, 11, 14, 600);
+  static TextStyle get legendLabel => _font(ui, 14, 18, 700);
+  static TextStyle get legendValue => _font(
+    ui,
+    14,
+    18,
+    800,
+  ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+  static TextStyle get legendUnit => _font(ui, 12, 16, 600);
+  static TextStyle get ctaLarge => _font(ui, 16, 20, 800);
+  static TextStyle get weekDay => _font(ui, 10.5, 13, 700);
+
+  /// [style] dengan ketebalan [weight]. Font dibundel sebagai font variabel,
+  /// jadi `copyWith(fontWeight:)` saja tidak mengubah ketebalannya.
+  static TextStyle withWeight(TextStyle style, double weight) => style.copyWith(
+    fontWeight: _weightOf(weight),
+    fontVariations: [FontVariation('wght', weight)],
+  );
   static TextStyle get heroTitleV2 => _font(serif, 30, 34, 500);
 
   /// Belajar v2: kotak info 13/18, angka node 15/800, kartu tahap aktif

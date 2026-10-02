@@ -136,7 +136,10 @@ NextStepResult decideNextStep(HomeSnapshot s) {
     alternatives.add(_alt(kind, s));
   }
   final playing = s.nowPlaying;
-  if (playing != null && primary != NextStepKind.reading) {
+  // Baris bacaan yang sudah menjadi DIPUTAR (surah yang sama) sudah membuka
+  // pemutar; DENGAR untuk murottal yang sama hanya mengulang informasi.
+  final readingIsPlaying = alternatives.any((a) => a.eyebrow == 'DIPUTAR');
+  if (playing != null && primary != NextStepKind.reading && !readingIsPlaying) {
     final name = surahCatalog[playing.surah - 1].displayName;
     alternatives.add(
       NextStepAlt(
@@ -286,9 +289,11 @@ String murajaahSummary(List<AyahMemorization> due) {
   final first = bySurah.entries.first;
   final ayat = [...first.value]..sort();
   final name = surahCatalog[first.key - 1].displayName;
+  // Word joiner (U+2060) di sekitar tanda pisah: rentang "1–10" tidak
+  // dipatah menjadi "1–" / "10" saat judul turun baris.
   final range = ayat.first == ayat.last
       ? '${ayat.first}'
-      : '${ayat.first}–${ayat.last}';
+      : '${ayat.first}⁠–⁠${ayat.last}';
   final others = bySurah.length - 1;
   return others == 0 ? '$name $range' : '$name $range + $others surah';
 }
