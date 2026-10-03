@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
@@ -8,7 +9,11 @@ import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 import 'package:quran_app_2025/features/onboarding/domain/start_point.dart';
+import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/presentation/session_card.dart';
+import 'package:quran_app_2025/features/session/presentation/session_screen.dart';
 import 'package:quran_app_2025/screens/lesson_screen.dart';
+import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 /// Kelompok tahap pada segmented control Belajar.
@@ -104,6 +109,32 @@ class _LearnScreenState extends State<LearnScreen> {
             subtitle: 'Dari mengenal huruf sampai lancar bertajwid',
           ),
         ];
+        // Kartu Sesi hari ini pindah dari Beranda ke sini (19-beranda.md):
+        // hanya bila ada materi terbit (atau draf di build debug).
+        if (snapshot.data case final curriculum?
+            when curriculum.visible(includeDrafts: _drafts).isNotEmpty) {
+          children
+            ..add(
+              ValueListenableBuilder<int>(
+                valueListenable: sessionRevision,
+                builder: (context, _, _) => SessionTodayCard(
+                  session: SessionStore.app?.day(
+                    ReadingProgressService.localDate(),
+                  ),
+                  onOpen: () => Navigator.of(context)
+                      .push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const SessionScreen(),
+                        ),
+                      )
+                      .then((_) {
+                        if (mounted) setState(() {});
+                      }),
+                ),
+              ),
+            )
+            ..add(const SizedBox(height: 12));
+        }
         if (snapshot.hasError) {
           children.add(
             _Message(
@@ -118,8 +149,8 @@ class _LearnScreenState extends State<LearnScreen> {
         }
         return ListView(
           physics: const BouncingScrollPhysics(),
-          // Ruang untuk tab bar mengambang.
-          padding: const EdgeInsets.only(bottom: 120),
+          // Ruang untuk dock; bertambah saat murottal diputar.
+          padding: EdgeInsets.only(bottom: AppDock.reservedHeightOf(context)),
           children: children,
         );
       },

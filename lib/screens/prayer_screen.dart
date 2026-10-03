@@ -8,6 +8,9 @@ import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
+import 'package:quran_app_2025/features/prayer/application/prayer_settings_store.dart';
+import 'package:quran_app_2025/features/prayer/domain/prayer_settings.dart';
+import 'package:quran_app_2025/features/prayer/presentation/prayer_settings_sheet.dart';
 import 'package:quran_app_2025/screens/qibla_screen.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
@@ -38,8 +41,7 @@ Future<bool> _scheduleWithService(
     prayerNames: prayers,
     quranReminderMinutes: quranAt,
     sessionReminderMinutes: sessionAt,
-    city: SharedPreferencesService.getPrayerCity(),
-    country: SharedPreferencesService.getPrayerCountry(),
+    settings: PrayerSettingsStore.load(),
   );
   return true;
 }
@@ -134,11 +136,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   Future<PrayerDay> _load(DateTime? date) =>
       widget.loader?.call(date) ??
-      PrayerService.fetch(
-        city: SharedPreferencesService.getPrayerCity(),
-        country: SharedPreferencesService.getPrayerCountry(),
-        date: date,
-      );
+      PrayerService.fetch(settings: PrayerSettingsStore.load(), date: date);
 
   void _reload() => setState(() {
     _day = _load(null);
@@ -197,38 +195,31 @@ class _PrayerScreenState extends State<PrayerScreen> {
     await _saveReminders(day, previous: previous, previousQuran: _quranMinutes);
   }
 
+  /// Jadwal hari ini yang sedang tampil, untuk pratinjau koreksi menit.
+  PrayerDay? _shown;
+
+  /// Lembar "Waktu salat" (22-pengaturan-salat.md). Setelah disimpan,
+  /// pengingat yang aktif dijadwalkan ulang dengan logika ganti kota lama.
   Future<void> _changePlace() async {
-    final place = await showModalBottomSheet<(String, String)>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).extension<SacredTokens>()!.bg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (_) => _PlaceSheet(
-        city: SharedPreferencesService.getPrayerCity(),
-        country: SharedPreferencesService.getPrayerCountry(),
-      ),
+    final loader = widget.loader;
+    final saved = await showPrayerSettingsSheet(
+      context,
+      preview: _shown,
+      fetch: loader == null ? null : (_) => loader(null),
+      onSaved: (day, _) async {
+        if (!mounted) return;
+        if (_enabled.isNotEmpty ||
+            _quranMinutes != null ||
+            _sessionMinutes != null) {
+          await _saveReminders(
+            day,
+            previous: Set.of(_enabled),
+            previousQuran: _quranMinutes,
+          );
+        }
+      },
     );
-    if (place == null || !mounted) return;
-    await SharedPreferencesService.setPrayerPlace(place.$1, place.$2);
-    _reload();
-    // Pengingat yang sudah aktif dijadwalkan ulang untuk kota baru.
-    try {
-      final day = await _day;
-      if (mounted &&
-          (_enabled.isNotEmpty ||
-              _quranMinutes != null ||
-              _sessionMinutes != null)) {
-        await _saveReminders(
-          day,
-          previous: Set.of(_enabled),
-          previousQuran: _quranMinutes,
-        );
-      }
-    } on Object {
-      // Kota tidak ditemukan atau luring: pesan galat sudah tampil.
-    }
+    if (saved != null && mounted) _reload();
   }
 
   /// Pengingat harian Sesi hari ini (docs/design/v5-sesi-harian §4): jam
@@ -375,7 +366,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 ),
               ),
               _PlaceRow(
-                city: SharedPreferencesService.getPrayerCity(),
+                settings: PrayerSettingsStore.load(),
                 onChange: _changePlace,
               ),
               ..._body(context, tokens, snapshot),
@@ -415,6 +406,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
     }
 
     final day = snapshot.data!;
+    _shown = day;
+    final settings = PrayerSettingsStore.load();
     final now = widget.clock();
     final next = day.nextLabelAt(now);
     final tomorrow = next == 'Subuh besok';
@@ -431,8 +424,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
         child: Text(
           // Cara jadwal ini dihitung; zona waktu dari respons AlAdhan.
           [
-            'Metode ${PrayerService.methodShort} '
-                '(AlAdhan #${PrayerService.methodId})',
+            'Metode ${prayerMethodOf(settings.method).label} '
+                '(AlAdhan #${settings.method})',
+            if (settings.school == 1) 'Asar Hanafi',
+            if (settings.hasTune) 'dikoreksi',
             ?day.timezone,
           ].join(' · '),
           style: SacredText.listMeta.copyWith(color: tokens.sec),
@@ -552,16 +547,23 @@ class _QiblaButton extends StatelessWidget {
   }
 }
 
-/// Lokasi dan tautan Ganti kota.
+/// Lokasi dan tautan Ganti (membuka lembar Waktu salat).
 class _PlaceRow extends StatelessWidget {
-  const _PlaceRow({required this.city, required this.onChange});
+  const _PlaceRow({required this.settings, required this.onChange});
 
-  final String city;
+  final PrayerSettings settings;
   final VoidCallback onChange;
+
+  String get _place => settings.usesCoordinates
+      ? 'Lokasi otomatis'
+      : SharedPreferencesService.hasPrayerCity()
+      ? settings.city
+      : '${settings.city} (bawaan)';
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final place = _place;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Wrap(
@@ -574,17 +576,21 @@ class _PlaceRow extends StatelessWidget {
             size: 16,
             strokeWidth: 2,
           ),
-          Text(city, style: SacredText.segmentIdle.copyWith(color: tokens.ink)),
+          Text(
+            place,
+            style: SacredText.segmentIdle.copyWith(color: tokens.ink),
+          ),
           Semantics(
             button: true,
             excludeSemantics: true,
-            label: 'Ganti kota, sekarang $city',
-            child: InkWell(
+            label: 'Ganti lokasi dan cara hitung, sekarang $place',
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onChange,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
-                  'Ganti kota',
+                  'Ganti',
                   style: SacredText.buttonSmall.copyWith(
                     color: tokens.primaryText,
                   ),
@@ -962,120 +968,6 @@ class _PrayerRow extends StatelessWidget {
               onChanged: (on) => onToggle(name, on),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Lembar Ganti kota: dua isian dan tombol Simpan yang aktif bila keduanya
-/// terisi.
-class _PlaceSheet extends StatefulWidget {
-  const _PlaceSheet({required this.city, required this.country});
-
-  final String city;
-  final String country;
-
-  @override
-  State<_PlaceSheet> createState() => _PlaceSheetState();
-}
-
-class _PlaceSheetState extends State<_PlaceSheet> {
-  late final _city = TextEditingController(text: widget.city);
-  late final _country = TextEditingController(text: widget.country);
-
-  @override
-  void dispose() {
-    _city.dispose();
-    _country.dispose();
-    super.dispose();
-  }
-
-  bool get _valid =>
-      _city.text.trim().isNotEmpty && _country.text.trim().isNotEmpty;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Lokasi jadwal salat',
-                style: SacredText.stageTitle.copyWith(color: tokens.ink),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tulis nama kota dan negara, misalnya Bandung, Indonesia.',
-                style: SacredText.cardNote.copyWith(color: tokens.sec),
-              ),
-              const SizedBox(height: 14),
-              _Field(
-                label: 'Kota',
-                controller: _city,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 10),
-              _Field(
-                label: 'Negara',
-                controller: _country,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 16),
-              SacredButton(
-                label: 'Simpan',
-                expand: true,
-                onTap: _valid
-                    ? () => Navigator.pop(context, (
-                        _city.text.trim(),
-                        _country.text.trim(),
-                      ))
-                    : null,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Field extends StatelessWidget {
-  const _Field({
-    required this.label,
-    required this.controller,
-    required this.onChanged,
-  });
-
-  final String label;
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: tokens.fill,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        textCapitalization: TextCapitalization.words,
-        style: SacredText.searchInput.copyWith(color: tokens.ink),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          labelText: label,
-          labelStyle: SacredText.listMeta.copyWith(color: tokens.sec),
         ),
       ),
     );

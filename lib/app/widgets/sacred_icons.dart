@@ -34,6 +34,12 @@ abstract final class SacredIcons {
 
   static const chart = ['M5 20v-6', 'M12 20V5', 'M19 20v-10'];
 
+  /// Empat batang equalizer: murottal sedang diputar.
+  static const equalizer = ['M5 19v-6', 'M10 19V7', 'M15 19v-9', 'M20 19v-4'];
+
+  /// Panah dua arah: rentang ayat (pill Rentang di Murottal v6).
+  static const range = ['M3.5 12h17', 'M7.5 8l-4 4 4 4', 'M16.5 8l4 4-4 4'];
+
   static const sliders = [
     'M4 7h9',
     'M19 7h1',
@@ -165,6 +171,21 @@ abstract final class SacredIcons {
 
   static const previous = ['M19 19 10 12l9-7z', 'M5.5 5v14'];
   static const next = ['m5 5 9 7-9 7z', 'M18.5 5v14'];
+
+  /// Sebelumnya/Berikutnya panel Murottal v6 (isi): segitiga membulat +
+  /// batang 2.6 (docs/design/v6/html/build_mockup.py `prev`/`next`).
+  static const skipPrevious = [
+    'M19 5.6v12.8a.9.9 0 0 1-1.4.75l-9.3-6.4a.9.9 0 0 1 0-1.5l9.3-6.4'
+        'A.9.9 0 0 1 19 5.6z',
+    'M5.4 4.5h.2a1.2 1.2 0 0 1 1.2 1.2v12.6a1.2 1.2 0 0 1-1.2 1.2h-.2'
+        'a1.2 1.2 0 0 1-1.2-1.2V5.7a1.2 1.2 0 0 1 1.2-1.2z',
+  ];
+  static const skipNext = [
+    'M5 5.6v12.8a.9.9 0 0 0 1.4.75l9.3-6.4a.9.9 0 0 0 0-1.5L6.4 4.85'
+        'A.9.9 0 0 0 5 5.6z',
+    'M18.4 4.5h.2a1.2 1.2 0 0 1 1.2 1.2v12.6a1.2 1.2 0 0 1-1.2 1.2h-.2'
+        'a1.2 1.2 0 0 1-1.2-1.2V5.7a1.2 1.2 0 0 1 1.2-1.2z',
+  ];
 
   // Ikon tambahan paket desain v2 (`docs/design/v2/html/`).
 

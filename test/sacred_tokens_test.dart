@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/app/glass/glass_tokens.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 
@@ -54,6 +55,83 @@ void main() {
         );
       }
     }
+  });
+
+  test('token kaca ikut di setiap tema; kontras tinggi selalu padat', () {
+    for (final palette in AppPalette.values) {
+      for (final brightness in Brightness.values) {
+        final glass = SacredTheme.themeFor(
+          palette,
+          brightness,
+        ).extension<GlassTokens>();
+        expect(glass, isNotNull, reason: '$palette $brightness');
+        expect(
+          glass!.forcesSolid,
+          palette == AppPalette.highContrast,
+          reason: '$palette $brightness',
+        );
+      }
+    }
+  });
+
+  // docs/design/v6/DESIGN.md §3: token v6 dan kontras yang wajib dites.
+  // Nilai hasil hitungan di dokumen: onHero/heroB 11.7 · 13.6, onHeroSec/heroA
+  // 5.5 · 5.7, goldLine/heroA 4.9 · 4.9, onGoldButton/goldButton 11.5,
+  // teal/surf 5.6 · 5.3 (sepia) · 9.8.
+  group('token v6 di semua palet', () {
+    for (final palette in AppPalette.values) {
+      for (final brightness in Brightness.values) {
+        final name = '$palette $brightness';
+        final t = SacredTheme.tokensFor(palette, brightness);
+
+        test('$name: teal di surf ≥ 3 (elemen grafis)', () {
+          expect(_contrast(t.teal, t.surf), greaterThanOrEqualTo(3));
+        });
+
+        test('$name: teks kartu hijau terbaca', () {
+          expect(_contrast(t.onHero, t.heroB), greaterThanOrEqualTo(7));
+          // onHeroSec semi-transparan: dihitung setelah dikomposit di heroA.
+          expect(
+            _contrast(Color.alphaBlend(t.onHeroSec, t.heroA), t.heroA),
+            greaterThanOrEqualTo(4.5),
+          );
+          // Eyebrow 11/800 dihitung teks kecil.
+          expect(_contrast(t.goldLine, t.heroA), greaterThanOrEqualTo(4.5));
+          expect(
+            _contrast(t.onGoldButton, t.goldButton),
+            greaterThanOrEqualTo(7),
+          );
+        });
+      }
+    }
+
+    test('kontras tinggi: kartu hijau padat dan horizon = surf', () {
+      for (final brightness in Brightness.values) {
+        final t = SacredTheme.tokensFor(AppPalette.highContrast, brightness);
+        expect(t.heroA, t.heroB);
+        expect(t.skyHorizon, t.surf);
+      }
+    });
+
+    test('lerp dan copyWith ikut membawa token v6', () {
+      final mid = SacredTokens.light.lerp(SacredTokens.dark, .5);
+      expect(
+        mid.teal,
+        Color.lerp(SacredTokens.light.teal, SacredTokens.dark.teal, .5),
+      );
+      expect(
+        mid.skyHorizon,
+        Color.lerp(
+          SacredTokens.light.skyHorizon,
+          SacredTokens.dark.skyHorizon,
+          .5,
+        ),
+      );
+      expect(
+        SacredTokens.light.copyWith(goldLine: const Color(0xFF000000)).goldLine,
+        const Color(0xFF000000),
+      );
+    });
   });
 
   test('emas untuk teks memakai goldText di latar terang', () {

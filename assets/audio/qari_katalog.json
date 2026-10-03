@@ -1,0 +1,758 @@
+{
+ "_tentang": "Katalog qari MyQuran (kurasi awal, 2 Oktober 2026). Tag suasana adalah penilaian kurasi, bukan fakta; pemilik boleh mengubahnya. Qari hanya tampil di rilis bila salah satu sumbernya berstatus granted di lib/data/audio_sources.dart. ref null = cari identifier dari API sumber (cocokkan nama), jangan menebak.",
+ "diperbarui": "2026-10-02",
+ "suasana": {
+  "tenang": "Tenang & adem",
+  "merdu": "Merdu",
+  "hafalan": "Pelan, cocok untuk hafalan",
+  "belajar": "Untuk belajar (diulang/ditirukan)",
+  "imam_dua_masjid": "Haramain (imam Masjidil Haram & Masjid Nabawi)",
+  "populer": "Populer sekarang"
+ },
+ "populer": [
+  "yasser",
+  "alafasy",
+  "muzammil",
+  "salim",
+  "maher",
+  "juhany",
+  "abkar",
+  "qatami",
+  "sudais",
+  "islam_sobhi",
+  "hanirifai",
+  "jalil"
+ ],
+ "sumber": {
+  "islamic_network": {
+   "nama": "Islamic Network (alquran.cloud)",
+   "status": "granted",
+   "perAyat": true,
+   "bukti": "dipakai sejak awal; konfirmasi tertulis masih diminta (docs/lisensi)"
+  },
+  "equran": {
+   "nama": "equran.id",
+   "status": "pending",
+   "perAyat": true,
+   "bukti": null
+  },
+  "quran_foundation": {
+   "nama": "Quran Foundation (quran.com) lewat bff/",
+   "status": "pending",
+   "perAyat": true,
+   "bukti": null,
+   "syarat": "akses produksi Developer Console + BFF ter-deploy; cache/unduhan maks 7 hari"
+  },
+  "qul": {
+   "nama": "QUL / Tarteel",
+   "status": "pending",
+   "perAyat": null,
+   "bukti": null,
+   "syarat": "issue #768"
+  },
+  "mp3quran": {
+   "nama": "MP3Quran",
+   "status": "pending",
+   "perAyat": false,
+   "bukti": null
+  },
+  "langsung": {
+   "nama": "Izin langsung dari qari",
+   "status": "pending",
+   "perAyat": null,
+   "bukti": null
+  }
+ },
+ "qari": [
+  {
+   "id": "alafasy",
+   "nama": "Mishary Rashid Alafasy",
+   "gaya": "murattal",
+   "suasana": [
+    "merdu",
+    "populer"
+   ],
+   "negara": "Kuwait",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.alafasy",
+     "perAyat": true
+    },
+    {
+     "sumber": "equran",
+     "ref": "05",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "sudais",
+   "nama": "Abdurrahman As-Sudais",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "populer"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.abdurrahmaansudais",
+     "perAyat": true
+    },
+    {
+     "sumber": "equran",
+     "ref": "03",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "shuraym",
+   "nama": "Saud Ash-Shuraym",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.saoodshuraym",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "maher",
+   "nama": "Maher Al-Muaiqly",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "populer",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.mahermuaiqly",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    },
+    {
+     "sumber": "mp3quran",
+     "ref": "102",
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "hudhaify",
+   "nama": "Ali Al-Hudhaify",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "tenang",
+    "hafalan"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.hudhaify",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "husary",
+   "nama": "Mahmoud Khalil Al-Husary",
+   "gaya": "murattal",
+   "suasana": [
+    "hafalan",
+    "tenang"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.husary",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "husary_mujawwad",
+   "nama": "Mahmoud Khalil Al-Husary (Mujawwad)",
+   "gaya": "mujawwad",
+   "suasana": [
+    "merdu"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.husarymujawwad",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "husary_muallim",
+   "nama": "Mahmoud Khalil Al-Husary (Muallim)",
+   "gaya": "muallim",
+   "suasana": [
+    "hafalan",
+    "belajar"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ],
+   "catatan": "Diulang untuk ditirukan; cocok untuk pemula."
+  },
+  {
+   "id": "abdulbasit",
+   "nama": "Abdul Basit Abdus Samad",
+   "gaya": "murattal",
+   "suasana": [
+    "merdu"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.abdulsamad",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "abdulbasit_mujawwad",
+   "nama": "Abdul Basit Abdus Samad (Mujawwad)",
+   "gaya": "mujawwad",
+   "suasana": [
+    "merdu"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "ajamy",
+   "nama": "Ahmed Al-Ajamy",
+   "gaya": "murattal",
+   "suasana": [
+    "merdu"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.ahmedajamy",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "shaatree",
+   "nama": "Abu Bakr Ash-Shaatree",
+   "gaya": "murattal",
+   "suasana": [
+    "merdu",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.shaatree",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "hanirifai",
+   "nama": "Hani Ar-Rifai",
+   "gaya": "murattal",
+   "suasana": [
+    "merdu",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.hanirifai",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "basfar",
+   "nama": "Abdullah Basfar",
+   "gaya": "murattal",
+   "suasana": [
+    "hafalan",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.abdullahbasfar",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "akhdar",
+   "nama": "Ibrahim Al-Akhdar",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.ibrahimakhbar",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "ayyoub",
+   "nama": "Muhammad Ayyoub",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "tenang",
+    "hafalan"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.muhammadayyoub",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "jibreel",
+   "nama": "Muhammad Jibreel",
+   "gaya": "murattal",
+   "suasana": [
+    "merdu"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.muhammadjibreel",
+     "perAyat": true
+    },
+    {
+     "sumber": "qul",
+     "ref": null,
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "sowaid",
+   "nama": "Ayman Suwaid",
+   "gaya": "murattal",
+   "suasana": [
+    "hafalan",
+    "belajar"
+   ],
+   "negara": "Suriah",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.aymanswoaid",
+     "perAyat": true
+    }
+   ],
+   "catatan": "Dikenal sebagai guru tajwid; cocok untuk belajar."
+  },
+  {
+   "id": "parhizgar",
+   "nama": "Shahriar Parhizgar",
+   "gaya": "murattal",
+   "suasana": [
+    "tenang"
+   ],
+   "negara": "Iran",
+   "sumber": [
+    {
+     "sumber": "islamic_network",
+     "ref": "ar.parhizgar",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "yasser",
+   "nama": "Yasser Al-Dosari",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "tenang",
+    "imam_dua_masjid"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "equran",
+     "ref": "06",
+     "perAyat": true
+    },
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true,
+     "catatan": "tercantum beta di quran.com"
+    },
+    {
+     "sumber": "qul",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "juhany",
+   "nama": "Abdullah Al-Juhany",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "tenang",
+    "imam_dua_masjid"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "equran",
+     "ref": "01",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "ibrahim_dossari",
+   "nama": "Ibrahim Al-Dossari",
+   "gaya": "murattal",
+   "suasana": [
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "equran",
+     "ref": "04",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "qasim",
+   "nama": "Abdul Muhsin Al-Qasim",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "equran",
+     "ref": "02",
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "ghamdi",
+   "nama": "Saad Al-Ghamdi",
+   "gaya": "murattal",
+   "suasana": [
+    "tenang",
+    "hafalan",
+    "populer"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    }
+   ]
+  },
+  {
+   "id": "minshawi",
+   "nama": "Muhammad Siddiq Al-Minshawi",
+   "gaya": "murattal",
+   "suasana": [
+    "tenang",
+    "hafalan"
+   ],
+   "negara": "Mesir",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    },
+    {
+     "sumber": "mp3quran",
+     "ref": "112",
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "bandar",
+   "nama": "Bandar Baleela",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "tenang",
+    "populer"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true,
+     "catatan": "beta"
+    },
+    {
+     "sumber": "qul",
+     "ref": null,
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "alijaber",
+   "nama": "Ali Jaber",
+   "gaya": "murattal",
+   "suasana": [
+    "imam_dua_masjid",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true,
+     "catatan": "beta, \"Abdullah Ali Jabir\" di quran.com — cocokkan identitasnya"
+    }
+   ]
+  },
+  {
+   "id": "tunaiji",
+   "nama": "Khalifah At-Tunaiji",
+   "gaya": "murattal",
+   "suasana": [
+    "tenang"
+   ],
+   "negara": "Uni Emirat Arab",
+   "sumber": [
+    {
+     "sumber": "quran_foundation",
+     "ref": null,
+     "perAyat": true
+    },
+    {
+     "sumber": "qul",
+     "ref": null,
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "qatami",
+   "nama": "Nasser Al-Qatami",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "merdu"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "qul",
+     "ref": null,
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "jalil",
+   "nama": "Khalid Al-Jalil",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "qul",
+     "ref": null,
+     "perAyat": false
+    },
+    {
+     "sumber": "mp3quran",
+     "ref": "20",
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "abkar",
+   "nama": "Idris Abkar",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "tenang"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "mp3quran",
+     "ref": "12",
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "luhaidan",
+   "nama": "Muhammad Al-Luhaidan",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "merdu"
+   ],
+   "negara": "Arab Saudi",
+   "sumber": [
+    {
+     "sumber": "mp3quran",
+     "ref": "107",
+     "perAyat": false
+    }
+   ]
+  },
+  {
+   "id": "muzammil",
+   "nama": "Muzammil Hasballah",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "tenang"
+   ],
+   "negara": "Indonesia",
+   "sumber": [
+    {
+     "sumber": "langsung",
+     "ref": null,
+     "perAyat": false,
+     "catatan": "izin langsung ke qari/manajemen"
+    }
+   ]
+  },
+  {
+   "id": "salim",
+   "nama": "Salim Bahanan",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "tenang"
+   ],
+   "negara": "Indonesia",
+   "sumber": [
+    {
+     "sumber": "langsung",
+     "ref": null,
+     "perAyat": false,
+     "catatan": "izin langsung ke qari/manajemen"
+    }
+   ]
+  },
+  {
+   "id": "islam_sobhi",
+   "nama": "Islam Sobhi",
+   "gaya": "murattal",
+   "suasana": [
+    "populer",
+    "merdu"
+   ],
+   "negara": "Mesir",
+   "sumber": [],
+   "catatan": "Belum ditemukan sumber yang menyatakan izin pakai di aplikasi. Jangan diambil dari YouTube/TikTok."
+  }
+ ]
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
@@ -141,7 +142,7 @@ void main() {
         Align(
           alignment: Alignment.bottomCenter,
           child: StatefulBuilder(
-            builder: (context, setState) => FloatingTabBar(
+            builder: (context, setState) => AppDock(
               tabs: _tabs,
               currentIndex: selected,
               onSelected: (index) => setState(() => selected = index),
@@ -168,11 +169,7 @@ void main() {
         tester,
         Align(
           alignment: Alignment.bottomCenter,
-          child: FloatingTabBar(
-            tabs: _tabs,
-            currentIndex: 1,
-            onSelected: (_) {},
-          ),
+          child: AppDock(tabs: _tabs, currentIndex: 1, onSelected: (_) {}),
         ),
         textScale: 2,
         size: const Size(320, 640),

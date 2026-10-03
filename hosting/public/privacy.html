@@ -62,9 +62,19 @@
       aplikasi dihapus.</p>
 
     <h2>Lokasi</h2>
-    <p>Izin lokasi hanya dipakai saat halaman Kiblat dibuka untuk menghitung arah Ka’bah.
-      Perhitungannya dilakukan di perangkat; lokasi tidak dikirim ke server. Jadwal salat
-      memakai nama kota dan negara yang Anda pilih sendiri, bukan lokasi GPS.</p>
+    <p>Izin lokasi dipakai untuk dua hal, dan hanya setelah Anda menekan tombolnya:</p>
+    <ul>
+      <li><strong>Kiblat</strong>: arah Ka’bah dihitung di perangkat; lokasi tidak dikirim ke
+        server mana pun.</li>
+      <li><strong>Waktu salat, mode Otomatis</strong> (opsional): koordinat perangkat
+        dibulatkan dulu ke kisi sekitar 3 km (lokasi perkiraan), lalu dikirim ke AlAdhan
+        untuk menghitung jadwal salat. Koordinat yang sudah dibulatkan disimpan di perangkat
+        untuk jadwal berikutnya dan tidak disimpan oleh MyQuran di server. Saat aplikasi
+        dibuka, MyQuran memakai posisi terakhir yang diketahui perangkat untuk memperbarui
+        jadwal bila Anda sudah pindah lebih dari 25 km; izin tidak pernah diminta otomatis.</li>
+    </ul>
+    <p>Tanpa mode Otomatis, jadwal salat memakai nama kota dan negara yang Anda tulis sendiri
+      (bawaan: Jakarta).</p>
 
     <h2>Notifikasi</h2>
     <p>Pengingat salat dan tilawah dijadwalkan secara lokal di perangkat. Kontrol murottal
@@ -74,10 +84,13 @@
     <ul>
       <li><strong>Google (Firebase, Google Sign-In)</strong> untuk akun dan sinkronisasi,
         hanya jika Anda masuk.</li>
-      <li><strong>AlAdhan API</strong> menerima nama kota dan negara yang Anda pilih untuk
-        menghitung jadwal salat.</li>
-      <li><strong>Islamic Network CDN (alquran.cloud), MP3Quran, dan equran.id</strong>
-        menyediakan audio murottal saat Anda memutar atau mengunduhnya.</li>
+      <li><strong>AlAdhan API</strong> menerima nama kota dan negara yang Anda pilih, atau
+        koordinat yang sudah dibulatkan ke kisi sekitar 3 km bila memakai mode Otomatis,
+        beserta metode hitung, mazhab Asar, dan koreksi menit, untuk menghitung jadwal
+        salat.</li>
+      <li><strong>Islamic Network CDN (alquran.cloud)</strong> menyediakan audio murottal saat
+        Anda memutar atau mengunduhnya. Qari hanya ditampilkan bila sumber audionya sudah
+        berizin.</li>
       <li><strong>QuranEnc dan fawazahmed0/quran-api</strong> menyediakan terjemahan
         bahasa lain saat Anda mengunduhnya.</li>
       <li><strong>GDELT</strong> menyediakan daftar berita Islam berbahasa Indonesia.</li>

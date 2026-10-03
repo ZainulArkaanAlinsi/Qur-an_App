@@ -3,7 +3,7 @@ description: "A beautiful Quran app with complete features"
 
 publish_to: "none"
 
-version: 1.10.1+21
+version: 1.11.0+22
 
 environment:
   sdk: ">=3.9.2 <4.0.0"
@@ -34,6 +34,11 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  # Tes kinerja kaca (LIQUID_GLASS.md §7); keduanya bawaan SDK Flutter.
+  integration_test:
+    sdk: flutter
+  flutter_driver:
     sdk: flutter
   crypto: ^3.0.7
   flutter_lints: ^5.0.0
@@ -92,6 +97,8 @@ flutter:
     - assets/fonts/OFL-EBGaramond.txt
     - assets/fonts/OFL-Amiri.txt
     - assets/fonts/OFL-AmiriQuran.txt
+    # Katalog qari terkurasi + registri izin (docs/design/v6/screens/23-qari.md).
+    - assets/audio/qari_katalog.json
     - assets/quran/raw/tanzil_uthmani_v1.0.2.txt
     - assets/quran/raw/tajweed_cpfair_tanzil_v1.0.2.json
     - assets/quran/raw/quran-data.xml

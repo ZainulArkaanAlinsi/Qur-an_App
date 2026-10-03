@@ -1,0 +1,71 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><style>
+@font-face{font-family:'AmiriQuran';src:url(../../../../assets/fonts/AmiriQuran-Regular.ttf);}
+@font-face{font-family:'Jakarta';src:url(../../../../assets/fonts/PlusJakartaSans-wght-Latin.ttf);font-weight:200 800;}
+@font-face{font-family:'Garamond';src:url(../../../../assets/fonts/EBGaramond-wght-Latin.ttf);font-weight:400 800;}
+:root{--bg:#08110E;--surf:#111C18;--surf2:#1A2823;--ink:#ECEFEA;--sec:#9DA79F;--ter:#646D67;--hair:rgba(236,239,234,.08);--primary:#8FD7B8;--primaryText:#9ADDBF;--primarySoft:rgba(143,215,184,.14);--gold:#FED65B;--goldText:#F4D679;--goldSoft:rgba(254,214,91,.12);--goldBtn:#F4CF5D;--onGoldBtn:#1F1A08;--heroA:#0F4A39;--heroB:#082A20;--onHero:#F3F1E8;--onHeroSec:rgba(243,241,232,.74);--goldLine:#D6B04A;--teal:#7CCFD6;--tealSoft:rgba(124,207,214,.14);--sky1:#111C18;--sky2:#132733;--glass:rgba(17,28,24,.46);--glassRim1:rgba(255,255,255,.22);--glassRim2:rgba(255,255,255,.04);--lens:rgba(143,215,184,.20);--shadow:0 12px 34px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35);--cardShadow:0 1px 0 rgba(255,255,255,.03) inset;--statusInk:#ECEFEA;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Jakarta',sans-serif;word-spacing:.12em;-webkit-font-smoothing:antialiased}
+.phone{width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)}
+.phone.tall{height:auto;min-height:844px;padding-bottom:150px}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font-weight:700;font-size:15px;color:var(--statusInk)}
+.status .r{display:flex;gap:6px;align-items:center;font-size:12px}
+.status .bat{border:1.5px solid var(--statusInk);border-radius:5px;padding:0 4px;font-size:11px;line-height:15px}
+.ic{display:block;flex:none}
+.px{padding:0 20px}
+.row{display:flex;align-items:center}
+.circle{width:40px;height:40px;border-radius:50%;background:var(--surf);display:grid;place-items:center;color:var(--ink);box-shadow:var(--cardShadow);border:1px solid var(--hair)}
+.serif{font-family:'Garamond',serif}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+.tab{font-variant-numeric:tabular-nums}
+.mihrab{position:relative;flex:none}
+.mihrab svg{position:absolute;inset:0;width:100%;height:100%}
+.mh-ar{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:'AmiriQuran';color:var(--goldLine);direction:rtl;line-height:1.6}
+.mh-num{position:absolute;left:0;right:0;bottom:16%;text-align:center;color:var(--goldLine);font-weight:800;font-size:12px}
+.home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.85}
+/* ---- dock (tab bar + now playing), satu permukaan kaca ---- */
+.dock{position:absolute;left:12px;right:12px;bottom:26px;border-radius:32px;overflow:hidden;
+  background:var(--glass);backdrop-filter:blur(18px) saturate(1.7);-webkit-backdrop-filter:blur(18px) saturate(1.7);
+  box-shadow:var(--shadow)}
+.dock::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(170deg,var(--glassRim1),var(--glassRim2) 55%,var(--glassRim1));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.dock::after{content:'';position:absolute;left:0;right:0;top:0;height:55%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0))}
+.tabs{display:flex;height:64px;padding:4px;position:relative;z-index:1}
+.tabs .t{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink);font-size:11px;font-weight:600;border-radius:26px;position:relative}
+.tabs .t.on{color:var(--primaryText);font-weight:800;background:var(--lens);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 1px 3px rgba(0,0,0,.06)}
+.np{position:relative;z-index:1;display:flex;align-items:center;gap:12px;padding:10px 10px 6px 12px;height:62px}
+.np .meta{flex:1;min-width:0}
+.np .meta b{display:block;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np .meta span{display:block;font-size:12px;color:var(--sec);font-weight:600;margin-top:1px}
+.np .btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.np .btn.main{background:var(--primary);color:var(--surf)}
+.npTrack{position:relative;z-index:1;display:flex;gap:3px;padding:0 16px 2px}
+.npTrack i{flex:1;height:3px;border-radius:2px;background:var(--hair)}
+.npTrack i.done{background:var(--primaryText)}
+.npTrack i.cur{background:linear-gradient(90deg,var(--gold) var(--p),var(--hair) var(--p))}
+.npSep{position:relative;z-index:1;height:1px;margin:6px 14px 0;background:var(--hair)}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding:6px 20px 0}
+.top b{font-size:17px;font-weight:800}
+.search{margin:14px 20px 0;height:44px;border-radius:22px;background:var(--surf);border:1px solid var(--hair);display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--sec);font-size:14px;font-weight:600}
+.chips{display:flex;gap:8px;padding:12px 20px 4px;overflow:hidden;white-space:nowrap}
+.chip{padding:8px 13px;border-radius:999px;background:var(--surf);border:1px solid var(--hair);font-size:13px;font-weight:700;color:var(--ink);flex:none}
+.chip.on{background:var(--primary);color:var(--surf);border-color:var(--primary)}
+.sec{padding:16px 20px 8px;font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--sec);display:flex;justify-content:space-between}
+.sec span{letter-spacing:0;font-weight:600}
+.grp{margin:0 20px;border-radius:22px;background:var(--surf);border:1px solid var(--hair);overflow:hidden}
+.q{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;min-height:64px}
+.q+.q{border-top:1px solid var(--hair)}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;background:var(--primarySoft);color:var(--primaryText)}
+.q.sel .av{background:var(--primary);color:var(--surf)}
+.q .tx{flex:1;min-width:0}
+.q .tx b{display:block;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q .tx span{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--sec);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden}
+.tag{font-style:normal;flex:none;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--goldSoft);color:var(--goldText)}
+.tag.p{background:var(--surf2);color:var(--sec)}
+.pv{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--ink);flex:none}
+.ck{color:var(--primaryText);flex:none}
+.debug{margin:14px 20px 0;padding:10px 12px;border-radius:14px;background:var(--goldSoft);color:var(--goldText);font-size:12.5px;font-weight:700}
+</style></head><body><div class="phone"><div class="status"><span>10:41</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><span class="bat">88</span></span></div><div class="top"><div class="circle"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><b>Pilih qari</b><div style="width:40px"></div></div><div class="search"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>Cari nama qari</div><div class="chips"><span class="chip">Semua</span><span class="chip on">Adem</span><span class="chip">Populer</span><span class="chip">Hafalan</span><span class="chip">Merdu</span><span class="chip">Haramain</span></div><div class="debug">Build debug: qari dari sumber yang belum berizin ikut tampil. Di build rilis mereka tersembunyi.</div><div class="sec">DIPILIH</div><div class="grp"><div class="q sel"><div class="av">AH</div><div class="tx"><b>Ali Al-Hudhaify</b><span>Murattal · Arab Saudi<i class="tag">Haramain</i></span></div><div class="ck"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div></div></div><div class="sec">ADEM · 21 QARI<span>semua sumber</span></div><div class="grp"><div class="q"><div class="av">AQ</div><div class="tx"><b>Abdul Muhsin Al-Qasim</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div><div class="q"><div class="av">AJ</div><div class="tx"><b>Abdullah Al-Juhany</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div><div class="q"><div class="av">AJ</div><div class="tx"><b>Ali Jaber</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div><div class="q"><div class="av">BB</div><div class="tx"><b>Bandar Baleela</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div><div class="q"><div class="av">ID</div><div class="tx"><b>Ibrahim Al-Dossari</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div><div class="q"><div class="av">IA</div><div class="tx"><b>Idris Abkar</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div><div class="q"><div class="av">KJ</div><div class="tx"><b>Khalid Al-Jalil</b><span>Murattal<i class="tag p">MENUNGGU IZIN</i></span></div><div class="pv"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg></div></div></div><div class="home-ind"></div></div></body></html>

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
@@ -15,10 +16,6 @@ import 'package:quran_app_2025/screens/reader_screen.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 enum _Browse { surah, juz, halaman }
-
-/// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi baris
-/// terakhir; tingginya sama dengan scrim di mockup.
-const _bottomInset = 150.0;
 
 /// Istilah yang dipakai mockup untuk tempat turunnya surah.
 String _revelationLabel(String value) =>
@@ -83,7 +80,7 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
         final names = namesSnapshot.data ?? const <String>[];
         return ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: _bottomInset),
+          padding: EdgeInsets.only(bottom: AppDock.reservedHeightOf(context)),
           children: [
             _Header(
               onBookmark: () => Navigator.of(context).push(

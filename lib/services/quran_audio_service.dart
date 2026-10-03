@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app_2025/data/audio_repository.dart';
+import 'package:quran_app_2025/data/audio_sources.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
@@ -177,6 +178,10 @@ class QuranAudioService {
   /// Jumlah putaran yang diminta, atau null bila tanpa batas.
   final rangeTarget = ValueNotifier<int?>(null);
 
+  /// True bila diputar dari satu berkas per surah (sumber cadangan terakhir):
+  /// posisi ayat tidak diketahui, jadi layar tidak boleh mengikuti ayat.
+  final wholeSurah = ValueNotifier<bool>(false);
+
   /// Indeks terakhir yang dilaporkan player, untuk mengenali putaran baru.
   int _lastIndex = 0;
 
@@ -222,12 +227,22 @@ class QuranAudioService {
 
   /// URL ayat pada qari pilihan. Bitrate berbeda antar qari, jadi memakai
   /// nilai yang sudah diperiksa saat qari dipilih.
-  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) =>
-      AudioRepository.islamicNetworkAyah(
-        reciter ?? SharedPreferencesService.getReciter(),
-        surah,
-        ayah,
-      );
+  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) {
+    final chosen = reciter ?? SharedPreferencesService.getReciter();
+    // equran.id hanya bisa dipilih di build debug (sumber pending).
+    if (chosen.provider == AudioProvider.equran) {
+      return AudioRepository.equranAyah(chosen.equranCode, surah, ayah);
+    }
+    return AudioRepository.islamicNetworkAyah(chosen, surah, ayah);
+  }
+
+  /// Qari untuk antrean per ayat. Qari per surah saja tidak bisa memutar
+  /// per ayat, jadi Ulang ayat, Rentang, dan Sesi harian memakai qari per
+  /// ayat bawaan (23-qari.md §Tampilan 8).
+  static Reciter perAyatReciter() {
+    final chosen = SharedPreferencesService.getReciter();
+    return chosen.perAyat ? chosen : defaultReciter;
+  }
 
   /// Berkas lokal bila tersedia, kalau tidak URL [remote] (bawaan: CDN
   /// utama cdn.islamic.network).
@@ -300,20 +315,44 @@ class QuranAudioService {
   /// sehingga 3×, 5×, dan 10× sama-sama tidak pernah berhenti. Sekarang
   /// jumlahnya benar-benar dihitung, dan satu putaran memutar rentangnya saja
   /// — bukan sampai akhir surah.
+  ///
+  /// [startAyah] dan [position] dipakai layar Murottal saat mode ulang
+  /// berganti: rentangnya dimuat ulang tanpa pindah dari ayat yang sedang
+  /// didengar.
   Future<void> playRange({
     required int surah,
     required int fromAyah,
     required int toAyah,
     int? repeatCount = 1,
+    int? startAyah,
+    Duration? position,
   }) {
     final next = AudioQueue.from(surah, fromAyah, toAyah: toAyah);
     final plan = RangePlan.of(length: next.length, repeatCount: repeatCount);
+    final start = startAyah == null
+        ? 0
+        : (startAyah - next.firstAyah).clamp(0, next.length - 1);
     return _load(
       next,
       plan.mode,
       copies: plan.copies,
       passTarget: plan.passTarget,
+      initialIndex: start,
+      position: position,
     );
+  }
+
+  /// Lompat ke ayat ke-[index] (0-based) dalam antrean lalu memutarnya.
+  /// Dipakai daftar ayat dan segmen di layar Murottal.
+  Future<void> jumpTo(int index) async {
+    final q = queue.value;
+    if (q == null || _loading || wholeSurah.value) return;
+    if (index < 0 || index >= q.length) return;
+    // Lompatan bukan putaran baru: tanpa ini, lompat dari ayat terakhir ke
+    // ayat pertama rentang ikut terhitung sebagai satu putaran.
+    _lastIndex = index;
+    await _player.seek(Duration.zero, index: index);
+    if (!_player.playing) _play();
   }
 
   /// Memutar Al-Fatihah ayat 1 dengan [reciter] sebagai contoh suara.
@@ -462,6 +501,7 @@ class QuranAudioService {
     repeat.value = AudioRepeat.off;
     rangePass.value = 1;
     rangeTarget.value = null;
+    wholeSurah.value = false;
     _lastIndex = 0;
     buffering.value = false;
     // Listeners have already shown any message; reset so a repeat of the
@@ -477,17 +517,19 @@ class QuranAudioService {
     int? passTarget,
     int copies = 1,
     bool autoplay = true,
+    int initialIndex = 0,
   }) async {
     final generation = ++_generation;
     _loading = true;
     error.value = null;
     queue.value = next;
     repeat.value = mode;
-    playingVerse.value = next.keyAt(0);
+    playingVerse.value = next.keyAt(initialIndex);
     buffering.value = true;
     rangePass.value = 1;
     rangeTarget.value = passTarget ?? (copies > 1 ? copies : null);
-    _lastIndex = 0;
+    wholeSurah.value = false;
+    _lastIndex = initialIndex;
     try {
       await _player.setLoopMode(switch (mode) {
         AudioRepeat.off => LoopMode.off,
@@ -496,7 +538,7 @@ class QuranAudioService {
       });
       // Berkas yang sudah diunduh dipakai lebih dulu agar bisa diputar tanpa
       // internet; sisanya tetap di-stream.
-      final reciter = SharedPreferencesService.getReciter();
+      final reciter = perAyatReciter();
       final folder = await AudioDownloadService().folderPath(reciter);
       List<AudioSource> sources([Uri Function(int, int)? remote]) => [
         for (var copy = 0; copy < copies; copy++)
@@ -515,16 +557,24 @@ class QuranAudioService {
       try {
         // Utama: cdn.islamic.network (atau berkas yang sudah diunduh).
         await _player
-            .setAudioSources(sources(), initialPosition: position)
+            .setAudioSources(
+              sources(),
+              initialIndex: initialIndex,
+              initialPosition: position,
+            )
             .timeout(_loadTimeout);
       } on Object {
         if (generation != _generation) return;
+        // equran.id & MP3Quran masih berstatus pending: cadangan ini hanya
+        // dipakai di build debug (keputusan 2026-10-03, audio_sources.dart).
+        if (!AudioSources.allowPending) rethrow;
         // Cadangan per ayat: equran.id.
         final qari = AudioRepository.equranQariFor(reciter);
         try {
           await _player
               .setAudioSources(
                 sources((s, a) => AudioRepository.equranAyah(qari, s, a)),
+                initialIndex: initialIndex,
                 initialPosition: position,
               )
               .timeout(_loadTimeout);
@@ -552,6 +602,7 @@ class QuranAudioService {
               'Diputar per surah dari '
               '${result.value.host.contains('equran') ? 'equran.id' : 'MP3Quran'}'
               '; penanda ayat tidak mengikuti bacaan.';
+          wholeSurah.value = true;
         }
       }
       if (generation != _generation) return;

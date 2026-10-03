@@ -1,0 +1,115 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><style>@font-face{font-family:'AmiriQuran';src:url(../../../../assets/fonts/AmiriQuran-Regular.ttf);}@font-face{font-family:'Jakarta';src:url(../../../../assets/fonts/PlusJakartaSans-wght-Latin.ttf);font-weight:200 800;}@font-face{font-family:'Garamond';src:url(../../../../assets/fonts/EBGaramond-wght-Latin.ttf);font-weight:400 800;}:root{--bg:#F4F1EA;--surf:#FCF9F8;--surf2:#EAE6DC;--ink:#1B1C1C;--sec:#5F625D;--ter:#9A9D97;--hair:rgba(27,28,28,.08);--primary:#003527;--primaryText:#00513B;--primarySoft:#E0ECE5;--gold:#C9A13B;--goldText:#7A5A0E;--goldSoft:#FBF0CC;--goldBtn:#F4CF5D;--onGoldBtn:#1F1A08;--heroA:#0D5843;--heroB:#063B2D;--onHero:#FBF7EC;--onHeroSec:rgba(251,247,236,.78);--goldLine:#E2C36A;--teal:#1F6F78;--tealSoft:#DCEEEF;--sky1:#FCF9F8;--sky2:#E3EEF2;--glass:rgba(252,249,248,.42);--glassRim1:rgba(255,255,255,.75);--glassRim2:rgba(255,255,255,.18);--lens:rgba(224,236,229,.92);--shadow:0 10px 30px rgba(20,30,25,.14), 0 2px 6px rgba(20,30,25,.08);--cardShadow:0 1px 2px rgba(20,30,25,.05), 0 6px 18px rgba(20,30,25,.05);--statusInk:#1B1C1C;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Jakarta',sans-serif;word-spacing:.12em;-webkit-font-smoothing:antialiased}
+.phone{width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)}
+.phone.tall{height:auto;min-height:844px;padding-bottom:150px}
+.status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font-weight:700;font-size:15px;color:var(--statusInk)}
+.status .r{display:flex;gap:6px;align-items:center;font-size:12px}
+.status .bat{border:1.5px solid var(--statusInk);border-radius:5px;padding:0 4px;font-size:11px;line-height:15px}
+.ic{display:block;flex:none}
+.px{padding:0 20px}
+.row{display:flex;align-items:center}
+.circle{width:40px;height:40px;border-radius:50%;background:var(--surf);display:grid;place-items:center;color:var(--ink);box-shadow:var(--cardShadow);border:1px solid var(--hair)}
+.serif{font-family:'Garamond',serif}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+.tab{font-variant-numeric:tabular-nums}
+.mihrab{position:relative;flex:none}
+.mihrab svg{position:absolute;inset:0;width:100%;height:100%}
+.mh-ar{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:'AmiriQuran';color:var(--goldLine);direction:rtl;line-height:1.6}
+.mh-num{position:absolute;left:0;right:0;bottom:16%;text-align:center;color:var(--goldLine);font-weight:800;font-size:12px}
+.home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.85}
+/* ---- dock (tab bar + now playing), satu permukaan kaca ---- */
+.dock{position:absolute;left:12px;right:12px;bottom:26px;border-radius:32px;overflow:hidden;
+  background:var(--glass);backdrop-filter:blur(18px) saturate(1.7);-webkit-backdrop-filter:blur(18px) saturate(1.7);
+  box-shadow:var(--shadow)}
+.dock::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(170deg,var(--glassRim1),var(--glassRim2) 55%,var(--glassRim1));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.dock::after{content:'';position:absolute;left:0;right:0;top:0;height:55%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0))}
+.tabs{display:flex;height:64px;padding:4px;position:relative;z-index:1}
+.tabs .t{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink);font-size:11px;font-weight:600;border-radius:26px;position:relative}
+.tabs .t.on{color:var(--primaryText);font-weight:800;background:var(--lens);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 1px 3px rgba(0,0,0,.06)}
+.np{position:relative;z-index:1;display:flex;align-items:center;gap:12px;padding:10px 10px 6px 12px;height:62px}
+.np .meta{flex:1;min-width:0}
+.np .meta b{display:block;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np .meta span{display:block;font-size:12px;color:var(--sec);font-weight:600;margin-top:1px}
+.np .btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.np .btn.main{background:var(--primary);color:var(--surf)}
+.npTrack{position:relative;z-index:1;display:flex;gap:3px;padding:0 16px 2px}
+.npTrack i{flex:1;height:3px;border-radius:2px;background:var(--hair)}
+.npTrack i.done{background:var(--primaryText)}
+.npTrack i.cur{background:linear-gradient(90deg,var(--gold) var(--p),var(--hair) var(--p))}
+.npSep{position:relative;z-index:1;height:1px;margin:6px 14px 0;background:var(--hair)}
+
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:6px 20px 0}
+.hdr .d b{display:block;font-size:13px;font-weight:800}
+.hdr .d span{display:block;font-size:13px;color:var(--sec);font-weight:500;margin-top:1px}
+.greet{padding:14px 20px 0}
+.greet span{font-size:15px;color:var(--sec);font-weight:600}
+.greet h1{font-family:'Garamond';font-weight:500;font-size:34px;line-height:1.08;letter-spacing:-.3px}
+/* horizon salat */
+.hz{margin:16px 20px 0;border-radius:22px;padding:14px 16px 12px;background:linear-gradient(135deg,var(--sky1) 45%,var(--sky2));box-shadow:var(--cardShadow);border:1px solid var(--hair)}
+.hz .top{display:flex;justify-content:space-between;align-items:center}
+.hz .top b{font-size:15px;font-weight:800}
+.hz .top b em{font-style:normal;color:var(--sec);font-weight:600;font-size:13px;margin-right:6px}
+.pill{font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--primarySoft);color:var(--primaryText);white-space:nowrap}
+.trk{position:relative;height:16px;margin:14px 8px 6px}
+.trk .ln{position:absolute;left:0;right:0;top:7px;height:2px;background:var(--surf2);border-radius:2px}
+.trk .ln.past{right:auto;background:var(--primaryText)}
+.trk .n{position:absolute;top:3px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--surf);border:2px solid var(--ter)}
+.trk .n.past{background:var(--primaryText);border-color:var(--primaryText)}
+.trk .n.next{top:0;width:16px;height:16px;margin-left:-8px;border:3px solid var(--gold);background:var(--surf);box-shadow:0 0 0 4px var(--goldSoft)}
+.trk .now{position:absolute;top:2px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 3px var(--surf)}
+.lbls{display:flex;justify-content:space-between;margin:0 -6px}
+.lbls div{width:62px;text-align:center;font-size:11px;font-weight:700;color:var(--ink);line-height:1.3}
+.lbls div span{display:block;font-weight:600;color:var(--sec)}
+.lbls div.next{color:var(--ink);font-weight:800}
+.lbls div.next span{color:var(--goldText);font-weight:800}
+/* kartu langkah berikutnya */
+.ns{margin:14px 20px 0;border-radius:28px;padding:18px 18px 16px;color:var(--onHero);position:relative;overflow:hidden;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.08),rgba(255,255,255,0) 60%),linear-gradient(160deg,var(--heroA),var(--heroB));box-shadow:0 14px 30px rgba(6,59,45,.22)}
+.ns .pat{position:absolute;inset:0;opacity:.07}
+.ns .top{display:flex;justify-content:space-between;align-items:center;position:relative}
+.ns .top .eyebrow{color:var(--goldLine)}
+.ns .tm{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.12);color:var(--onHero)}
+.ns h2{font-family:'Garamond';font-weight:500;font-size:31px;line-height:1.1;margin-top:8px;position:relative}
+.ns p{font-size:14px;color:var(--onHeroSec);margin-top:4px;font-weight:500;position:relative}
+.steps{position:relative;margin:16px 6px 4px;height:14px}
+.steps .ln{position:absolute;left:0;right:0;top:6px;height:2px;background:rgba(255,255,255,.18)}
+.steps .n{position:absolute;top:2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--heroB);border:2px solid rgba(255,255,255,.4)}
+.steps .n.cur{top:-1px;width:16px;height:16px;margin-left:-8px;border:3px solid var(--goldLine);background:var(--heroA);box-shadow:0 0 0 4px rgba(217,182,83,.18)}
+.slb{display:flex;justify-content:space-between;margin:0 -14px;position:relative}
+.slb span{width:58px;text-align:center;font-size:10.5px;font-weight:700;color:var(--onHeroSec)}
+.slb span.cur{color:var(--onHero)}
+.cta{margin-top:16px;height:52px;border-radius:26px;background:var(--goldBtn);color:var(--onGoldBtn);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:16px;position:relative}
+.alt{margin-top:12px;position:relative;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10)}
+.alt .a{display:flex;align-items:center;gap:12px;padding:9px 12px;min-height:56px}
+.alt .a+.a{border-top:1px solid rgba(255,255,255,.10)}
+.alt .a .tx{flex:1;min-width:0}
+.alt .a small{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;color:var(--goldLine);text-transform:uppercase}
+.alt .a b{display:block;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alt .a > .ic:last-child{color:var(--onHeroSec)}
+.alt .ico{width:32px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.10);color:var(--goldLine);flex:none}
+/* hari ini */
+.sect{padding:22px 20px 8px;font-size:12px;font-weight:800;letter-spacing:1.4px;color:var(--sec);display:flex;justify-content:space-between}
+.sect a{letter-spacing:0;font-weight:700;color:var(--primaryText)}
+.today{margin:0 20px;border-radius:24px;background:var(--surf);padding:16px;box-shadow:var(--cardShadow);border:1px solid var(--hair)}
+.today .grid{display:flex;gap:16px;align-items:center}
+.lg{flex:1;display:flex;flex-direction:column;gap:10px}
+.lg .r{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.lg .r i{width:10px;height:10px;border-radius:50%;flex:none}
+.lg .r span{flex:1}
+.lg .r b{font-weight:800;font-variant-numeric:tabular-nums}
+.lg .r b small{color:var(--sec);font-weight:600;font-size:12px}
+.hint{margin-top:12px;font-size:13px;color:var(--sec);font-weight:600;padding:10px 12px;border-radius:14px;background:var(--bg)}
+.week{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--hair)}
+.week .st{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px;color:var(--goldText);white-space:nowrap}
+.week .ds{flex:1;display:flex;justify-content:space-between}
+.week .ds div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--sec)}
+.week .ds i{width:14px;height:14px;border-radius:50%;background:var(--surf2)}
+.week .ds i.on{background:var(--gold)}
+.week .ds i.td{background:transparent;border:2px dashed var(--gold)}
+.week .ds div.t{color:var(--ink)}
+</style></head><body><div class="phone tall"><div class="status"><span>10:35</span><span class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><span class="bat">90</span></span></div><div class="hdr"><div class="d"><b>Jumat, 2 Oktober</b><span>21 Rabiulakhir 1448 H</span></div><div class="row" style="gap:10px"><div class="circle"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></div><div class="circle"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-4-5.5 4z"/></svg></div></div></div><div class="greet"><span>Assalamu'alaikum,</span><h1>Zainul</h1></div><div class="hz"><div class="top"><b><em>Berikutnya</em>Dzuhur 11:42</b><span class="pill">1 j 7 m lagi</span></div><div class="trk"><div class="ln"></div><div class="ln past" style="width:21.2%"></div><div class="n past" style="left:0%"></div><div class="n next" style="left:25%"></div><div class="n " style="left:50%"></div><div class="n " style="left:75%"></div><div class="n " style="left:100%"></div><div class="now" style="left:21.2%"></div></div><div class="lbls"><div class="">Subuh<span>04:22</span></div><div class="next">Dzuhur<span>11:42</span></div><div class="">Ashar<span>14:50</span></div><div class="">Maghrib<span>17:49</span></div><div class="">Isya<span>18:58</span></div></div></div><div class="ns"><svg class="pat" width="100%" height="100%"><defs><pattern id="st" width="46" height="46" patternUnits="userSpaceOnUse"><path d="M23 4l5.5 13.5L42 23l-13.5 5.5L23 42l-5.5-13.5L4 23l13.5-5.5z" fill="none" stroke="#fff" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#st)"/></svg><div class="top"><span class="eyebrow">Langkah berikutnya</span><span class="tm">±10 mnt</span></div><h2>Sesi hari ini</h2><p>Langkah 1 dari 5 · Pemanasan, ulang 4 soal</p><div class="steps"><div class="ln"></div><div class="n cur" style="left:0%"></div><div class="n" style="left:25%"></div><div class="n" style="left:50%"></div><div class="n" style="left:75%"></div><div class="n" style="left:100%"></div></div><div class="slb"><span class="cur">Ulang</span><span class="">Baru</span><span class="">Ayat</span><span class="">Tirukan</span><span class="">Selesai</span></div><div class="cta"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg> Mulai sesi</div><div class="alt"><div class="a"><div class="mihrab" style="width:34px;height:42px"><svg viewBox="0 0 100 130" preserveAspectRatio="none"><path d="M8 130 Q0 130 0 122 L0 52 C0 27 28 11 50 0 C72 11 100 27 100 52 L100 122 Q100 130 92 130 Z" fill="var(--heroA)"/></svg><div class="mh-ar" style="font-size:9px">الفاتحة</div></div><div class="tx"><small>Baca</small><b>Al-Fatihah · ayat 3</b></div><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div><div class="a"><div class="ico"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21 8l-9 4.5L3 8z"/><path d="m3 12 9 4.5 9-4.5M3 16l9 4.5 9-4.5"/></svg></div><div class="tx"><small>Murajaah</small><b>An-Naba' 1 · 1 ayat</b></div><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div></div></div><div class="sect">HARI INI <a>Progres</a></div><div class="today"><div class="grid"><svg width="108" height="108" viewBox="0 0 108 108" style="flex:none"><circle cx="54.0" cy="54.0" r="49.0" fill="none" stroke="var(--surf2)" stroke-width="10"/><circle cx="54.0" cy="54.0" r="35.0" fill="none" stroke="var(--surf2)" stroke-width="10"/><circle cx="54.0" cy="54.0" r="21.0" fill="none" stroke="var(--surf2)" stroke-width="10"/></svg><div class="lg"><div class="r"><i style="background:var(--primaryText)"></i><span>Baca</span><b>0<small>/5 mnt</small></b></div><div class="r"><i style="background:var(--gold)"></i><span>Sesi</span><b>0<small>/5 langkah</small></b></div><div class="r"><i style="background:var(--teal)"></i><span>Murajaah</span><b>0<small>/1 ayat</small></b></div></div></div><div class="hint">Hari pertama. Lima menit membaca sudah cukup untuk mulai.</div><div class="week"><div class="st"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.8 3.4 4.8 5.6 4.8 10.2a4.8 4.8 0 0 1-9.6 0c0-2 .9-3.3 1.9-4.3.1 1.8.9 2.8 1.9 2.8 0-2.9-.3-5.6 1-8.7z"/></svg> 0 hari</div><div class="ds"><div class=""><i class=""></i>S</div><div class=""><i class=""></i>S</div><div class=""><i class=""></i>R</div><div class=""><i class=""></i>K</div><div class=""><i class="td"></i>J</div><div class=""><i class=""></i>S</div><div class=""><i class=""></i>M</div></div></div></div></div></body></html>

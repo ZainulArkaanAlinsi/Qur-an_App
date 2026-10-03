@@ -1,76 +1,74 @@
-# PRD — Ruang Tilawah → Quran Learning Super App
+# PRD — MyQuran: rilis Google Play + v6
 
-Status: draf Fase 0 · 22 September 2026 · pemilik: Zainul Arkaan
+Status: aktif · 2 Oktober 2026 · pemilik: Zainul Arkaan
+PRD lama (Fase 0, 22 September 2026) dipindah ke `docs/arsip/PRD-2026-09-22.md`.
 
-## 1. Ringkasan
+## 1. Masalah
 
-Ruang Tilawah (v1.1.2, rilis APK gratis di GitHub Releases) dikembangkan menjadi
-pusat **membaca, mendengar, memahami, belajar tajwid, belajar membaca, dan
-menghafal** Al-Qur'an untuk pengguna Indonesia, anak-anak sampai dewasa.
-Aplikasi dikembangkan dari kode yang sudah ada, bukan dibangun ulang.
+Orang Indonesia yang ingin dekat dengan Al-Qur'an biasanya memakai beberapa aplikasi sekaligus: satu untuk membaca, satu untuk murottal, satu untuk jadwal salat, dan belajar tajwid di tempat lain. Kebanyakan aplikasi itu penuh iklan, menampilkan banyak tombol yang sama pentingnya, dan tidak membantu membangun kebiasaan harian.
 
-Urutan prioritas: **integritas teks Al-Qur'an** → kemudahan membaca → sumber
-ilmu yang dapat diverifikasi → offline → privasi → performa.
+MyQuran menjawabnya dengan satu aplikasi gratis tanpa iklan yang **memberi tahu satu langkah berikutnya** setiap hari, dengan teks Al-Qur'an yang dijaga verbatim.
 
 ## 2. Pengguna
 
-| Persona | Kebutuhan utama |
-|---|---|
-| Pembaca dewasa | Lanjut baca cepat, mushaf halaman, murottal, target harian |
-| Pelajar tajwid | Warna tajwid bersumber, chip hukum per ayat, materi terstruktur |
-| Anak (didampingi orang tua) | Sesi 5–10 menit, audio guru, reward tanpa dark pattern |
-| Penghafal | Blok hafalan, repeat rentang, murajaah terjadwal |
-| Guru/TPQ (fase 4) | Kelas, tugas, progres santri |
+| Persona | Titik mulai onboarding | Yang paling dibutuhkan |
+| --- | --- | --- |
+| Pemula (belum bisa membaca huruf Arab) | `nol` | Sesi 10 menit yang jelas urutannya, bunyi huruf, tidak dihakimi |
+| Pembaca yang ingin lancar tajwid | `tajwid` | Warna tajwid, materi bertahap, murottal per ayat untuk ditirukan |
+| Penghafal | `hafalan` | Murajaah terjadwal, ulang ayat/rentang, rekam suara sendiri |
+| Semua | — | Lanjut baca cepat, jadwal salat akurat untuk lokasinya, tanpa iklan |
 
-## 3. Yang sudah ada (v1.1.2)
+## 3. Lingkup
 
-Reader card per ayat (Tanzil Uthmani + Amiri, terjemahan Tanzil `id.indonesian`
-2010), murottal Alafasy per ayat dengan antrean/repeat/background, bookmark +
-koleksi, lanjut baca, pencarian, tab Juz, target menit + streak lembut, rencana
-khatam, jadwal salat, kiblat, berita Islam, pengingat, sync cloud opsional
-(Google + Firestore). Navigasi: Beranda, Qur'an, Progres, Pengaturan.
+### Masuk rilis Play pertama (1.10.x, sekarang)
+Fitur 1.10.0 apa adanya: baca (kartu ayat + tajwid), terjemahan, murottal per ayat, sesi hari ini (v5), belajar tahap 1–5, hafalan & murajaah, salat & kiblat, pengingat, sinkron opsional.
 
-## 4. Lingkup per fase
+### Masuk update selama closed testing (1.11 = v6)
+Beranda v6, dock, Murottal v6, pengaturan waktu salat, pemilih qari v6, liquid glass v4.
 
-Detail dan kriteria lulus ada di `docs/ROADMAP.md`.
+### Tidak masuk (dikunci sampai ada izin/peninjau)
+Mode mushaf 1/2 halaman (izin KFGQPC + QUL), materi tajwid tahap 6–16 (2 peninjau bersanad), qari dari sumber yang belum berizin, rekaman bunyi huruf (menunggu guru).
 
-- **Fase 0**: dokumen, keputusan edisi/sumber, spike parser tajwid ✅, spike
-  font QCF V2/V4, prototipe tiga layout, akses API resmi.
-- **Fase 1 (MVP pembaca)**: tiga mode baca (Card Belajar, Mushaf 1 halaman,
-  Mushaf 2 halaman), banyak qari, setting font/tema, download teks & audio.
-- **Fase 2 (belajar)**: Akademi Tajwid, tajwid interaktif per ayat, kurikulum
-  *Belajar Membaca Al-Qur'an* orisinal, mode anak/dewasa, hub Juz Amma.
-- **Fase 3 (hafalan)**: target, blok, repeat, spaced repetition, rekam lokal.
-- **Fase 4 (pemahaman & institusi)**: tafsir terkurasi, tema ayat, dashboard
-  guru, admin editorial.
+### Bukan tujuan
+Iklan, langganan, pembelian dalam aplikasi; skor bacaan otomatis/AI; tafsir buatan AI; forum; fadhilah/amalan tanpa dalil shahih.
 
-## 5. Navigasi target
+## 4. Fitur & kriteria selesai
 
-Lima tab: **Beranda, Baca, Belajar, Hafalan, Profil**. Dengar, Juz Amma,
-Tajwid, Belajar Membaca, Tafsir, Pencarian menjadi shortcut.
+Prioritas: **Must** = wajib sebelum minta akses Production · **Should** = di 1.11 bila sempat · **Could** = nanti.
 
-**Keputusan yang perlu disetujui pemilik:** fitur yang sudah ada dan tidak
-disebut di master prompt, yaitu jadwal salat, kiblat, berita Islam, dan
-rencana khatam. Usulan: jadwal salat dan kiblat menjadi shortcut di Beranda,
-Progres + Rencana khatam masuk ke Profil, dan berita tetap sebagai shortcut
-(atau dihapus). Tab tidak diubah sebelum ada persetujuan.
+| # | Fitur | Prio | Kriteria selesai (semua harus benar) |
+| --- | --- | --- | --- |
+| R1 | Build Play siap tes tertutup | Must | `flutter build appbundle --release` sukses dengan kunci upload; targetSdk 36; lolos cek 16 KB page size di App bundle explorer; tidak ada izin `REQUEST_INSTALL_PACKAGES` di AAB |
+| R2 | Kebijakan privasi & Data safety sesuai kode | Must | Setiap pengumpulan data di kode (Firebase Auth, Firestore, AlAdhan, audio) tercantum; tidak ada klaim yang tidak ada di kode; URL hidup |
+| R3 | Hapus akun di aplikasi + web | Must | Saya → kartu profil → Hapus akun & data cloud bekerja; ada URL web untuk permintaan hapus (Play mewajibkan untuk app yang punya login) |
+| R4 | Tidak ada tombol mati / teks internal | Must | Tidak ada tombol non-aktif tanpa alasan terlihat; tidak ada kalimat developer di UI (cek: "belum dicatat", "TODO", "debug") |
+| V1 | Beranda v6 | Must (1.11) | `docs/design/v6/screens/19-beranda.md` "Selesai jika" + tes `NextStepEngine` |
+| V2 | Dock (tab + sedang diputar) | Must (1.11) | `21-dock.md` "Selesai jika" |
+| V3 | Murottal ikuti bacaan | Must (1.11) | `20-murottal.md` "Selesai jika" |
+| V4 | Liquid glass v4 | Must (1.11) | `docs/design/v4-liquid-glass/AUDIT_RUBRIK.md` ≥ 18/20, G6–G8 = 2 (G8 boleh 1 bila belum diukur di HP, ditulis jujur) |
+| V5 | Pengaturan waktu salat (lokasi otomatis, metode, Asar, koreksi menit) | Should | `22-pengaturan-salat.md` "Selesai jika" + privasi diperbarui |
+| V6 | Pemilih qari v6 + registri izin sumber | Should | `23-qari.md` "Selesai jika"; qari `pending` tidak pernah muncul di rilis |
+| V7 | Gambar Play Store dibuat ulang dari UI v6 | Should | `tool/store/store_assets_test.dart` dijalankan ulang; 7 bahasa; hanya fitur yang ada di rilis |
+| C1 | Qari populer tambahan (Yasser Al-Dosari, dll.) | Could | Setelah bukti izin disimpan (`23-qari.md`) |
+| C2 | Gutter 20 & Lintasan di semua layar | Could | Migrasi layar per layar dengan golden |
 
-## 6. Non-goal
+## 5. Alur utama
 
-- AI generatif untuk tafsir, tema ayat, asbabun nuzul, fatwa, deteksi tajwid,
-  atau skor bacaan otomatis.
-- Menyalin halaman/nama produk Iqro tanpa izin tertulis.
-- Forum/komunitas, iklan di layar Al-Qur'an, paywall untuk ayat.
-- Klaim "sama persis dengan mushaf cetak" sebelum verifikasi visual + izin aset.
+1. **Hari pertama pemula**: buka → onboarding pilih `nol` → Beranda: horizon salat, kartu "Sesi hari ini" → Mulai sesi → 5 langkah → selesai → Beranda: kartu berubah ke bacaan/murajaah, cincin Sesi penuh, istiqamah 1 hari.
+2. **Penghafal pagi hari**: buka → kartu utama "Murajaah An-Naba' 1–10" → Mulai → kembali → kartu berubah ke sesi/bacaan.
+3. **Dengar sambil mengikuti**: Beranda → pilihan "Baca Al-Fatihah" → ikon dengar di pembaca → dock memanjang → ketuk dock → Murottal: ayat aktif tersorot dan bergulir sendiri → atur ulang 3× → geser dock ke bawah untuk berhenti → Urungkan.
+4. **Pindah kota**: Salat → Ganti → Otomatis → Pakai lokasi sekarang → jadwal & pengingat diperbarui.
 
-## 7. Model bisnis
+## 6. Metrik (lokal, tanpa pelacak)
 
-Membaca, terjemahan dasar, dan tajwid dasar tetap gratis. Catatan: terjemahan
-yang dibundel saat ini berlisensi **non-komersial** (Tanzil). Monetisasi apa pun
-(fitur institusi, sync keluarga, dll.) mewajibkan izin terjemahan terlebih dulu
-— lihat `docs/DATA_SOURCES_AND_LICENSES.md`.
+Crash-free (Play Console vitals), waktu buka pembaca < 1 dtk luring, 0 laporan teks ayat salah, rating Play ≥ 4.5 dari penguji tertutup.
 
-## 8. Metrik keberhasilan (lokal, tanpa tracker)
+## 7. Pertanyaan terbuka
 
-Crash-free session, waktu buka reader < 1 detik offline, 0 laporan teks salah,
-persentase ayat tajwid yang tampil berwarna vs fallback polos.
+| # | Pertanyaan | Pemilik jawaban |
+| --- | --- | --- |
+| Q1 | ~~Kunci penandatanganan: pakai kunci rilis yang ada atau kunci Google?~~ Terjawab 3 Oktober 2026: kunci Google (lihat `docs/decisions.md`) | Zainul, saat membuat app di Play Console |
+| Q2 | Kategori Play: Education atau Books & Reference? | Zainul |
+| Q3 | Siapa 12+ penguji tertutup (email Google mereka)? | Zainul |
+| Q4 | APK GitHub tetap dirilis? Bila ya, daftarkan package di Play Console → Verifikasi developer Android (penegakan di Indonesia sejak 30 Sep 2026) | Zainul |
+| Q5 | Urutan qari "Populer di Indonesia" disetujui? | Zainul |

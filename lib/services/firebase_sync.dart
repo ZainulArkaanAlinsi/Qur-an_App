@@ -307,6 +307,11 @@ class AccountService with WidgetsBindingObserver {
     } on FirebaseAuthException catch (error) {
       debugPrint('Firebase Auth gagal: ${error.code}');
       return 'Masuk gagal (${error.code}).';
+    } on Object catch (error) {
+      // Galat lain (plugin, jaringan) juga harus terlihat, bukan hanya
+      // jendela Google yang tertutup tanpa penjelasan.
+      debugPrint('Masuk gagal: $error');
+      return 'Masuk dengan Google gagal. Coba lagi.';
     } finally {
       busy.value = false;
     }

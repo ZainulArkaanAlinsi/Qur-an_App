@@ -1,10 +1,14 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 
-/// A deliberately small, clipped blur surface for navigation and compact cards.
-/// Large scrolling content uses tonal containers instead to protect scroll FPS.
+/// Pembungkus lama; semua kaca sekarang lewat [LiquidGlass]
+/// (docs/design/v4-liquid-glass/LIQUID_GLASS.md §3).
+///
+/// `tint` dan `borderColor` diabaikan: warna kaca ditentukan `GlassTokens`
+/// per palet supaya kontras teks di atasnya tetap terjamin (§5).
+@Deprecated('Pakai LiquidGlass dari lib/app/glass/liquid_glass.dart.')
 class GlassSurface extends StatelessWidget {
+  @Deprecated('Pakai LiquidGlass dari lib/app/glass/liquid_glass.dart.')
   const GlassSurface({
     super.key,
     required this.child,
@@ -19,46 +23,14 @@ class GlassSurface extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final BorderRadius borderRadius;
   final Color? tint;
-
-  /// Garis tepi; bawaannya `outlineVariant` tema.
   final Color? borderColor;
-
-  /// Matikan bayangan bawaan bila pemanggil sudah memasang bayangannya sendiri
-  /// di luar klip (bayangan di dalam ClipRRect ikut terpotong).
   final bool shadowless;
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    // Ikut palet aktif: warna tetap membuat panel ini hilang di palet sepia
-    // dan kontras tinggi.
-    final color = tint ?? scheme.surfaceContainerLowest.withValues(alpha: .86);
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: borderRadius,
-            border: Border.all(color: borderColor ?? scheme.outlineVariant),
-            boxShadow: shadowless
-                ? null
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: Theme.of(context).brightness == Brightness.dark
-                            ? .16
-                            : .06,
-                      ),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-          ),
-          child: Padding(padding: padding ?? EdgeInsets.zero, child: child),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => LiquidGlass(
+    borderRadius: borderRadius,
+    padding: padding,
+    shadow: !shadowless,
+    child: child,
+  );
 }

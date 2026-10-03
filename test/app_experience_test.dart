@@ -141,7 +141,8 @@ void main() {
       expect(find.text('Mahir'), findsOneWidget);
       // Tahap pertama yang belum selesai menjadi kartu aktif.
       expect(find.text('Mulai dari mana'), findsOneWidget);
-      expect(find.text('Mulai'), findsOneWidget);
+      // Kartu Sesi hari ini (pindah dari Beranda, v6) + kartu tahap aktif.
+      expect(find.text('Mulai'), findsNWidgets(2));
       // Layar terpisah yang dulu kosong sudah tidak ada.
       expect(find.text('Akademi Tajwid'), findsNothing);
       // Juz Amma ada di tab Hafalan, bukan di sini.

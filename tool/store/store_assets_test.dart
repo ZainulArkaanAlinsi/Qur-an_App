@@ -1,10 +1,10 @@
 // Generator gambar Play Store: 7 screenshot (1080×1920) dan feature graphic
 // (1024×500) untuk tiap bahasa listing. Bukan tes aplikasi; jalankan manual:
 //
-//   flutter test --dart-define=STORE_SHOTS=true test/golden/screen_01_beranda_test.dart \
-//     test/golden/screen_05_kartu_test.dart test/golden/screen_08_belajar_test.dart \
-//     test/golden/screen_10_hafalan_test.dart test/golden/screen_14_salat_test.dart \
-//     test/golden/screen_17_onboarding_test.dart
+//   flutter test --dart-define=STORE_SHOTS=true test/golden/screen_19_beranda_test.dart \
+//     test/golden/screen_20_murottal_test.dart test/golden/screen_05_kartu_test.dart \
+//     test/golden/screen_08_belajar_test.dart test/golden/screen_10_hafalan_test.dart \
+//     test/golden/screen_14_salat_test.dart test/golden/screen_17_onboarding_test.dart
 //   flutter test tool/store/store_assets_test.dart
 //   python tool/store/to_jpeg.py
 //
@@ -22,15 +22,113 @@ import 'package:quran_app_2025/features/onboarding/presentation/brand_art.dart';
 import '../../test/golden/golden_harness.dart' show loadAppFonts, loadImages;
 
 /// Layar yang dipakai, urut tampil di Play Store. `dark` = latar gelap.
+/// v6 (1.11): Beranda & Murottal baru; kartu gelap diganti Murottal.
 const _shots = [
   ('17_onboarding_1_light', false),
   ('05_kartu_light', false),
-  ('01_beranda_light', false),
+  ('19_beranda_baru_light', false),
+  ('20_murottal_teks_light', false),
   ('08_belajar_light', false),
   ('10_hafalan_light', false),
   ('14_salat_light', false),
-  ('05_kartu_dark', true),
 ];
+
+/// Keterangan v6 per bahasa: (Beranda, Murottal, Salat). Hanya fitur yang
+/// ada di rilis 1.11; qari yang izinnya belum ada tidak disebut.
+const _v6Copy =
+    <String, ((String, String), (String, String), (String, String))>{
+      'id': (
+        (
+          'Satu langkah untuk hari ini',
+          'Salat berikutnya dan bacaan yang menunggu.',
+        ),
+        (
+          'Dengar sambil mengikuti ayat',
+          'Ayat yang dibaca qari tersorot dan ikut bergulir.',
+        ),
+        (
+          'Waktu salat & arah kiblat',
+          'Lokasi otomatis atau pilih kota, dengan pengingat.',
+        ),
+      ),
+      'en': (
+        ('One clear step for today', 'Your next prayer and what to read now.'),
+        (
+          'Listen and follow each verse',
+          'The verse being recited is highlighted and scrolls along.',
+        ),
+        (
+          'Prayer times & Qibla',
+          'Automatic location or your city, with reminders.',
+        ),
+      ),
+      'ar': (
+        ('خطوة واحدة لليوم', 'الصلاة القادمة وما تقرؤه الآن.'),
+        ('استمع وتابع كل آية', 'الآية التي يتلوها القارئ مميّزة وتتحرك معه.'),
+        (
+          'مواقيت الصلاة واتجاه القبلة',
+          'موقع تلقائي أو اختر مدينتك، مع التنبيهات.',
+        ),
+      ),
+      'ms': (
+        (
+          'Satu langkah untuk hari ini',
+          'Solat seterusnya dan bacaan yang menanti.',
+        ),
+        (
+          'Dengar sambil mengikuti ayat',
+          'Ayat yang dibaca qari diserlahkan dan turut bergulir.',
+        ),
+        (
+          'Waktu solat & arah kiblat',
+          'Lokasi automatik atau pilih bandar, dengan peringatan.',
+        ),
+      ),
+      'tr': (
+        ('Bugün için tek bir adım', 'Sıradaki namaz ve şimdi okunacak bölüm.'),
+        (
+          'Dinlerken her ayeti takip et',
+          'Okunan ayet vurgulanır ve kendiliğinden kayar.',
+        ),
+        (
+          'Namaz vakitleri ve kıble',
+          'Otomatik konum veya şehir seçimi, hatırlatıcılarla.',
+        ),
+      ),
+      'ur': (
+        ('آج کے لیے ایک قدم', 'اگلی نماز اور ابھی پڑھنے کا حصہ۔'),
+        (
+          'سنیں اور ہر آیت کے ساتھ چلیں',
+          'قاری کی پڑھی جانے والی آیت نمایاں ہو کر ساتھ چلتی ہے۔',
+        ),
+        (
+          'نماز کے اوقات اور قبلہ',
+          'خودکار مقام یا اپنا شہر، یاد دہانی کے ساتھ۔',
+        ),
+      ),
+      'fr': (
+        (
+          "Une étape claire pour aujourd'hui",
+          'La prochaine prière et la lecture du moment.',
+        ),
+        (
+          'Écoutez en suivant chaque verset',
+          'Le verset récité est surligné et défile avec la voix.',
+        ),
+        (
+          'Horaires de prière et qibla',
+          'Position automatique ou ville au choix, avec rappels.',
+        ),
+      ),
+    };
+
+/// Keterangan 7 layar [_shots]: onboarding & kartu dari [_copy], lalu
+/// Beranda & Murottal v6, Belajar & Hafalan dari [_copy], lalu Salat v6.
+List<(String, String)> _captions(String lang) {
+  final old = _copy[lang]!.$1;
+  final (home, murottal, prayer) = _v6Copy[lang]!;
+  return [old[0], old[1], home, murottal, old[3], old[4], prayer];
+}
 
 /// Keterangan per bahasa: [judul, anak judul] untuk tiap layar di [_shots],
 /// lalu tagline dan kalimat feature graphic.
@@ -433,7 +531,7 @@ void main() {
     testWidgets('store assets · $lang', (tester) async {
       for (var i = 0; i < _shots.length; i++) {
         final (name, dark) = _shots[i];
-        final (title, subtitle) = copy.$1[i];
+        final (title, subtitle) = _captions(lang)[i];
         await _pump(
           tester,
           _Screenshot(

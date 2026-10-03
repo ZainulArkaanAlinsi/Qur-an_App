@@ -4,7 +4,6 @@ import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/juz_repository.dart';
 import 'package:quran_app_2025/data/page_repository.dart';
 import 'package:quran_app_2025/data/sura_names_repository.dart';
-import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
 import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/features/session/data/session_store.dart';
@@ -12,16 +11,35 @@ import 'package:quran_app_2025/features/session/domain/session_plan.dart';
 import 'package:quran_app_2025/models/memorization_status.dart';
 import 'package:quran_app_2025/screens/home_screen.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
+import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final _now = DateTime(2026, 9, 24, 9, 20);
+/// Beranda v6 (docs/design/v6/screens/19-beranda.md): perilaku, bukan
+/// piksel (piksel ada di golden 19_beranda_*).
+final _now = DateTime(2026, 10, 2, 10, 35);
+
+final _day = PrayerDay(
+  gregorianDate: DateTime(2026, 10, 2),
+  hijriDate: '21 Rabīʿ al-thānī 1448',
+  hijriMonth: 'Rabīʿ al-thānī',
+  hijriDay: 21,
+  hijriMonthNumber: 4,
+  hijriYear: 1448,
+  prayers: const {
+    'Subuh': '04:22',
+    'Dzuhur': '11:42',
+    'Ashar': '14:50',
+    'Maghrib': '17:49',
+    'Isya': '18:58',
+  },
+);
 
 Future<void> _pumpHome(
   WidgetTester tester, {
   VoidCallback? onOpenLearn,
   VoidCallback? onOpenHafalan,
-  Future<PrayerDay?> Function()? prayer,
+  PrayerDay? prayer,
 }) async {
   await tester.binding.setSurfaceSize(const Size(400, 2000));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -34,7 +52,7 @@ Future<void> _pumpHome(
           onOpenLearn: onOpenLearn ?? () {},
           onOpenHafalan: onOpenHafalan,
           // Luring kecuali tes memberi jadwal.
-          prayerLoader: prayer ?? () async => null,
+          prayerLoader: () async => prayer,
           now: () => _now,
         ),
       ),
@@ -46,6 +64,8 @@ Future<void> _pumpHome(
     );
     await tester.pump();
   }
+  // Pergantian isi kartu memakai AnimatedSwitcher 260 ms.
+  await tester.pump(const Duration(milliseconds: 400));
 }
 
 Future<void> _prefs(Map<String, Object> values) async {
@@ -53,9 +73,26 @@ Future<void> _prefs(Map<String, Object> values) async {
   await SharedPreferencesService.init();
 }
 
+Future<void> _memorizeDue() async {
+  await SharedPreferencesService.setMemorizationStatus(
+    78,
+    MemorizationStatus.learning,
+  );
+  for (var ayah = 1; ayah <= 10; ayah++) {
+    await SharedPreferencesService.setAyahMemorization(
+      78,
+      ayah,
+      AyahMemorization(
+        surah: 78,
+        ayah: ayah,
+        interval: 3,
+        dueOn: DateTime(2026, 10, 2),
+      ),
+    );
+  }
+}
+
 void main() {
-  // rootBundle menyimpan future hasil muat aset; buat di waktu nyata supaya
-  // setiap tes menerimanya.
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     await JuzRepository.load();
@@ -64,33 +101,20 @@ void main() {
     await CurriculumRepository.load();
   });
 
-  testWidgets('menampilkan posisi baca dari perangkat, bukan contoh', (
-    tester,
-  ) async {
-    await tester.runAsync(
-      () => _prefs({'last_read_surah': 36, 'last_read_verse_36': 41}),
-    );
-    await _pumpHome(tester);
-
-    expect(find.text('LANJUTKAN MEMBACA'), findsOneWidget);
-    expect(find.text(surahCatalog[35].displayName), findsOneWidget);
-    expect(find.textContaining('Juz 23'), findsOneWidget);
-    expect(find.textContaining('Ayat 41'), findsOneWidget);
-    expect(find.text('Lanjutkan'), findsOneWidget);
-  });
-
-  testWidgets('pengguna baru diajak mulai, bukan "lanjutkan"', (tester) async {
+  testWidgets('pengguna baru: satu langkah "Sesi hari ini", bukan tiga '
+      '"Lanjutkan"', (tester) async {
     await tester.runAsync(() => _prefs({}));
     await _pumpHome(tester);
-
-    expect(find.text('MULAI MEMBACA'), findsOneWidget);
-    expect(find.text(surahCatalog.first.displayName), findsOneWidget);
-    // "Mulai" di kartu hero dan di kartu Sesi hari ini.
-    expect(find.text('Mulai'), findsNWidgets(2));
+    expect(find.text('LANGKAH BERIKUTNYA'), findsOneWidget);
+    expect(find.text('Sesi hari ini'), findsOneWidget);
+    expect(find.text('Mulai sesi'), findsOneWidget);
     expect(find.text('Lanjutkan'), findsNothing);
-    // Belum ada hafalan: ajakan memulai, tanpa pill jumlah ayat.
-    expect(find.text('Mulai hafalan'), findsOneWidget);
-    expect(find.textContaining(RegExp(r'^\d+ ayat$')), findsNothing);
+    expect(
+      find.text('Hari pertama. Lima menit membaca sudah cukup untuk mulai.'),
+      findsOneWidget,
+    );
+    // Belum pernah menghafal: cincin Murajaah tidak ditampilkan.
+    expect(find.text('Murajaah'), findsNothing);
   });
 
   testWidgets('luring: jujur soal jadwal salat, tanpa jam atau Hijriah palsu', (
@@ -98,167 +122,65 @@ void main() {
   ) async {
     await tester.runAsync(() => _prefs({}));
     await _pumpHome(tester);
-
-    expect(find.text('Jadwal salat butuh koneksi internet.'), findsOneWidget);
-    expect(find.textContaining(RegExp(r'\d{4} H$')), findsNothing);
-    expect(find.textContaining('dalam '), findsNothing);
+    expect(find.text('Jadwal salat belum dimuat · Coba lagi'), findsOneWidget);
+    expect(find.textContaining('Rabiulakhir'), findsNothing);
+    expect(find.textContaining('Dzuhur'), findsNothing);
   });
 
-  testWidgets('jadwal salat: salat berikutnya dan hitung mundur', (
+  testWidgets(
+    'jadwal salat: horizon dengan salat berikutnya dan hitung mundur',
+    (tester) async {
+      await tester.runAsync(() => _prefs({}));
+      await _pumpHome(tester, prayer: _day);
+      expect(find.text('21 Rabiulakhir 1448 H'), findsOneWidget);
+      expect(
+        find.text('Berikutnya Dzuhur 11:42', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.text('1 j 7 m lagi'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(
+          'Salat berikutnya Dzuhur, pukul 11.42, 1 jam 7 menit lagi',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('titik mulai hafalan + murajaah: kartu membuka tab Hafalan', (
     tester,
   ) async {
-    await tester.runAsync(() => _prefs({}));
-    await _pumpHome(
-      tester,
-      prayer: () async => PrayerDay(
-        gregorianDate: DateTime(2026, 9, 24),
-        hijriDate: '13 Rabīʿ al-thānī 1448',
-        hijriMonth: 'Rabīʿ al-thānī',
-        hijriDay: 13,
-        hijriMonthNumber: 4,
-        hijriYear: 1448,
-        prayers: const {
-          'Subuh': '04:24',
-          'Dzuhur': '11:45',
-          'Ashar': '14:54',
-          'Maghrib': '17:48',
-          'Isya': '18:57',
-        },
-      ),
-    );
-
-    // Bulan ditulis sekali, dalam bahasa Indonesia (dulu tampil dobel).
-    expect(find.text('13 Rabiulakhir 1448 H'), findsOneWidget);
-    expect(find.text('Dzuhur 11:45'), findsOneWidget);
-    expect(find.text('dalam 2 j 25 m'), findsOneWidget);
-  });
-
-  testWidgets('murajaah jatuh tempo: jumlah ayat dan membuka tab Hafalan', (
-    tester,
-  ) async {
-    var hafalan = 0;
     await tester.runAsync(() async {
       await _prefs({});
-      await SharedPreferencesService.setMemorizationStatus(
-        78,
-        MemorizationStatus.learning,
-      );
-      for (var ayah = 1; ayah <= 10; ayah++) {
-        await SharedPreferencesService.setAyahMemorization(
-          78,
-          ayah,
-          AyahMemorization(
-            surah: 78,
-            ayah: ayah,
-            interval: 3,
-            // Kemarin terlewat: tetap dihitung jatuh tempo.
-            dueOn: DateTime(2026, 9, 23),
-          ),
-        );
-      }
+      await SharedPreferencesService.setStartPoint('hafalan');
+      await _memorizeDue();
     });
+    var hafalan = 0;
     await _pumpHome(tester, onOpenHafalan: () => hafalan++);
-
-    expect(find.text('Murajaah hari ini'), findsOneWidget);
-    expect(
-      find.text('${surahCatalog[77].displayName} 1–10 · jatuh tempo'),
-      findsOneWidget,
-    );
     expect(find.text('10 ayat'), findsOneWidget);
-
-    await tester.tap(find.text('Murajaah hari ini'));
+    await tester.tap(find.text('Mulai murajaah'));
     await tester.pump();
     expect(hafalan, 1);
   });
 
-  testWidgets('baris belajar membuka tab Belajar', (tester) async {
+  testWidgets('sesi selesai: bacaan jadi langkah utama, "Sesi besok" ke '
+      'tab Belajar', (tester) async {
+    await tester.runAsync(() async {
+      await _prefs({'last_read_surah': 18, 'last_read_verse_18': 23});
+      await SessionStore.app!.saveDay(
+        DailySession(
+          date: ReadingProgressService.localDate(_now),
+          step: SessionStep.done,
+          completed: true,
+        ),
+      );
+    });
     var learn = 0;
-    await tester.runAsync(() => _prefs({}));
     await _pumpHome(tester, onOpenLearn: () => learn++);
-
-    await tester.tap(find.text('Lanjutkan belajar'));
+    expect(find.text('Lanjut membaca'), findsOneWidget);
+    expect(find.text('SESI BESOK'), findsOneWidget);
+    await tester.tap(find.text('SESI BESOK'));
     await tester.pump();
     expect(learn, 1);
-  });
-
-  test('Hijriah Indonesia kembali ke teks asli bila angkanya tidak ada', () {
-    final day = PrayerDay(
-      gregorianDate: DateTime(2026, 9, 24),
-      hijriDate: '13 Rabīʿ al-thānī 1448',
-      hijriMonth: 'Rabīʿ al-thānī',
-      prayers: const {},
-    );
-    expect(day.hijriIndonesian, '13 Rabīʿ al-thānī 1448');
-    expect(PrayerDay.hijriMonthsId, hasLength(12));
-    expect(PrayerDay.hijriMonthsId[8], 'Ramadan');
-  });
-
-  group('kartu Sesi hari ini (SESI_HARIAN.md §4)', () {
-    double top(WidgetTester tester, String text) =>
-        tester.getTopLeft(find.text(text)).dy;
-
-    testWidgets('titik mulai nol: paling atas, di atas kartu hero', (
-      tester,
-    ) async {
-      await tester.runAsync(() => _prefs({'belajar.titikMulai': 'nol'}));
-      await _pumpHome(tester);
-      expect(
-        top(tester, 'Sesi hari ini'),
-        lessThan(top(tester, 'MULAI MEMBACA')),
-      );
-    });
-
-    testWidgets('titik mulai hafalan: di bawah kartu Lanjutkan membaca', (
-      tester,
-    ) async {
-      await tester.runAsync(() => _prefs({'belajar.titikMulai': 'hafalan'}));
-      await _pumpHome(tester);
-      expect(
-        top(tester, 'Sesi hari ini'),
-        greaterThan(top(tester, 'MULAI MEMBACA')),
-      );
-    });
-
-    testWidgets('sesi setengah jalan: Lanjutkan dari langkahnya', (
-      tester,
-    ) async {
-      await tester.runAsync(() async {
-        await _prefs({});
-        await SessionStore(SharedPreferencesService.instance!).saveDay(
-          const DailySession(date: '2026-09-24', step: SessionStep.findInVerse),
-        );
-      });
-      await _pumpHome(tester);
-      expect(
-        find.text('Lanjut dari langkah 3: Temukan di ayat'),
-        findsOneWidget,
-      );
-      expect(find.text('Lanjutkan'), findsOneWidget);
-    });
-
-    testWidgets('sesi selesai: Selesai hari ini dan saran besok', (
-      tester,
-    ) async {
-      await tester.runAsync(() async {
-        await _prefs({});
-        await SessionStore(SharedPreferencesService.instance!).saveDay(
-          const DailySession(
-            date: '2026-09-24',
-            step: SessionStep.done,
-            completed: true,
-            tomorrow: 'Bentuk sambung',
-          ),
-        );
-      });
-      await _pumpHome(tester);
-      expect(
-        find.textContaining(
-          RegExp(r'^Selesai hari ini .* · besok: Bentuk sambung$'),
-          findRichText: true,
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Lanjutkan'), findsNothing);
-    });
   });
 }

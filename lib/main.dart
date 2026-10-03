@@ -6,7 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/app_entry.dart';
 import 'package:quran_app_2025/app/distribution.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/features/prayer/application/prayer_reminders.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
 import 'package:quran_app_2025/services/app_update_service.dart';
@@ -19,11 +22,12 @@ Future<void> main() async {
   await SharedPreferencesService.init();
   final controller = AppController();
   await controller.load();
+  final glass = GlassController.load();
   _registerFontLicenses();
   // Layanan lain disiapkan sambil splash animasi berjalan; splash menunggu
   // paling lama 2,5 detik lalu lanjut (docs/design/v3/DESIGN.md §4b).
   final ready = _startServices();
-  runApp(QuranApp(controller: controller, ready: ready));
+  runApp(QuranApp(controller: controller, ready: ready, glass: glass));
   // Build Play diperbarui lewat Play; build GitHub punya pengunduhnya sendiri.
   if (!isGithubBuild) unawaited(AppUpdateService.checkOnLaunch());
 }
@@ -49,6 +53,14 @@ Future<void> _startServices() async {
   } on Object catch (error) {
     debugPrint('Sinkronisasi cloud tidak aktif: $error');
   }
+  // Mode lokasi Otomatis: bila sudah pindah > 25 km, jadwal & pengingat
+  // ikut diperbarui. Tidak pernah meminta izin dan tidak menahan splash.
+  unawaited(
+    refreshPrayerLocationIfMoved().catchError((Object error) {
+      debugPrint('Lokasi salat tidak diperbarui: $error');
+      return false;
+    }),
+  );
 }
 
 /// Font yang dibundel berlisensi SIL OFL 1.1; teks lisensinya wajib ikut
@@ -70,9 +82,18 @@ void _registerFontLicenses() {
 }
 
 class QuranApp extends StatelessWidget {
-  const QuranApp({super.key, required this.controller, required this.ready});
+  const QuranApp({
+    super.key,
+    required this.controller,
+    required this.ready,
+    this.glass,
+  });
   final AppController controller;
   final Future<void> ready;
+
+  /// Pilihan "Efek kaca" dan tingkat dari pengawas frame. Tanpa ini, kaca
+  /// memakai bawaan (Otomatis, tingkat penuh).
+  final GlassController? glass;
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
@@ -86,8 +107,19 @@ class QuranApp extends StatelessWidget {
       // AppScope harus berada di atas Navigator, bukan di dalam `home`:
       // halaman yang dibuka lewat Navigator.push adalah route lain dan tidak
       // akan menemukannya bila dipasang di dalam home.
-      builder: (context, child) =>
-          AppScope(controller: controller, child: child ?? const SizedBox()),
+      builder: (context, child) {
+        final app = AppScope(
+          controller: controller,
+          child: child ?? const SizedBox(),
+        );
+        final glass = this.glass;
+        if (glass == null) return app;
+        // Pengawas frame menurunkan efek kaca bila HP terasa berat (§7).
+        return GlassScope(
+          controller: glass,
+          child: GlassGovernor(controller: glass, child: app),
+        );
+      },
       home: AppEntry(ready: ready),
     ),
   );

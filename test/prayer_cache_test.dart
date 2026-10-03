@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:quran_app_2025/features/prayer/domain/prayer_settings.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,8 +44,7 @@ void main() {
   });
 
   Future<PrayerDay> online(DateTime date) => PrayerService.fetch(
-    city: 'Jakarta',
-    country: 'Indonesia',
+    settings: PrayerSettings(city: 'Jakarta', country: 'Indonesia'),
     date: date,
     client: MockClient((_) async => _aladhan()),
   );
@@ -55,8 +55,7 @@ void main() {
   test('memakai method=20 dan menyimpan jadwal yang berhasil', () async {
     Uri? asked;
     final result = await PrayerService.fetch(
-      city: 'Jakarta',
-      country: 'Indonesia',
+      settings: PrayerSettings(city: 'Jakarta', country: 'Indonesia'),
       date: day,
       client: MockClient((request) async {
         asked = request.url;
@@ -71,8 +70,7 @@ void main() {
   test('luring: jadwal tersimpan untuk tanggal yang sama dipakai', () async {
     await online(day);
     final kept = await PrayerService.fetch(
-      city: ' jakarta ',
-      country: 'Indonesia',
+      settings: PrayerSettings(city: ' jakarta ', country: 'Indonesia'),
       date: day,
       client: offline(),
     );
@@ -85,8 +83,7 @@ void main() {
     await online(day);
     await expectLater(
       PrayerService.fetch(
-        city: 'Jakarta',
-        country: 'Indonesia',
+        settings: PrayerSettings(city: 'Jakarta', country: 'Indonesia'),
         date: day.add(const Duration(days: 1)),
         client: offline(),
       ),
@@ -98,8 +95,7 @@ void main() {
     await online(day);
     await expectLater(
       PrayerService.fetch(
-        city: 'Bandung',
-        country: 'Indonesia',
+        settings: PrayerSettings(city: 'Bandung', country: 'Indonesia'),
         date: day,
         client: offline(),
       ),
@@ -110,8 +106,7 @@ void main() {
   test('tanpa tanggal memakai tanggal hari ini menurut jam', () async {
     await online(day);
     final kept = await PrayerService.fetch(
-      city: 'Jakarta',
-      country: 'Indonesia',
+      settings: PrayerSettings(city: 'Jakarta', country: 'Indonesia'),
       clock: () => DateTime(2026, 9, 24, 21),
       client: offline(),
     );

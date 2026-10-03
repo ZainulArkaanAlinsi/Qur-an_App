@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/widgets/app_dock.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
@@ -8,6 +11,8 @@ import 'package:quran_app_2025/app/widgets/chip_palette.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/app/widgets/theme_preview.dart';
@@ -20,6 +25,7 @@ import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/features/prayer/presentation/prayer_settings_sheet.dart';
 import 'package:quran_app_2025/screens/prayer_screen.dart';
 import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/reciter_picker.dart';
@@ -36,9 +42,6 @@ import 'package:quran_app_2025/services/update_check_service.dart';
 import 'package:quran_app_2025/services/firebase_sync.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-/// Ruang di bawah daftar supaya tab bar mengambang tidak menutupi isinya.
-const _bottomInset = 132.0;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -228,6 +231,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  static String _glassLabel(GlassPreference preference) => switch (preference) {
+    GlassPreference.auto => 'Otomatis',
+    GlassPreference.full => 'Penuh',
+    GlassPreference.lite => 'Ringan',
+    GlassPreference.off => 'Mati',
+  };
+
+  /// Saya → Tampilan → Efek kaca (LIQUID_GLASS.md §7): pratinjau kaca di
+  /// atas garis warna, pilihan, dan satu baris keterangan.
+  Widget _glassSettings(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final glass = GlassScope.maybeOf(context);
+    if (glass == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Pratinjau: kaca sungguhan di atas garis warna, ikut berubah
+          // saat pilihan diganti.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: 92,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Row(
+                    children: [
+                      for (final color in [
+                        tokens.heroA,
+                        tokens.gold,
+                        tokens.primaryText,
+                        tokens.goldSoft,
+                        tokens.heroB,
+                      ])
+                        Expanded(child: ColoredBox(color: color)),
+                    ],
+                  ),
+                  Center(
+                    child: LiquidGlass(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 22,
+                        vertical: 12,
+                      ),
+                      child: Text(
+                        _glassLabel(glass.preference),
+                        style: SacredText.buttonSmall.copyWith(
+                          color: tokens.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          GroupedList(
+            children: [
+              for (final preference in GlassPreference.values)
+                ListRow(
+                  title: _glassLabel(preference),
+                  trailing: glass.preference == preference
+                      ? LineIcon(
+                          SacredIcons.checkCircle,
+                          color: tokens.primaryText,
+                          size: 22,
+                        )
+                      : null,
+                  onTap: () async {
+                    await glass.setPreference(preference);
+                    if (mounted) setState(() {});
+                    _refreshSheet?.call();
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Otomatis menurunkan efek bila HP terasa berat.',
+            style: SacredText.cardNote.copyWith(color: tokens.sec),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _themeSettings(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final controller = AppScope.of(context);
@@ -292,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: _bottomInset),
+      padding: EdgeInsets.only(bottom: AppDock.reservedHeightOf(context)),
       children: [
         // Judul besar sekali saja (bug lama: "Pengaturan" tampil dobel).
         const ScreenHeader(title: 'Saya'),
@@ -387,6 +478,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 onTap: () => _openSheet('Tema', _themeSettings),
               ),
+              if (GlassScope.maybeOf(context) case final glass?) ...[
+                Divider(
+                  height: .5,
+                  thickness: .5,
+                  indent: SettingsRow.separatorInset,
+                  color: tokens.sep,
+                ),
+                SettingsRow(
+                  icon: SacredIcons.layers,
+                  chipColor: SacredBadge.blue,
+                  title: 'Efek kaca',
+                  value: _glassLabel(glass.preference),
+                  onTap: () => _openSheet('Efek kaca', _glassSettings),
+                ),
+              ],
             ],
           ),
         ),
@@ -442,14 +548,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         _Group(
           header: 'Salat',
-          child: SettingsRow(
-            icon: SacredIcons.sun,
-            chipColor: SacredBadge.blue,
-            title: 'Jadwal salat & adzan',
-            subtitle: 'Kota, metode, dan pengingat tiap waktu',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PrayerScreen()),
-            ),
+          child: Column(
+            children: [
+              SettingsRow(
+                icon: SacredIcons.sun,
+                chipColor: SacredBadge.blue,
+                title: 'Jadwal salat & adzan',
+                subtitle: 'Jadwal hari ini dan pengingat tiap waktu',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const PrayerScreen()),
+                ),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.pin,
+                chipColor: SacredBadge.green,
+                title: 'Waktu salat',
+                subtitle: 'Lokasi, metode, Asar, koreksi menit',
+                onTap: () => unawaited(showPrayerSettingsSheet(context)),
+              ),
+            ],
           ),
         ),
 
@@ -998,12 +1121,26 @@ class _SyncCardState extends State<_SyncCard> {
     if (mounted) setState(() => _lastSync = last);
   }
 
+  /// Hasil terakhir (gagal masuk, hapus akun) ditulis di dalam kartu.
+  /// Kartu ini ada di lembar bawah; SnackBar akan muncul di halaman di
+  /// belakang lembar dan tertutup olehnya.
+  String? _notice;
+
   void _show(String? message) {
-    if (message == null || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    if (!mounted) return;
+    setState(() => _notice = message);
   }
+
+  Widget _noticeLine(SacredTokens tokens) => Padding(
+    padding: const EdgeInsets.only(top: 10),
+    child: Semantics(
+      liveRegion: true,
+      child: Text(
+        _notice!,
+        style: SacredText.cardNote.copyWith(color: tokens.ink),
+      ),
+    ),
+  );
 
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
@@ -1118,6 +1255,7 @@ class _SyncCardState extends State<_SyncCard> {
                       : const Icon(Icons.login_rounded),
                   label: const Text('Masuk dengan Google'),
                 ),
+                if (_notice != null) _noticeLine(tokens),
               ],
             ),
           );
@@ -1199,6 +1337,7 @@ class _SyncCardState extends State<_SyncCard> {
                 onPressed: busy || syncing ? null : _confirmDelete,
                 child: const Text('Hapus akun & data cloud'),
               ),
+              if (_notice != null) _noticeLine(tokens),
             ],
           ),
         );

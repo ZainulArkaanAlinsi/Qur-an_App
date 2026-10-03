@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/hafalan/domain/murajaah_schedule.dart';
@@ -280,6 +281,31 @@ class SharedPreferencesService {
     await _prefs?.setString('palette', palette.name);
   }
 
+  /// Saya → Tampilan → Efek kaca (LIQUID_GLASS.md §4); bawaan Otomatis.
+  static GlassPreference getGlassPreference() {
+    final value = _prefs?.getString('glass_preference');
+    return GlassPreference.values.firstWhere(
+      (preference) => preference.name == value,
+      orElse: () => GlassPreference.auto,
+    );
+  }
+
+  static Future<void> setGlassPreference(GlassPreference value) async {
+    await _prefs?.setString('glass_preference', value.name);
+  }
+
+  /// Tingkat kaca yang diturunkan pengawas frame (`glass_tier_auto`),
+  /// berlaku untuk versi aplikasi [version]; versi lain = belum diukur.
+  static String? getGlassAutoTier(String version) =>
+      _prefs?.getString('glass_tier_auto_version') == version
+      ? _prefs?.getString('glass_tier_auto')
+      : null;
+
+  static Future<void> setGlassAutoTier(String tier, String version) async {
+    await _prefs?.setString('glass_tier_auto', tier);
+    await _prefs?.setString('glass_tier_auto_version', version);
+  }
+
   /// Tinggi baris teks Arab di Reader.
   static double getArabicLineHeight() {
     final value = _prefs?.getDouble('arabic_line_height') ?? 2.0;
@@ -439,6 +465,61 @@ class SharedPreferencesService {
     return items;
   }
 
+  /// Awalan kunci hitungan murajaah harian (docs/DATA.md §4).
+  static const murajaahDonePrefix = 'murajaah.selesai.';
+
+  /// Kunci murajaah lebih tua dari ini dibersihkan saat menulis.
+  static const murajaahDoneKeepDays = 14;
+
+  /// Jumlah ayat jatuh tempo yang dimurajaah pada tanggal lokal [day].
+  static int getMurajaahDone(DateTime day) =>
+      _prefs?.getInt('$murajaahDonePrefix${_dateKey(day)}') ?? 0;
+
+  /// Menambah satu ayat ke hitungan [today], lalu membersihkan kunci yang
+  /// lebih tua dari [murajaahDoneKeepDays] hari. Tidak ikut sinkron cloud.
+  static Future<void> addMurajaahDone(DateTime today) async {
+    final prefs = _prefs;
+    if (prefs == null) return;
+    final key = '$murajaahDonePrefix${_dateKey(today)}';
+    await prefs.setInt(key, (prefs.getInt(key) ?? 0) + 1);
+    for (final stale in staleMurajaahKeys(prefs.getKeys(), today)) {
+      await prefs.remove(stale);
+    }
+  }
+
+  /// Kunci `murajaah.selesai.<tanggal>` yang tanggalnya lebih dari
+  /// [murajaahDoneKeepDays] hari sebelum [today].
+  @visibleForTesting
+  static List<String> staleMurajaahKeys(Iterable<String> keys, DateTime today) {
+    final limit = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(const Duration(days: murajaahDoneKeepDays));
+    return [
+      for (final key in keys)
+        if (key.startsWith(murajaahDonePrefix))
+          if (DateTime.tryParse(key.substring(murajaahDonePrefix.length))
+              case final date? when date.isBefore(limit))
+            key,
+    ];
+  }
+
+  /// Tampilan layar Murottal: `teks` (bawaan) atau `sampul` (DATA.md §4).
+  /// Kunci lokal, tidak ikut sinkron cloud.
+  static String getMurottalView() =>
+      _prefs?.getString('murottal.tampilan') ?? 'teks';
+
+  static Future<void> setMurottalView(String value) async =>
+      _prefs?.setString('murottal.tampilan', value);
+
+  /// Terjemahan di daftar ayat Murottal (bawaan tampil). Tidak ikut sinkron.
+  static bool getMurottalTranslation() =>
+      _prefs?.getBool('murottal.terjemahan') ?? true;
+
+  static Future<void> setMurottalTranslation(bool value) async =>
+      _prefs?.setBool('murottal.terjemahan', value);
+
   /// Menyimpan satu ayat; [item] null menghapus catatannya.
   static Future<void> setAyahMemorization(
     int surah,
@@ -562,6 +643,50 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_city', city.trim());
     await _prefs?.setString('prayer_country', country.trim());
   }
+
+  /// Pengguna pernah memilih kota sendiri (bukan Jakarta bawaan).
+  static bool hasPrayerCity() => _prefs?.containsKey('prayer_city') ?? false;
+
+  // Lokasi & cara hitung waktu salat (docs/design/v6/screens/22-pengaturan-
+  // salat.md). Semua lokal, tidak ikut sinkron cloud.
+
+  /// `kota` / `otomatis`; null = pengguna lama → mode kota.
+  static String? getPrayerLocationMode() =>
+      _prefs?.getString('salat.lokasi.mode');
+  static Future<void> setPrayerLocationMode(String mode) async =>
+      _prefs?.setString('salat.lokasi.mode', mode);
+
+  /// Koordinat yang sudah dibulatkan, mis. "-6.2,106.85".
+  static String? getPrayerCoordinates() =>
+      _prefs?.getString('salat.lokasi.koordinat');
+  static Future<void> setPrayerCoordinates(String coordinates) async =>
+      _prefs?.setString('salat.lokasi.koordinat', coordinates);
+
+  /// ID metode AlAdhan; bawaan 20 (Kemenag RI).
+  static int getPrayerMethod() => _prefs?.getInt('salat.metode') ?? 20;
+  static Future<void> setPrayerMethod(int id) async =>
+      _prefs?.setInt('salat.metode', id);
+
+  /// Mazhab Asar: 0 Standar, 1 Hanafi.
+  static int getPrayerSchool() => _prefs?.getInt('salat.asar') ?? 0;
+  static Future<void> setPrayerSchool(int school) async =>
+      _prefs?.setInt('salat.asar', school);
+
+  /// Koreksi menit "Subuh,Dzuhur,Ashar,Maghrib,Isya".
+  static String? getPrayerTune() => _prefs?.getString('salat.koreksi');
+  static Future<void> setPrayerTune(String tune) async =>
+      _prefs?.setString('salat.koreksi', tune);
+
+  /// Chip filter terakhir di pemilih qari (23-qari.md), mis. "adem".
+  static String? getQariFilter() => _prefs?.getString('qari.filter');
+  static Future<void> setQariFilter(String filter) async =>
+      _prefs?.setString('qari.filter', filter);
+
+  /// Maks 5 kota terakhir, "kota|negara", terbaru di depan.
+  static List<String> getRecentPrayerCities() =>
+      _prefs?.getStringList('salat.kotaTerakhir') ?? const [];
+  static Future<void> setRecentPrayerCities(List<String> places) async =>
+      _prefs?.setStringList('salat.kotaTerakhir', places);
 
   /// Onboarding v3 sudah dilewati dengan tombol Mulai; tampil sekali saja
   /// (docs/design/v3/DESIGN.md §5a).
