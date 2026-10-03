@@ -88,25 +88,49 @@ Today's session: about 10 minutes a day to review, learn one small step, find it
   *closed testing* dengan minimal **12 penguji selama 14 hari berturut-turut** sebelum
   bisa mengajukan akses Production. Jadi pada hari pertama, unggah ke **Internal
   testing** atau **Closed testing**, bukan langsung Production.
-- [ ] **Pilih kunci penandatanganan aplikasi saat membuat app**: Play Console menawarkan
-  kunci buatan Google atau kunci sendiri. Disarankan **memakai kunci rilis yang sudah ada**
-  (`ruang-tilawah-release.jks`, opsi *Use existing app signing key*, ikuti panduan PEPK di
-  Play Console). Dengan begitu pengguna APK GitHub bisa langsung memperbarui lewat Play
-  tanpa mencopot aplikasi (tanda tangan sama), dan SHA di Firebase tidak berubah. Kalau
-  memilih kunci buatan Google, pengguna lama harus mencopot versi GitHub dulu (data lokal
-  hilang kecuali sudah disinkron) dan langkah SHA di bawah wajib.
-- [ ] **Play App Signing**: setelah unggahan pertama, salin SHA-1 dan SHA-256 dari
-  *Setup › App signing › App signing key certificate* ke Firebase Console
-  (Project settings › Android app `com.zainularkaan.quran`), lalu unduh ulang
-  `google-services.json`. Tanpa ini, **Masuk dengan Google gagal** di aplikasi yang
-  diunduh dari Play (kunci Play berbeda dari kunci upload). Tambahkan SHA yang sama ke
-  pembatasan API key Android di Google Cloud Console.
-- [ ] **Kebijakan privasi & halaman hapus akun**: deploy `hosting/public/` yang sudah
+- [x] **Kunci penandatanganan aplikasi** (3 Oktober 2026): Play memakai **kunci buatan
+  Google**, bukan kunci rilis lama. Saran awal di sini adalah memakai kunci lama lewat
+  PEPK, tapi unggahan pertama terjadi dengan kunci Google, dan kunci app signing tidak
+  bisa diganti dengan cara biasa. Akibatnya:
+  - `ruang-tilawah-release.jks` sekarang hanya **kunci upload** Play.
+  - APK GitHub (kunci lama) **tidak bisa diperbarui langsung** ke versi Play. Pengguna
+    harus mencopot versi GitHub dulu, dan data lokal hilang kecuali sudah disinkron.
+
+  | Kunci | SHA-1 | SHA-256 |
+  | --- | --- | --- |
+  | App signing Play (Google) | `ED:D3:47:CC:75:1B:8C:86:20:EB:AA:FE:B6:40:7E:1C:90:2A:0B:24` | `44:B6:3B:3C:…:47:66:DC:25` |
+  | Upload / APK GitHub (`CN=Ruang Tilawah`) | `F4:BA:11:D8:…:9E:8A:3A:54` | `3A:F7:E6:FD:…:24:D8:FE:AA` |
+
+  SHA-1 dan SHA-256 di atas dibaca langsung dari APK universal yang ditandatangani Play
+  (`apksigner verify --print-certs`), bukan disalin dari layar.
+- [x] **Daftarkan kunci Play di dua tempat** (sudah, 3 Oktober 2026). Kalau salah satu
+  terlewat, **Masuk dengan Google gagal** di aplikasi yang dipasang dari Play:
+  1. Firebase Console › Project settings › Android app `com.zainularkaan.quran` ›
+     *Add fingerprint*: tambahkan SHA-1 dan SHA-256 kunci Play.
+  2. Google Cloud Console › APIs & Services › Credentials › API key Android
+     (`current_key` di `google-services.json`) › *Application restrictions › Android
+     apps*: tambahkan `com.zainularkaan.quran` + SHA-1 kunci Play.
+
+  Kalau langkah 2 terlewat, jendela akun Google tetap muncul, tapi Firebase Auth gagal
+  dengan kode `unknown`. Server mengembalikan
+  `403 API_KEY_ANDROID_APP_BLOCKED`. Cara mengeceknya tanpa HP: kirim `POST`
+  `accounts:signInWithIdp` dengan header `X-Android-Package` dan `X-Android-Cert`. SHA
+  yang belum terdaftar mendapat 403, sedangkan SHA yang terdaftar mendapat
+  `INVALID_IDP_RESPONSE` untuk token palsu.
+
+  `google-services.json` **tidak perlu** diunduh ulang dan aplikasi **tidak perlu**
+  di-build ulang. Login memakai client Web yang tidak berubah. Sudah diuji: 1.10.1 (21)
+  dari Internal testing di Samsung SM-A556E berhasil masuk.
+- [x] **Kebijakan privasi & halaman hapus akun**: deploy `hosting/public/` yang sudah
   diperbarui (privasi versi 2 Oktober 2026 + halaman baru `hapus-akun.html`):
   `firebase deploy --only hosting`. Lalu cantumkan di Play Console:
   - Privacy policy: `https://quran-app-zainularkaan.web.app/privacy`
   - Data safety › *Delete account URL*: `https://quran-app-zainularkaan.web.app/hapus-akun`
     (bisa dipakai tanpa memasang aplikasi, lewat email `zainaril13@gmail.com`)
+
+  Deploy 3 Oktober 2026 dari worktree `rilis/1.10.1`, sehingga yang tayang adalah privasi
+  versi 1.10.1 (tanpa lokasi otomatis). Saat 1.11.0 dirilis, deploy ulang dari
+  `fitur/v6` / `main`.
 - [ ] **Verifikasi developer Android** (lihat bagian 2a). APK MyQuran juga dibagikan
   lewat GitHub Releases, jadi package-nya wajib didaftarkan manual.
 - [x] **Backup keystore** `C:/Users/USER/keystores/ruang-tilawah-release.jks` dan
@@ -127,7 +151,7 @@ Sumber: https://developer.android.com/developer-verification (dicek 2 Oktober 20
   1. Selesaikan verifikasi identitas akun developer di Play Console.
   2. Daftarkan package `com.zainularkaan.quran` di bagian *Android developer
      verification* Play Console, dengan kunci penandatanganan yang sama dengan APK
-     GitHub.
+     GitHub (`F4:BA:11:D8:…`, bukan kunci app signing Play).
   3. Setelah terdaftar, uji pasang APK GitHub di HP Android Indonesia. Pemasangan harus
      berjalan tanpa peringatan "developer tidak terverifikasi".
 

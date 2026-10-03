@@ -1121,12 +1121,26 @@ class _SyncCardState extends State<_SyncCard> {
     if (mounted) setState(() => _lastSync = last);
   }
 
+  /// Hasil terakhir (gagal masuk, hapus akun) ditulis di dalam kartu.
+  /// Kartu ini ada di lembar bawah; SnackBar akan muncul di halaman di
+  /// belakang lembar dan tertutup olehnya.
+  String? _notice;
+
   void _show(String? message) {
-    if (message == null || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    if (!mounted) return;
+    setState(() => _notice = message);
   }
+
+  Widget _noticeLine(SacredTokens tokens) => Padding(
+    padding: const EdgeInsets.only(top: 10),
+    child: Semantics(
+      liveRegion: true,
+      child: Text(
+        _notice!,
+        style: SacredText.cardNote.copyWith(color: tokens.ink),
+      ),
+    ),
+  );
 
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
@@ -1241,6 +1255,7 @@ class _SyncCardState extends State<_SyncCard> {
                       : const Icon(Icons.login_rounded),
                   label: const Text('Masuk dengan Google'),
                 ),
+                if (_notice != null) _noticeLine(tokens),
               ],
             ),
           );
@@ -1322,6 +1337,7 @@ class _SyncCardState extends State<_SyncCard> {
                 onPressed: busy || syncing ? null : _confirmDelete,
                 child: const Text('Hapus akun & data cloud'),
               ),
+              if (_notice != null) _noticeLine(tokens),
             ],
           ),
         );

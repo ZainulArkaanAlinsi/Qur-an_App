@@ -13,8 +13,8 @@ Urutan tercepat ke Production untuk akun pribadi baru. Detail teknis: `docs/PLAY
 ## Hari 1 — setelah akun terverifikasi
 
 - [ ] **Create app**: nama `MyQuran`, bahasa default Indonesia, App, Free.
-- [ ] Pilih kunci penandatanganan → **Use existing app signing key** (kunci `ruang-tilawah-release.jks`), ikuti panduan PEPK. Alasan: pengguna APK GitHub bisa update langsung & SHA Firebase tetap.
-- [ ] Setelah unggahan pertama: salin SHA-1 & SHA-256 dari *App signing* ke Firebase Console, unduh ulang `google-services.json` (kalau tidak, Masuk dengan Google gagal di versi Play).
+- [x] Kunci penandatanganan: Play memakai **kunci buatan Google** (3 Oktober 2026). `ruang-tilawah-release.jks` menjadi kunci upload. Rinciannya ada di `docs/PLAY_STORE_RELEASE.md §2`.
+- [x] SHA kunci Play didaftarkan di **Firebase** (sidik jari) dan di **pembatasan API key Android** di Google Cloud Console. Kalau salah satu terlewat, Masuk dengan Google gagal di versi Play. Aplikasi tidak perlu di-build ulang.
 - [ ] **App content**: isi sesuai tabel di `docs/PLAY_STORE_RELEASE.md §3` (privasi, iklan: tidak, akses: tanpa login, rating konten, target 13+, Data safety, layanan latar media playback + video demo layar mati).
 - [ ] **Store listing**: salin dari `docs/play-store/LISTING.md` + gambar di `docs/play-store/<bahasa>/`.
 - [ ] **Testing → Closed testing**: buat track, tambahkan daftar email penguji, unggah AAB, kirim untuk ditinjau.

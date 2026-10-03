@@ -67,7 +67,7 @@ Crash-free (Play Console vitals), waktu buka pembaca < 1 dtk luring, 0 laporan t
 
 | # | Pertanyaan | Pemilik jawaban |
 | --- | --- | --- |
-| Q1 | Kunci penandatanganan: pakai kunci rilis yang ada (disarankan, lihat `PLAY_STORE_RELEASE.md`) atau kunci Google? | Zainul, saat membuat app di Play Console |
+| Q1 | ~~Kunci penandatanganan: pakai kunci rilis yang ada atau kunci Google?~~ Terjawab 3 Oktober 2026: kunci Google (lihat `docs/decisions.md`) | Zainul, saat membuat app di Play Console |
 | Q2 | Kategori Play: Education atau Books & Reference? | Zainul |
 | Q3 | Siapa 12+ penguji tertutup (email Google mereka)? | Zainul |
 | Q4 | APK GitHub tetap dirilis? Bila ya, daftarkan package di Play Console → Verifikasi developer Android (penegakan di Indonesia sejak 30 Sep 2026) | Zainul |
