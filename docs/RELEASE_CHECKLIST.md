@@ -36,14 +36,20 @@ Build Play dibuat dengan `flutter build appbundle --release` dan tidak memuat iz
 pasang APK maupun pengunduh pembaruan GitHub (kebijakan Play). Langkah lengkap,
 deklarasi App content, dan Data safety: `docs/PLAY_STORE_RELEASE.md`.
 
-## Distribusi APK langsung (dipilih 22 September 2026)
+## Riwayat: distribusi APK langsung (keputusan 22 September 2026, sudah tidak berlaku)
 
-Build GitHub Releases: `flutter build apk --release --dart-define=DISTRIBUTION=github`.
+> Keputusan ini digantikan oleh rilis Google Play (2 Oktober 2026, `docs/decisions.md`).
+> Langkah yang berlaku sekarang ada di `docs/PLAY_STORE_RELEASE.md`, termasuk closed
+> testing 12 penguji × 14 hari dan verifikasi developer Android untuk APK GitHub.
+> Paragraf di bawah disimpan sebagai catatan saja.
 
-Aplikasi didistribusikan gratis lewat GitHub Releases, bukan Google Play.
+Build GitHub Releases (masih dipakai berdampingan dengan Play):
+`flutter build apk --release --dart-define=DISTRIBUTION=github`.
+
+~~Aplikasi didistribusikan gratis lewat GitHub Releases, bukan Google Play.
 Butir khusus Play Console di atas (deklarasi foreground service, Data safety,
 akun developer US$25, tes tertutup 12 penguji) tidak berlaku kecuali kelak
-beralih ke Play Store.
+beralih ke Play Store.~~
 
 - [ ] Backup `C:/Users/USER/keystores/ruang-tilawah-release.jks` dan `android/key.properties` ke tempat aman di luar laptop.
 - [ ] Pasang APK rilis di HP nyata: masuk Google, sinkron, murottal dengan layar mati, mode pesawat.

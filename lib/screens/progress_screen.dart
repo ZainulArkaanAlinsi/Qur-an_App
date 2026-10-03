@@ -248,16 +248,6 @@ class _StreakCard extends StatelessWidget {
                       textAlign: TextAlign.right,
                       style: SacredText.statSide.copyWith(color: tokens.ink),
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      // Jujur: durasi murottal memang belum pernah dihitung,
-                      // jadi angkanya tidak boleh dikarang.
-                      'Dengar belum dicatat',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.right,
-                      style: SacredText.cardNote.copyWith(color: tokens.sec),
-                    ),
                   ],
                 ),
               ),
