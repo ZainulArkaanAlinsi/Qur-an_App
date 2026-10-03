@@ -133,27 +133,13 @@ class _MurottalScreenState extends State<MurottalScreen> {
     ),
   );
 
+  /// Pemilih qari memuat ulang antrean di ayat yang sama sendiri
+  /// (23-qari.md §Tampilan 7); di sini cukup menyegarkan nama qari.
   Future<void> _pickReciter() async {
-    final before = SharedPreferencesService.getReciter().identifier;
     await Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => const ReciterPicker()));
-    if (!mounted) return;
-    setState(() {});
-    final view = PlayerView.of(_audio.queue, _audio.playingVerse);
-    if (view == null ||
-        SharedPreferencesService.getReciter().identifier == before) {
-      return;
-    }
-    // Qari berganti: muat ulang antrean dari ayat yang sama.
-    await _guard(
-      () => _audio.playRange(
-        surah: view.surah,
-        fromAyah: view.queue.firstAyah,
-        toAyah: view.queue.lastAyah,
-        startAyah: view.ayah,
-      ),
-    );
+    if (mounted) setState(() {});
   }
 
   Future<void> _openMenu(PlayerView view) async {
@@ -357,6 +343,7 @@ class _MurottalScreenState extends State<MurottalScreen> {
           onRetry: _retry,
           onError: _onError,
           downloadService: widget.downloadService,
+          reciter: SharedPreferencesService.getReciter(),
         ),
       ],
     );

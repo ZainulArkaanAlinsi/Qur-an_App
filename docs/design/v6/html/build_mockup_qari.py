@@ -3,7 +3,7 @@ import importlib.util, json, pathlib, html
 HERE = pathlib.Path(__file__).parent
 spec = importlib.util.spec_from_file_location('b', HERE / 'build_mockup.py')  # dari paket v6
 b = importlib.util.module_from_spec(spec); spec.loader.exec_module(b)
-CAT = json.load(open(HERE.parent / 'data/qari_katalog.json'))
+CAT = json.load(open(HERE.parents[3] / 'assets/audio/qari_katalog.json', encoding='utf-8'))
 SRC = CAT['sumber']
 def granted(q):
     return any(SRC[s['sumber']]['status'] == 'granted' for s in q['sumber'])

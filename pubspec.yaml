@@ -92,6 +92,8 @@ flutter:
     - assets/fonts/OFL-EBGaramond.txt
     - assets/fonts/OFL-Amiri.txt
     - assets/fonts/OFL-AmiriQuran.txt
+    # Katalog qari terkurasi + registri izin (docs/design/v6/screens/23-qari.md).
+    - assets/audio/qari_katalog.json
     - assets/quran/raw/tanzil_uthmani_v1.0.2.txt
     - assets/quran/raw/tajweed_cpfair_tanzil_v1.0.2.json
     - assets/quran/raw/quran-data.xml

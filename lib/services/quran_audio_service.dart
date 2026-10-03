@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app_2025/data/audio_repository.dart';
+import 'package:quran_app_2025/data/audio_sources.dart';
 import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
@@ -226,12 +227,22 @@ class QuranAudioService {
 
   /// URL ayat pada qari pilihan. Bitrate berbeda antar qari, jadi memakai
   /// nilai yang sudah diperiksa saat qari dipilih.
-  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) =>
-      AudioRepository.islamicNetworkAyah(
-        reciter ?? SharedPreferencesService.getReciter(),
-        surah,
-        ayah,
-      );
+  static Uri urlFor(int surah, int ayah, {Reciter? reciter}) {
+    final chosen = reciter ?? SharedPreferencesService.getReciter();
+    // equran.id hanya bisa dipilih di build debug (sumber pending).
+    if (chosen.provider == AudioProvider.equran) {
+      return AudioRepository.equranAyah(chosen.equranCode, surah, ayah);
+    }
+    return AudioRepository.islamicNetworkAyah(chosen, surah, ayah);
+  }
+
+  /// Qari untuk antrean per ayat. Qari per surah saja tidak bisa memutar
+  /// per ayat, jadi Ulang ayat, Rentang, dan Sesi harian memakai qari per
+  /// ayat bawaan (23-qari.md §Tampilan 8).
+  static Reciter perAyatReciter() {
+    final chosen = SharedPreferencesService.getReciter();
+    return chosen.perAyat ? chosen : defaultReciter;
+  }
 
   /// Berkas lokal bila tersedia, kalau tidak URL [remote] (bawaan: CDN
   /// utama cdn.islamic.network).
@@ -527,7 +538,7 @@ class QuranAudioService {
       });
       // Berkas yang sudah diunduh dipakai lebih dulu agar bisa diputar tanpa
       // internet; sisanya tetap di-stream.
-      final reciter = SharedPreferencesService.getReciter();
+      final reciter = perAyatReciter();
       final folder = await AudioDownloadService().folderPath(reciter);
       List<AudioSource> sources([Uri Function(int, int)? remote]) => [
         for (var copy = 0; copy < copies; copy++)
@@ -554,6 +565,9 @@ class QuranAudioService {
             .timeout(_loadTimeout);
       } on Object {
         if (generation != _generation) return;
+        // equran.id & MP3Quran masih berstatus pending: cadangan ini hanya
+        // dipakai di build debug (keputusan 2026-10-03, audio_sources.dart).
+        if (!AudioSources.allowPending) rethrow;
         // Cadangan per ayat: equran.id.
         final qari = AudioRepository.equranQariFor(reciter);
         try {

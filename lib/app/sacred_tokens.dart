@@ -839,6 +839,10 @@ abstract final class SacredText {
   static TextStyle get transportBadge => _font(ui, 10, 12, 800);
   static TextStyle get actionPill => _font(ui, 13, 17, 800);
 
+  /// Pemilih qari v6.1 (23-qari.md): nama 14.5/800, tag suasana 10.5/800.
+  static TextStyle get qariName => _font(ui, 14.5, 19, 800);
+  static TextStyle get qariTag => _font(ui, 10.5, 13, 800);
+
   /// [style] dengan ketebalan [weight]. Font dibundel sebagai font variabel,
   /// jadi `copyWith(fontWeight:)` saja tidak mengubah ketebalannya.
   static TextStyle withWeight(TextStyle style, double weight) => style.copyWith(

@@ -37,7 +37,11 @@ enum AudioProvider {
   quranFoundation(
     'Quran Foundation',
     'quran.foundation. Hak cipta rekaman milik qari.',
-  );
+  ),
+
+  /// equran.id: status izin masih pending, jadi hanya bisa dipilih di build
+  /// debug (docs/design/v6/screens/23-qari.md).
+  equran('equran.id', 'equran.id. Hak cipta rekaman milik qari.');
 
   const AudioProvider(this.label, this.attribution);
   final String label;
@@ -60,6 +64,7 @@ class Reciter {
     this.narration = Narration.hafs,
     this.provider = AudioProvider.alQuranCloud,
     this.hasWordTiming = false,
+    this.perAyat = true,
   });
 
   factory Reciter.fromEdition(Map<String, dynamic> edition) {
@@ -93,6 +98,7 @@ class Reciter {
           _providerByName(json['provider'] as String?) ??
           AudioProvider.alQuranCloud,
       hasWordTiming: json['hasWordTiming'] as bool? ?? false,
+      perAyat: json['perAyat'] as bool? ?? true,
     );
   }
 
@@ -151,6 +157,17 @@ class Reciter {
   /// Tanpa data ini timestamp tidak boleh dikarang.
   final bool hasWordTiming;
 
+  /// Berkas per ayat. Qari per surah saja: Ulang ayat/Rentang dan Sesi
+  /// harian memakai qari per ayat bawaan (23-qari.md §Tampilan 8).
+  final bool perAyat;
+
+  /// Kode qari equran.id ("01"–"06") untuk penyedia [AudioProvider.equran].
+  String get equranCode => identifier.replaceFirst('equran:', '');
+
+  /// Boleh diunduh: hanya CDN Islamic Network (pengunduh memakai CDN itu);
+  /// Quran Foundation tidak boleh disimpan > 7 hari.
+  bool get downloadable => provider == AudioProvider.alQuranCloud;
+
   /// Atribusi penyedia, untuk layar Sumber & lisensi.
   String get attribution => provider.attribution;
 
@@ -168,6 +185,7 @@ class Reciter {
     narration: narration,
     provider: provider,
     hasWordTiming: hasWordTiming,
+    perAyat: perAyat,
   );
 
   Map<String, dynamic> toJson() => {
@@ -179,6 +197,7 @@ class Reciter {
     'narration': narration.name,
     'provider': provider.name,
     if (hasWordTiming) 'hasWordTiming': true,
+    if (!perAyat) 'perAyat': false,
   };
 
   @override

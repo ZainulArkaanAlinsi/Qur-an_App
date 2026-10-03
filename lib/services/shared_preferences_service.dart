@@ -665,6 +665,11 @@ class SharedPreferencesService {
   static Future<void> setPrayerTune(String tune) async =>
       _prefs?.setString('salat.koreksi', tune);
 
+  /// Chip filter terakhir di pemilih qari (23-qari.md), mis. "adem".
+  static String? getQariFilter() => _prefs?.getString('qari.filter');
+  static Future<void> setQariFilter(String filter) async =>
+      _prefs?.setString('qari.filter', filter);
+
   /// Maks 5 kota terakhir, "kota|negara", terbaru di depan.
   static List<String> getRecentPrayerCities() =>
       _prefs?.getStringList('salat.kotaTerakhir') ?? const [];

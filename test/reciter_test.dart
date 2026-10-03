@@ -277,88 +277,11 @@ void main() {
   });
 
   group('pemilih qari', () {
-    const all = [
-      Reciter(
-        identifier: 'ar.alafasy',
-        name: 'مشاري العفاسي',
-        englishName: 'Mishary Rashid Alafasy',
-        style: RecitationStyle.murattal,
-      ),
-      Reciter(
-        identifier: 'ar.husary',
-        name: 'محمود خليل الحصري',
-        englishName: 'Husary Muallim',
-        style: RecitationStyle.muallim,
-      ),
-      Reciter(
-        identifier: 'ar.abdulbasit',
-        name: 'عبد الباسط',
-        englishName: 'Abdul Basit Mujawwad',
-        style: RecitationStyle.mujawwad,
-      ),
-      Reciter(
-        identifier: 'ar.shuraim',
-        name: 'سعود الشريم',
-        englishName: 'Saood Shuraim',
-      ),
-    ];
-
-    test('pencarian mencocokkan nama Latin tanpa peduli huruf besar', () {
-      expect(filterReciters(all, 'HUSARY').map((item) => item.identifier), [
-        'ar.husary',
-      ]);
-      expect(filterReciters(all, 'basit').map((item) => item.identifier), [
-        'ar.abdulbasit',
-      ]);
-    });
-
-    test('pencarian juga mencocokkan nama Arab', () {
-      expect(filterReciters(all, 'الحصري').map((item) => item.identifier), [
-        'ar.husary',
-      ]);
-    });
-
-    test('kata kunci kosong mengembalikan semuanya', () {
-      expect(filterReciters(all, '   '), hasLength(4));
-      expect(filterReciters(all, ''), hasLength(4));
-    });
-
-    test('kata kunci tanpa hasil mengembalikan daftar kosong', () {
-      expect(filterReciters(all, 'zzz'), isEmpty);
-    });
-
-    test('dikelompokkan per gaya, urut sesuai enum', () {
-      final groups = groupReciters(all);
-      expect(groups.keys.toList(), [
-        RecitationStyle.murattal,
-        RecitationStyle.mujawwad,
-        RecitationStyle.muallim,
-        RecitationStyle.unknown,
-      ]);
-      expect(groups[RecitationStyle.muallim]!.single.identifier, 'ar.husary');
-    });
-
-    test('inisial avatar mengabaikan keterangan dalam kurung', () {
-      Reciter named(String english, [String arabic = 'قارئ']) =>
-          Reciter(identifier: 'x', name: arabic, englishName: english);
-      expect(reciterInitials(named('Mahmoud Khalil Al-Husary')), 'MK');
-      expect(reciterInitials(named('Husary (Mujawwad)')), 'H');
-      expect(reciterInitials(named('Alafasy')), 'A');
-      expect(reciterInitials(named('', 'الحصري')), 'ا');
-    });
-
-    test('gaya juga dibaca dari identifier penyedia', () {
-      final reciter = Reciter.fromEdition({
-        'identifier': 'ar.abdulbasitmurattal',
-        'name': 'عبد الباسط',
-        'englishName': 'Abdul Basit',
-      });
-      expect(reciter.style, RecitationStyle.murattal);
-    });
-
-    test('kelompok kosong tidak ikut muncul', () {
-      final groups = groupReciters([all.first]);
-      expect(groups.keys, [RecitationStyle.murattal]);
+    test('inisial avatar: kata pertama & terakhir, tanpa "Al-" & kurung', () {
+      expect(qariInitials('Ali Al-Hudhaify'), 'AH');
+      expect(qariInitials('Mahmoud Khalil Al-Husary (Mujawwad)'), 'MH');
+      expect(qariInitials('Hudhaify'), 'HU');
+      expect(qariInitials(''), '?');
     });
   });
 }

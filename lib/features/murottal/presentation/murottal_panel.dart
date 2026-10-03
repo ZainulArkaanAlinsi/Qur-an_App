@@ -10,6 +10,7 @@ import 'package:quran_app_2025/data/surah_catalog.dart';
 import 'package:quran_app_2025/features/murottal/application/now_playing_audio.dart';
 import 'package:quran_app_2025/features/murottal/application/player_view_model.dart';
 import 'package:quran_app_2025/features/murottal/presentation/ayah_segment_track.dart';
+import 'package:quran_app_2025/models/reciter.dart';
 import 'package:quran_app_2025/services/audio_download_service.dart';
 import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/widgets/surah_download_button.dart';
@@ -27,6 +28,7 @@ class MurottalPanel extends StatefulWidget {
     this.failed = false,
     this.onRetry,
     this.downloadService,
+    this.reciter,
   });
 
   final MurottalAudio audio;
@@ -42,6 +44,18 @@ class MurottalPanel extends StatefulWidget {
 
   /// Hanya untuk tes; produksi memakai pengunduh bawaan.
   final AudioDownloadService? downloadService;
+
+  /// Qari terpilih. Per surah saja: Ulang ayat & Rentang memakai qari per
+  /// ayat bawaan (keterangan tampil). Sumber yang tidak boleh diunduh
+  /// (mis. Quran Foundation): pill Unduh disembunyikan (23-qari.md).
+  final Reciter? reciter;
+
+  /// Keterangan untuk qari per surah, atau null.
+  static String? perSurahNote(Reciter? reciter) =>
+      reciter == null || reciter.perAyat
+      ? null
+      : 'Qari ini per surah. Ulang ayat memakai '
+            '${defaultReciter.displayName}.';
 
   static const repeatCounts = <int?>[1, 3, 5, 7, null];
   static const sleepMinutes = [5, 10, 15, 30, 45, 60];
@@ -247,12 +261,21 @@ class _MurottalPanelState extends State<MurottalPanel> {
                 onRetry: widget.onRetry,
                 run: _run,
               ),
+              if (MurottalPanel.perSurahNote(widget.reciter)
+                  case final note?) ...[
+                const SizedBox(height: 6),
+                Text(
+                  note,
+                  textAlign: TextAlign.center,
+                  style: SacredText.cardNote.copyWith(color: tokens.sec),
+                ),
+              ],
               const SizedBox(height: 16),
               _Actions(
                 large: large,
                 children: [
                   _timerPill(tokens),
-                  _downloadPill(),
+                  if (widget.reciter?.downloadable ?? true) _downloadPill(),
                   ActionPill(
                     icon: SacredIcons.range,
                     label: _view.rangeLabel,
