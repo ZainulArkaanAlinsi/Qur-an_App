@@ -35,6 +35,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Tes kinerja kaca (LIQUID_GLASS.md §7); keduanya bawaan SDK Flutter.
+  integration_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
   crypto: ^3.0.7
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.4

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
 import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/glass/glass_tokens.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
@@ -62,42 +63,45 @@ class LiquidGlass extends StatelessWidget {
         : 0.0;
     final radius = borderRadius;
 
-    return CustomPaint(
-      painter: shadow && sacred != null
-          ? _OutsideShadowPainter(radius, sacred.floatShadows)
-          : null,
-      child: ClipRRect(
-        borderRadius: radius,
-        child: BackdropFilter.grouped(
-          filter: glassFilter(spec),
-          enabled: spec.blur,
-          child: CustomPaint(
-            painter: _FillPainter(
-              tint: spec.tint,
-              sheenTop: tier == GlassTier.solid
-                  ? glass.sheenTop.withValues(alpha: 0)
-                  : glass.sheenTop,
-              shift: shift,
-            ),
-            child: Stack(
-              children: [
-                Padding(padding: padding ?? EdgeInsets.zero, child: child),
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: RepaintBoundary(
-                      child: CustomPaint(
-                        painter: _RimPainter(
-                          radius: radius,
-                          start: glass.rimStart,
-                          end: glass.rimEnd,
-                          width: glass.rimWidth,
-                          highlight: glass.innerHighlight,
+    // Dihitung pengawas frame: hanya bekerja saat ada kaca di layar.
+    return GlassPresenceMarker(
+      child: CustomPaint(
+        painter: shadow && sacred != null
+            ? _OutsideShadowPainter(radius, sacred.floatShadows)
+            : null,
+        child: ClipRRect(
+          borderRadius: radius,
+          child: BackdropFilter.grouped(
+            filter: glassFilter(spec),
+            enabled: spec.blur,
+            child: CustomPaint(
+              painter: _FillPainter(
+                tint: spec.tint,
+                sheenTop: tier == GlassTier.solid
+                    ? glass.sheenTop.withValues(alpha: 0)
+                    : glass.sheenTop,
+                shift: shift,
+              ),
+              child: Stack(
+                children: [
+                  Padding(padding: padding ?? EdgeInsets.zero, child: child),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: CustomPaint(
+                          painter: _RimPainter(
+                            radius: radius,
+                            start: glass.rimStart,
+                            end: glass.rimEnd,
+                            width: glass.rimWidth,
+                            highlight: glass.innerHighlight,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

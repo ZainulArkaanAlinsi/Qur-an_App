@@ -294,6 +294,18 @@ class SharedPreferencesService {
     await _prefs?.setString('glass_preference', value.name);
   }
 
+  /// Tingkat kaca yang diturunkan pengawas frame (`glass_tier_auto`),
+  /// berlaku untuk versi aplikasi [version]; versi lain = belum diukur.
+  static String? getGlassAutoTier(String version) =>
+      _prefs?.getString('glass_tier_auto_version') == version
+      ? _prefs?.getString('glass_tier_auto')
+      : null;
+
+  static Future<void> setGlassAutoTier(String tier, String version) async {
+    await _prefs?.setString('glass_tier_auto', tier);
+    await _prefs?.setString('glass_tier_auto_version', version);
+  }
+
   /// Tinggi baris teks Arab di Reader.
   static double getArabicLineHeight() {
     final value = _prefs?.getDouble('arabic_line_height') ?? 2.0;

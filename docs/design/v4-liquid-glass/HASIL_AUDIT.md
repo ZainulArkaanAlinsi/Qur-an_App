@@ -102,3 +102,38 @@ Selisih golden dock vs acuan V6 yang ditemukan lalu diperbaiki:
 3. Chip pembaca sempat rata kiri setelah header dipindah ke lapisan atas. Sekarang di tengah lagi.
 
 Selisih yang tersisa hanya karena data dan latar uji.
+
+---
+
+## Audit 3 Oktober 2026 — Prompt 9 (v4 Prompt 3–5)
+
+`bash tool/glass_audit.sh`: **0 GAGAL** (C3 pengawas frame dan C4 tes kinerja sekarang lulus). C5: 7 pemakaian kaca di luar `lib/app/glass/`: dock (2), nav pembaca, baris sedang diputar pembaca, `GlassSurface` (pembungkus lama), dan pratinjau di lembar "Efek kaca" (contoh, bukan chrome).
+
+| Kriteria | Nilai | Bukti |
+| --- | --- | --- |
+| G1 | 2 | Tetap: `liquid_glass.dart` enam lapis. |
+| G2 | 2 | Golden `kaca_*_full.png`: garis hijau/emas/teal/merah di latar uji terlihat samar lewat kepala sheet, dock, dan tombol bulat. |
+| G3 | 2 | Lensa tab berpegas, nav pembaca menyingkir, dan ripple `InkWell` di nav kaca pembaca diganti efek tekan tanpa ripple (`_PressScale`, Prompt 6). |
+| G4 | 2 | Semua chrome mengambang memakai `LiquidGlass`: dock (tab + sedang diputar), nav pembaca, baris sedang diputar di pembaca, kepala lembar (`showGlassSheet`, Prompt 7). Tidak ada tombol bulat mengambang lain di aplikasi; tombol uji di golden memakai kaca yang sama. |
+| G5 | 2 | Golden `kaca_{light,dark,sepia,kontras_tinggi}_{full,solid}.png` (8 berkas). Kontras tinggi selalu padat bergaris tepi. |
+| G6 | 2 | Tetap: `test/glass_contrast_test.dart`. |
+| G7 | 2 | Golden `pembaca_tajwid_{fatihah,baqarah}_{light,dark,sepia}.png`: nav tidak menutup huruf, ayat aktif tersorot, tanpa efek di teks Arab. Tajwid ≥ 4.5:1 di semua permukaan ayat (`test/tajweed_widget_test.dart`, tidak ada warna yang diubah). |
+| G8 | 1 | Audit A lulus, kaca terlihat ≤ 2. Anggaran §7: **BELUM DIUKUR DI HP** (`HASIL_KINERJA.md`). PRD V4 mengizinkan 1 bila ditulis jujur. |
+| G9 | 2 | Tingkat full/lite/solid, pengawas frame (`glass_governor.dart`), dan Saya → Tampilan → "Efek kaca" (Otomatis/Penuh/Ringan/Mati + pratinjau + "Otomatis menurunkan efek bila HP terasa berat."). |
+| G10 | 2 | Audit 0 GAGAL, tes kontras, golden kaca empat palet × dua tingkat, `integration_test/glass_perf_test.dart` + `test_driver/perf_driver.dart`, tes aturan pengawas (`test/glass_governor_test.dart`). |
+
+**Total: 19/20. Lulus** (≥ 18, tidak ada nilai 0, G6/G7 = 2, G8 = 1 karena belum diukur di HP).
+
+### Pengamatan golden kaca
+
+| Golden | (a) tepi menangkap cahaya | (b) warna di belakang samar | (c) label tab tidak aktif jelas |
+| --- | --- | --- | --- |
+| `kaca_light_full` | Ya, garis tepi terang di atas sheet & dock | Ya, hijau→emas di kepala sheet, merah muda di dock, teal di tombol | Ya |
+| `kaca_dark_full` | Ya, tepi terang tipis | Ya, samar (lebih redup dari terang, sesuai tint gelap) | Ya |
+| `kaca_sepia_full` | Ya | Ya | Ya |
+| `kaca_kontras_tinggi_full` | Padat dengan garis tepi (sengaja) | Tidak (kontras tinggi selalu padat) | Ya |
+| `kaca_*_solid` | Padat, tepi tetap | Tidak (tingkat padat) | Ya |
+
+### Warna tajwid
+
+Tidak ada warna yang diubah: tes `tajweed_widget_test.dart` sudah memeriksa ≥ 4.5:1 di kartu, latar, ayat aktif, dan ayat bertanda untuk semua palet sejak 1.9.1, dan tetap lulus. Karena tidak ada perubahan, tabel ΔE2000 sebelum/sesudah tidak diperlukan.

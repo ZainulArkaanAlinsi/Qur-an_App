@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/glass/glass_tokens.dart';
+import 'package:quran_app_2025/core/app_version.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
 /// Tingkat kualitas kaca (LIQUID_GLASS.md §4). Bentuk dan ukuran sama di
@@ -11,18 +14,37 @@ enum GlassPreference { auto, full, lite, off }
 
 /// Menyimpan pilihan pengguna dan tingkat dari pengawas frame.
 class GlassController extends ChangeNotifier {
-  GlassController({GlassPreference preference = GlassPreference.auto})
-    : _preference = preference;
+  GlassController({
+    GlassPreference preference = GlassPreference.auto,
+    GlassTier autoTier = GlassTier.full,
+    this.persist = false,
+  }) : _preference = preference,
+       _autoTier = autoTier;
 
-  /// Dibaca dari preferensi (kunci `glass_preference`, bawaan otomatis).
+  /// Dibaca dari preferensi (`glass_preference`, bawaan otomatis) dan
+  /// tingkat pengawas frame (`glass_tier_auto`). Tingkat otomatis di-reset
+  /// sekali saat versi aplikasi berubah (LIQUID_GLASS.md §7).
   factory GlassController.load() => GlassController(
     preference: SharedPreferencesService.getGlassPreference(),
+    autoTier:
+        GlassTier.values
+            .where(
+              (tier) =>
+                  tier.name ==
+                  SharedPreferencesService.getGlassAutoTier(appVersion),
+            )
+            .firstOrNull ??
+        GlassTier.full,
+    persist: true,
   );
+
+  /// Simpan tingkat otomatis ke preferensi (produksi); tes tidak.
+  final bool persist;
 
   GlassPreference _preference;
   GlassPreference get preference => _preference;
 
-  GlassTier _autoTier = GlassTier.full;
+  GlassTier _autoTier;
 
   /// Tingkat yang dipilih pengawas frame saat preferensi Otomatis.
   GlassTier get autoTier => _autoTier;
@@ -39,6 +61,11 @@ class GlassController extends ChangeNotifier {
     if (tier.index <= _autoTier.index) return;
     _autoTier = tier;
     notifyListeners();
+    if (persist) {
+      unawaited(
+        SharedPreferencesService.setGlassAutoTier(tier.name, appVersion),
+      );
+    }
   }
 }
 

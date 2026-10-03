@@ -11,6 +11,8 @@ import 'package:quran_app_2025/app/widgets/chip_palette.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_icons.dart';
+import 'package:quran_app_2025/app/glass/glass_tier.dart';
+import 'package:quran_app_2025/app/glass/liquid_glass.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/app/widgets/svg_path.dart';
 import 'package:quran_app_2025/app/widgets/theme_preview.dart';
@@ -229,6 +231,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  static String _glassLabel(GlassPreference preference) => switch (preference) {
+    GlassPreference.auto => 'Otomatis',
+    GlassPreference.full => 'Penuh',
+    GlassPreference.lite => 'Ringan',
+    GlassPreference.off => 'Mati',
+  };
+
+  /// Saya → Tampilan → Efek kaca (LIQUID_GLASS.md §7): pratinjau kaca di
+  /// atas garis warna, pilihan, dan satu baris keterangan.
+  Widget _glassSettings(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final glass = GlassScope.maybeOf(context);
+    if (glass == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Pratinjau: kaca sungguhan di atas garis warna, ikut berubah
+          // saat pilihan diganti.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: 92,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Row(
+                    children: [
+                      for (final color in [
+                        tokens.heroA,
+                        tokens.gold,
+                        tokens.primaryText,
+                        tokens.goldSoft,
+                        tokens.heroB,
+                      ])
+                        Expanded(child: ColoredBox(color: color)),
+                    ],
+                  ),
+                  Center(
+                    child: LiquidGlass(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 22,
+                        vertical: 12,
+                      ),
+                      child: Text(
+                        _glassLabel(glass.preference),
+                        style: SacredText.buttonSmall.copyWith(
+                          color: tokens.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          GroupedList(
+            children: [
+              for (final preference in GlassPreference.values)
+                ListRow(
+                  title: _glassLabel(preference),
+                  trailing: glass.preference == preference
+                      ? LineIcon(
+                          SacredIcons.checkCircle,
+                          color: tokens.primaryText,
+                          size: 22,
+                        )
+                      : null,
+                  onTap: () async {
+                    await glass.setPreference(preference);
+                    if (mounted) setState(() {});
+                    _refreshSheet?.call();
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Otomatis menurunkan efek bila HP terasa berat.',
+            style: SacredText.cardNote.copyWith(color: tokens.sec),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _themeSettings(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     final controller = AppScope.of(context);
@@ -388,6 +478,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 onTap: () => _openSheet('Tema', _themeSettings),
               ),
+              if (GlassScope.maybeOf(context) case final glass?) ...[
+                Divider(
+                  height: .5,
+                  thickness: .5,
+                  indent: SettingsRow.separatorInset,
+                  color: tokens.sep,
+                ),
+                SettingsRow(
+                  icon: SacredIcons.layers,
+                  chipColor: SacredBadge.blue,
+                  title: 'Efek kaca',
+                  value: _glassLabel(glass.preference),
+                  onTap: () => _openSheet('Efek kaca', _glassSettings),
+                ),
+              ],
             ],
           ),
         ),

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:quran_app_2025/app/app_controller.dart';
 import 'package:quran_app_2025/app/app_entry.dart';
 import 'package:quran_app_2025/app/distribution.dart';
+import 'package:quran_app_2025/app/glass/glass_governor.dart';
 import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
 import 'package:quran_app_2025/features/prayer/application/prayer_reminders.dart';
@@ -112,7 +113,12 @@ class QuranApp extends StatelessWidget {
           child: child ?? const SizedBox(),
         );
         final glass = this.glass;
-        return glass == null ? app : GlassScope(controller: glass, child: app);
+        if (glass == null) return app;
+        // Pengawas frame menurunkan efek kaca bila HP terasa berat (§7).
+        return GlassScope(
+          controller: glass,
+          child: GlassGovernor(controller: glass, child: app),
+        );
       },
       home: AppEntry(ready: ready),
     ),
