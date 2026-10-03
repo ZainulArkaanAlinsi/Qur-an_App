@@ -43,7 +43,29 @@ flutter build appbundle --release
     ≥ 16384;
   - `zipalign -c -P 16 -v 4` lulus untuk 86 APK split hasil `bundletool build-apks`.
 
-### Catatan rilis (kolom "Yang baru" di Play Console)
+### Catatan rilis 1.11.0 (22) — update v6
+
+Diunggah ke track tes tertutup yang sama setelah 1.10.1. Maksimal 500 karakter
+(ID 386, EN 403). Hanya fitur yang ada di build rilis yang disebut (qari berstatus
+`pending` tidak).
+
+Bahasa Indonesia:
+
+```
+Beranda baru: salat berikutnya dan satu langkah untuk hari ini. Murottal kini menampilkan ayat yang dibaca qari dan ikut bergulir. Waktu salat bisa mengikuti lokasi otomatis (dibulatkan sekitar 3 km) atau kota pilihan, dengan pilihan metode, mazhab Asar, dan koreksi menit. Pemilih qari baru: cari, saring, dan dengar contoh. Pengaturan Efek kaca di tab Saya untuk HP yang terasa berat.
+```
+
+English:
+
+```
+New Home: your next prayer and one step for today. Murottal now shows the verse being recited and scrolls along with it. Prayer times can follow your location automatically (rounded to about 3 km) or a chosen city, with a choice of calculation method, Asr school and minute adjustments. New reciter picker: search, filter and play a sample. A Glass effect setting in the Saya (Me) tab for slower phones.
+```
+
+Di hari yang sama dengan unggahan 1.11.0: ubah Data safety (baris *Approximate
+location*, §3) dan jalankan `firebase deploy --only hosting` supaya `privacy.html`
+versi lokasi otomatis tayang.
+
+### Catatan rilis 1.10.1 (kolom "Yang baru" di Play Console)
 
 1.10.1 adalah unggahan Play pertama, jadi catatannya menyebut fitur utama 1.10.0 dan
 perbaikan 1.10.1. Maksimal 500 karakter (ID 372, EN 412).

@@ -38,7 +38,7 @@ MEMBACA
 • Teks Arab Uthmani dari Tanzil, persis tanpa perubahan, tersimpan di HP.
 • Kartu per ayat dengan warna tajwid di setiap huruf dan legenda arti warnanya.
 • Terjemahan Kementerian Agama RI tanpa internet, plus terjemahan bahasa lain yang bisa diunduh.
-• Murottal per ayat dengan banyak pilihan qari, bisa diputar saat layar mati dan disimpan untuk didengar tanpa internet.
+• Murottal per ayat dengan banyak pilihan qari: ayat yang sedang dibaca tersorot dan ikut bergulir. Bisa diputar saat layar mati dan disimpan untuk didengar tanpa internet.
 • Cari surah, daftar juz dan halaman, bookmark dengan koleksi, serta lanjutkan dari bacaan terakhir.
 
 BELAJAR
@@ -52,7 +52,7 @@ MENGHAFAL
 
 IBADAH HARIAN
 • Target baca harian, istiqamah, dan rencana khatam.
-• Jadwal salat per kota dengan pengingat, serta arah kiblat.
+• Jadwal salat dari lokasi otomatis atau kota pilihan, dengan metode hitung yang bisa diatur, pengingat, dan arah kiblat.
 
 NYAMAN DIPAKAI
 • Mode terang, gelap, sepia, dan kontras tinggi, serta ukuran teks yang bisa diatur.
@@ -81,7 +81,7 @@ READ
 • Uthmani Arabic text from Tanzil, verbatim and stored on your phone.
 • Verse-by-verse cards with color-coded tajweed on every letter, plus a color legend.
 • Built-in Indonesian translation (Ministry of Religious Affairs of Indonesia) that works offline, and more translations you can download, including English.
-• Verse-by-verse recitation with many reciters. Keeps playing with the screen off and can be saved for offline listening.
+• Verse-by-verse recitation with many reciters; the verse being recited is highlighted and scrolls along. Keeps playing with the screen off and can be saved for offline listening.
 • Surah search, juz and page lists, bookmarks with collections, and resume where you left off.
 
 LEARN
@@ -95,7 +95,7 @@ MEMORIZE
 
 DAILY PRACTICE
 • Daily reading goal, streak and khatam plan.
-• Prayer times for your city with reminders, and a Qibla compass.
+• Prayer times from your location or a chosen city, with an adjustable calculation method, reminders, and a Qibla compass.
 
 COMFORTABLE
 • Light, dark, sepia and high-contrast themes, with adjustable text size.
@@ -124,7 +124,7 @@ MyQuran is a personal project by a student. Learning the Qur'an is best done wit
 • نص عثماني من مشروع «تنزيل» كما هو دون تغيير، محفوظ على جهازك.
 • بطاقة لكل آية مع تجويد ملوّن على كل حرف ودليل لمعاني الألوان.
 • ترجمة إندونيسية مدمجة تعمل دون إنترنت، وترجمات أخرى يمكن تنزيلها.
-• تلاوة آية بآية بأصوات قرّاء متعددين، تعمل والشاشة مطفأة، ويمكن حفظها للاستماع دون إنترنت.
+• تلاوة آية بآية بأصوات قرّاء متعددين، مع تمييز الآية التي تُتلى الآن وتمريرها تلقائيًا، تعمل والشاشة مطفأة، ويمكن حفظها للاستماع دون إنترنت.
 • البحث عن السور، وقوائم الأجزاء والصفحات، والعلامات المرجعية، والمتابعة من آخر قراءة.
 
 التعلّم
@@ -138,7 +138,7 @@ MyQuran is a personal project by a student. Learning the Qur'an is best done wit
 
 العبادة اليومية
 • هدف قراءة يومي، ومواظبة، وخطة ختمة.
-• مواقيت الصلاة لمدينتك مع التنبيهات، وبوصلة القبلة.
+• مواقيت الصلاة حسب موقعك تلقائيًا أو مدينة تختارها، مع طريقة حساب قابلة للضبط، والتنبيهات، وبوصلة القبلة.
 
 راحة الاستخدام
 • أوضاع فاتحة وداكنة وسيبيا وعالية التباين، مع تحكّم في حجم الخط.
@@ -167,7 +167,7 @@ MEMBACA
 • Teks Arab Uthmani daripada Tanzil, tepat tanpa perubahan dan tersimpan dalam telefon.
 • Kad setiap ayat dengan warna tajwid pada setiap huruf, berserta petunjuk maksud warna.
 • Terjemahan bahasa Indonesia terbina dalam tanpa internet, dan terjemahan lain yang boleh dimuat turun.
-• Bacaan ayat demi ayat dengan pelbagai qari, boleh dimainkan semasa skrin tutup dan disimpan untuk didengar tanpa internet.
+• Bacaan ayat demi ayat dengan pelbagai qari; ayat yang sedang dibaca diserlahkan dan ikut menatal. Boleh dimainkan semasa skrin tutup dan disimpan untuk didengar tanpa internet.
 • Carian surah, senarai juzuk dan halaman, penanda buku serta sambung dari bacaan terakhir.
 
 BELAJAR
@@ -181,7 +181,7 @@ MENGHAFAZ
 
 AMALAN HARIAN
 • Sasaran bacaan harian, istiqamah dan pelan khatam.
-• Waktu solat mengikut bandar dengan peringatan, serta kompas kiblat.
+• Waktu solat mengikut lokasi automatik atau bandar pilihan, dengan kaedah kiraan yang boleh diubah, peringatan, serta kompas kiblat.
 
 SELESA DIGUNAKAN
 • Mod cerah, gelap, sepia dan kontras tinggi, dengan saiz teks boleh laras.
@@ -210,7 +210,7 @@ OKU
 • Tanzil'den değiştirilmeden alınmış Osmanlı hattı (Uthmani) Arapça metin, telefonunda kayıtlı.
 • Her harfte renkli tecvid gösteren ayet kartları ve renk açıklamaları.
 • İnternetsiz çalışan dahili Endonezce meal ve indirilebilen başka dillerde mealler.
-• Birçok kâriden ayet ayet tilavet; ekran kapalıyken çalar, internetsiz dinlemek için kaydedilebilir.
+• Birçok kâriden ayet ayet tilavet; okunan ayet vurgulanır ve kendiliğinden kayar. Ekran kapalıyken çalar, internetsiz dinlemek için kaydedilebilir.
 • Sure arama, cüz ve sayfa listeleri, koleksiyonlu yer imleri ve son kaldığın yerden devam.
 
 ÖĞREN
@@ -224,7 +224,7 @@ EZBERLE
 
 GÜNLÜK İBADET
 • Günlük okuma hedefi, seri ve hatim planı.
-• Şehrine göre namaz vakitleri, hatırlatıcılar ve kıble pusulası.
+• Konumuna göre otomatik ya da seçtiğin şehre göre namaz vakitleri, ayarlanabilir hesaplama yöntemi, hatırlatıcılar ve kıble pusulası.
 
 RAHAT KULLANIM
 • Açık, koyu, sepya ve yüksek kontrast temalar; ayarlanabilir yazı boyutu.
@@ -253,7 +253,7 @@ MyQuran آپ کو ایک پُرسکون ایپ میں قرآنِ مجید پڑھ
 • تنزیل (Tanzil) سے عثمانی رسم الخط میں عربی متن، بغیر کسی تبدیلی کے، آپ کے فون میں محفوظ۔
 • ہر آیت کا کارڈ، ہر حرف پر رنگین تجوید اور رنگوں کی وضاحت کے ساتھ۔
 • انٹرنیٹ کے بغیر انڈونیشیائی ترجمہ، اور دوسری زبانوں کے تراجم جو ڈاؤن لوڈ کیے جا سکتے ہیں۔
-• کئی قاریوں کی آواز میں آیت بہ آیت تلاوت، اسکرین بند ہونے پر بھی چلتی ہے اور بغیر انٹرنیٹ سننے کے لیے محفوظ کی جا سکتی ہے۔
+• کئی قاریوں کی آواز میں آیت بہ آیت تلاوت؛ جو آیت پڑھی جا رہی ہو وہ نمایاں ہوتی ہے اور خود بخود اسکرول ہوتی ہے۔ اسکرین بند ہونے پر بھی چلتی ہے اور بغیر انٹرنیٹ سننے کے لیے محفوظ کی جا سکتی ہے۔
 • سورت تلاش، پارے اور صفحات کی فہرست، بک مارکس، اور آخری تلاوت سے جاری رکھیں۔
 
 سیکھیں
@@ -267,7 +267,7 @@ MyQuran آپ کو ایک پُرسکون ایپ میں قرآنِ مجید پڑھ
 
 روزانہ عبادت
 • روزانہ تلاوت کا ہدف، استقامت اور ختم کا منصوبہ۔
-• آپ کے شہر کے مطابق نماز کے اوقات، یاد دہانیاں اور قبلہ نما۔
+• آپ کے مقام سے خودکار یا منتخب شہر کے مطابق نماز کے اوقات، قابلِ تبدیل طریقۂ حساب، یاد دہانیاں اور قبلہ نما۔
 
 آسان استعمال
 • لائٹ، ڈارک، سیپیا اور ہائی کنٹراسٹ تھیم، اور قابلِ تبدیل فونٹ سائز۔
@@ -296,7 +296,7 @@ LIRE
 • Texte arabe uthmani de Tanzil, sans aucune modification, enregistré sur votre téléphone.
 • Une carte par verset, avec le tajwid en couleur sur chaque lettre et une légende des couleurs.
 • Traduction indonésienne intégrée disponible hors ligne, et d'autres traductions téléchargeables.
-• Récitation verset par verset avec de nombreux récitateurs, même écran éteint, à enregistrer pour une écoute hors ligne.
+• Récitation verset par verset avec de nombreux récitateurs : le verset récité est mis en évidence et défile tout seul. Fonctionne écran éteint, à enregistrer pour une écoute hors ligne.
 • Recherche de sourates, listes des juz et des pages, favoris avec collections, reprise de la dernière lecture.
 
 APPRENDRE
@@ -310,7 +310,7 @@ MÉMORISER
 
 PRATIQUE QUOTIDIENNE
 • Objectif de lecture quotidien, régularité et plan de khatm.
-• Horaires de prière pour votre ville avec rappels, et boussole de la qibla.
+• Horaires de prière selon votre position ou la ville choisie, méthode de calcul réglable, rappels et boussole de la qibla.
 
 CONFORTABLE
 • Thèmes clair, sombre, sépia et contraste élevé, taille du texte réglable.
