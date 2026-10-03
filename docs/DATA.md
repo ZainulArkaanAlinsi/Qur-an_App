@@ -25,7 +25,7 @@ Berkas: `lib/features/home/domain/home_snapshot.dart`. Dibangun oleh `HomeContro
 | `murajaahDoneToday` | `int` | **baru**: kunci `murajaah.selesai.<yyyy-mm-dd>` (§4) |
 | `startPoint` | `StartPoint` | `StartPoint.saved ?? StartPoint.initial` |
 | `nextLesson` | `Lesson?` | `curriculum.nextAfter(done, includeDrafts: showDraftLessons)` (judul untuk "Sesi besok") |
-| `prayer` | `PrayerDay?` + status | `PrayerService.fetch(city, country)`; status `ok / belumDiatur / luring / memuat` |
+| `prayer` | `PrayerDay?` + status | `PrayerService.fetch(settings: PrayerSettingsStore.load())` (tempat, metode, Asar, koreksi; §8); status `ok / belumDiatur / luring / memuat`. Dimuat ulang juga saat `PrayerSettingsStore.revision` berubah |
 | `nowPlaying` | `AudioQueue?` + `playingVerse` | `QuranAudioService.instance.queue`, `.playingVerse` |
 
 Hitung ulang snapshot ketika: Beranda tampil lagi (kembali dari layar lain), `sessionRevision` berubah, `QuranAudioService.queue`/`playingVerse` berubah, pull-to-refresh, dan **tanggal lokal berganti** (timer ke 00:00:05 berikutnya).
@@ -204,3 +204,28 @@ Tafsiran tombol yang disetujui pemilik (2026-10-03):
 | Istiqamah & target | `StreakCalculator`, `ReadingProgressService` | `QURAN_APP_GUIDE_DAN_PROMPT_CODEX.md` |
 | Hafalan | `AyahMemorization` (`surah`, `ayah`, `interval`, `dueOn`) | `lib/features/hafalan/domain/murajaah_schedule.dart` |
 | Sinkron cloud | Firestore (hanya bila masuk) | `docs/CLOUD_SYNC.md`, `firestore.rules` |
+
+---
+
+## 8. Waktu salat: lokasi & cara hitung (v6)
+
+Berkas: `lib/features/prayer/domain/prayer_settings.dart` (murni), `application/prayer_settings_store.dart`, `application/prayer_reminders.dart`, `presentation/prayer_settings_sheet.dart`. Spesifikasi: `docs/design/v6/screens/22-pengaturan-salat.md`.
+
+| Kunci (lokal, tidak ikut sinkron) | Isi | Bawaan |
+| --- | --- | --- |
+| `salat.lokasi.mode` | `kota` / `otomatis` | tidak ada → `kota` (pengguna lama tetap dengan kotanya) |
+| `salat.lokasi.koordinat` | `"-6.2,106.85"`, sudah dibulatkan ke kisi 0,025° | — |
+| `salat.metode` | ID AlAdhan | 20 (Kemenag RI) |
+| `salat.asar` | 0 Standar / 1 Hanafi (AlAdhan `school`) | 0 |
+| `salat.koreksi` | `"Subuh,Dzuhur,Ashar,Maghrib,Isya"` menit, ±10 | `"0,0,0,0,0"` |
+| `salat.kotaTerakhir` | maks 5 `kota|negara`, terbaru di depan | kosong |
+| `prayer_city` / `prayer_country` | kota mode kota (kunci lama) | tidak ada → Jakarta, Indonesia (keputusan 2026-10-03) |
+
+Aturan:
+- **Pembulatan**: kisi 0,025° (≈ 2,8 km) sebelum disimpan atau dikirim. Satu sel ≥ 3 km² sampai lintang ±67° = *approximate location* menurut Play (keputusan 2026-10-03, menggantikan "2 desimal").
+- **Permintaan**: mode otomatis → `/v1/timings/{dd-MM-yyyy}?latitude&longitude&method&school[&tune]`; mode kota → `/v1/timingsByCity/{dd-MM-yyyy}?city&country&method&school[&tune]`. `tune` = 9 nilai Imsak,Fajr,Sunrise,Dhuhr,Asr,Maghrib,Sunset,Isha,Midnight; hanya 5 waktu salat diisi, dikirim bila ada yang ≠ 0. ID metode dicek dari `GET api.aladhan.com/v1/methods` (2026-10-03).
+- **Simpanan jadwal** dikunci `PrayerSettings.cacheKey` = tempat + metode + Asar + koreksi; jadwal lama tidak dipakai setelah setelan berubah.
+- **Simpan** (lembar): ambil jadwal dulu; bila gagal, setelan **tidak** disimpan dan pesan tampil di lembar. Bila berhasil: simpan → `PrayerSettingsStore.revision++` → jadwalkan ulang pengingat tersimpan (`reschedulePrayerReminders`, logika ganti kota lama; tidak meminta izin notifikasi).
+- **Izin lokasi** hanya diminta saat "Pakai lokasi sekarang" ditekan. Ditolak permanen → pesan + "Buka pengaturan" + "Pilih kota".
+- **Saat aplikasi dibuka** (mode otomatis, izin masih ada): `getLastKnownPosition`; pindah > 25 km → ambil jadwal, simpan, jadwalkan ulang pengingat diam-diam. Gagal/luring → lokasi lama tetap dipakai.
+

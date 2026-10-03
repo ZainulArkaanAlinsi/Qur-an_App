@@ -9,6 +9,7 @@ import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/features/learn/domain/curriculum.dart';
 import 'package:quran_app_2025/features/murottal/application/now_playing_audio.dart';
 import 'package:quran_app_2025/features/onboarding/domain/start_point.dart';
+import 'package:quran_app_2025/features/prayer/application/prayer_settings_store.dart';
 import 'package:quran_app_2025/features/session/data/session_store.dart';
 import 'package:quran_app_2025/screens/lesson_screen.dart'
     show showDraftLessons;
@@ -21,6 +22,7 @@ import 'package:quran_app_2025/services/shared_preferences_service.dart';
 /// - aplikasi kembali ke depan;
 /// - `sessionRevision` berubah (sesi hari ini disimpan);
 /// - antrean/ayat murottal berubah;
+/// - setelan waktu salat disimpan ([PrayerSettingsStore.revision]);
 /// - [refresh] dipanggil (pull-to-refresh, kembali dari layar lain);
 /// - **tanggal lokal berganti** (timer ke 00:00:05 berikutnya).
 class HomeController extends ChangeNotifier with WidgetsBindingObserver {
@@ -31,12 +33,14 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
     Future<List<PageBoundary>> Function()? loadPages,
     NowPlayingAudio? audio,
     Listenable? sessionChanges,
+    Listenable? prayerChanges,
   }) : _clock = clock ?? DateTime.now,
        _loadPrayerFor = loadPrayer ?? _fetchPrayer,
        _loadCurriculum = loadCurriculum ?? CurriculumRepository.load,
        _loadPages = loadPages ?? PageRepository.load,
        _audio = audio,
-       _sessionChanges = sessionChanges ?? sessionRevision;
+       _sessionChanges = sessionChanges ?? sessionRevision,
+       _prayerChanges = prayerChanges ?? PrayerSettingsStore.revision;
 
   final DateTime Function() _clock;
   final Future<PrayerDay?> Function(DateTime day) _loadPrayerFor;
@@ -44,6 +48,7 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
   final Future<List<PageBoundary>> Function() _loadPages;
   final NowPlayingAudio? _audio;
   final Listenable _sessionChanges;
+  final Listenable _prayerChanges;
 
   Curriculum? _curriculum;
   List<PageBoundary> _pages = const [];
@@ -64,6 +69,7 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
     _started = true;
     _audio?.addListener(_recompute);
     _sessionChanges.addListener(_recompute);
+    _prayerChanges.addListener(_onPrayerSettings);
     WidgetsBinding.instance.addObserver(this);
     _scheduleMidnight();
     try {
@@ -117,7 +123,7 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _refreshPrayer() async {
     final now = _clock();
-    if (SharedPreferencesService.getPrayerCity().trim().isEmpty) {
+    if (!PrayerSettingsStore.load().isSet) {
       _prayer = null;
       _prayerTomorrow = null;
       _prayerStatus = PrayerStatus.belumDiatur;
@@ -212,11 +218,15 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
     return number;
   }
 
-  static Future<PrayerDay?> _fetchPrayer(DateTime day) => PrayerService.fetch(
-    city: SharedPreferencesService.getPrayerCity(),
-    country: SharedPreferencesService.getPrayerCountry(),
-    date: day,
-  );
+  static Future<PrayerDay?> _fetchPrayer(DateTime day) =>
+      PrayerService.fetch(settings: PrayerSettingsStore.load(), date: day);
+
+  /// Setelan waktu salat berubah: jadwal lama dibuang lalu dimuat ulang.
+  void _onPrayerSettings() {
+    _prayer = null;
+    _prayerTomorrow = null;
+    unawaited(_refreshPrayer());
+  }
 
   @override
   void dispose() {
@@ -224,6 +234,7 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
     _midnight?.cancel();
     _audio?.removeListener(_recompute);
     _sessionChanges.removeListener(_recompute);
+    _prayerChanges.removeListener(_onPrayerSettings);
     if (_started) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

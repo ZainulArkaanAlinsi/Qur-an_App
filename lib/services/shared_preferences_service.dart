@@ -632,6 +632,45 @@ class SharedPreferencesService {
     await _prefs?.setString('prayer_country', country.trim());
   }
 
+  /// Pengguna pernah memilih kota sendiri (bukan Jakarta bawaan).
+  static bool hasPrayerCity() => _prefs?.containsKey('prayer_city') ?? false;
+
+  // Lokasi & cara hitung waktu salat (docs/design/v6/screens/22-pengaturan-
+  // salat.md). Semua lokal, tidak ikut sinkron cloud.
+
+  /// `kota` / `otomatis`; null = pengguna lama → mode kota.
+  static String? getPrayerLocationMode() =>
+      _prefs?.getString('salat.lokasi.mode');
+  static Future<void> setPrayerLocationMode(String mode) async =>
+      _prefs?.setString('salat.lokasi.mode', mode);
+
+  /// Koordinat yang sudah dibulatkan, mis. "-6.2,106.85".
+  static String? getPrayerCoordinates() =>
+      _prefs?.getString('salat.lokasi.koordinat');
+  static Future<void> setPrayerCoordinates(String coordinates) async =>
+      _prefs?.setString('salat.lokasi.koordinat', coordinates);
+
+  /// ID metode AlAdhan; bawaan 20 (Kemenag RI).
+  static int getPrayerMethod() => _prefs?.getInt('salat.metode') ?? 20;
+  static Future<void> setPrayerMethod(int id) async =>
+      _prefs?.setInt('salat.metode', id);
+
+  /// Mazhab Asar: 0 Standar, 1 Hanafi.
+  static int getPrayerSchool() => _prefs?.getInt('salat.asar') ?? 0;
+  static Future<void> setPrayerSchool(int school) async =>
+      _prefs?.setInt('salat.asar', school);
+
+  /// Koreksi menit "Subuh,Dzuhur,Ashar,Maghrib,Isya".
+  static String? getPrayerTune() => _prefs?.getString('salat.koreksi');
+  static Future<void> setPrayerTune(String tune) async =>
+      _prefs?.setString('salat.koreksi', tune);
+
+  /// Maks 5 kota terakhir, "kota|negara", terbaru di depan.
+  static List<String> getRecentPrayerCities() =>
+      _prefs?.getStringList('salat.kotaTerakhir') ?? const [];
+  static Future<void> setRecentPrayerCities(List<String> places) async =>
+      _prefs?.setStringList('salat.kotaTerakhir', places);
+
   /// Onboarding v3 sudah dilewati dengan tombol Mulai; tampil sekali saja
   /// (docs/design/v3/DESIGN.md §5a).
   static bool getOnboardingDone() =>

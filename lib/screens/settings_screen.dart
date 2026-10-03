@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app_2025/app/widgets/app_dock.dart';
@@ -21,6 +23,7 @@ import 'package:quran_app_2025/services/reading_progress_service.dart';
 import 'package:quran_app_2025/data/quran_text_repository.dart';
 import 'package:quran_app_2025/data/reciter_repository.dart';
 import 'package:quran_app_2025/models/reciter.dart';
+import 'package:quran_app_2025/features/prayer/presentation/prayer_settings_sheet.dart';
 import 'package:quran_app_2025/screens/prayer_screen.dart';
 import 'package:quran_app_2025/screens/progress_screen.dart';
 import 'package:quran_app_2025/screens/reciter_picker.dart';
@@ -440,14 +443,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         _Group(
           header: 'Salat',
-          child: SettingsRow(
-            icon: SacredIcons.sun,
-            chipColor: SacredBadge.blue,
-            title: 'Jadwal salat & adzan',
-            subtitle: 'Kota, metode, dan pengingat tiap waktu',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PrayerScreen()),
-            ),
+          child: Column(
+            children: [
+              SettingsRow(
+                icon: SacredIcons.sun,
+                chipColor: SacredBadge.blue,
+                title: 'Jadwal salat & adzan',
+                subtitle: 'Jadwal hari ini dan pengingat tiap waktu',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const PrayerScreen()),
+                ),
+              ),
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: SettingsRow.separatorInset,
+                color: tokens.sep,
+              ),
+              SettingsRow(
+                icon: SacredIcons.pin,
+                chipColor: SacredBadge.green,
+                title: 'Waktu salat',
+                subtitle: 'Lokasi, metode, Asar, koreksi menit',
+                onTap: () => unawaited(showPrayerSettingsSheet(context)),
+              ),
+            ],
           ),
         ),
 

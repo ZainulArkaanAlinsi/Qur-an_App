@@ -65,7 +65,7 @@ void main() {
         ...PrayerService.prayerNames,
         'Salat',
         'Kiblat',
-        'Ganti kota',
+        'Ganti',
         'Pengingat tilawah',
       ]);
       await expectLater(
@@ -125,7 +125,7 @@ void main() {
       );
     });
 
-    testWidgets('gagal memuat: Ganti kota tetap ada, Coba lagi memuat ulang', (
+    testWidgets('gagal memuat: Ganti tetap ada, Coba lagi memuat ulang', (
       tester,
     ) async {
       var fail = true;
@@ -137,7 +137,7 @@ void main() {
         },
       );
       expect(find.textContaining('belum bisa dimuat'), findsOne);
-      expect(find.text('Ganti kota'), findsOne);
+      expect(find.text('Ganti'), findsOne);
 
       fail = false;
       await tester.tap(find.text('Coba lagi'));
@@ -173,16 +173,16 @@ void main() {
       expect(find.textContaining('Sedang luring'), findsOne);
     });
 
-    testWidgets('Ganti kota: Simpan nonaktif bila kosong', (tester) async {
+    testWidgets('Ganti: Simpan nonaktif bila kosong', (tester) async {
       await open(tester, loader: (date) async => _day(date ?? _date));
-      await tester.tap(find.text('Ganti kota'));
+      await tester.tap(find.text('Ganti'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '');
       await tester.pump();
       await tester.tap(find.text('Simpan'), warnIfMissed: false);
       await tester.pumpAndSettle();
       // Lembar masih terbuka dan kota tidak berubah.
-      expect(find.text('Lokasi jadwal salat'), findsOne);
+      expect(find.text('Waktu salat'), findsOne);
       expect(SharedPreferencesService.getPrayerCity(), 'Jakarta');
 
       await tester.enterText(find.byType(TextField).first, 'Bandung');

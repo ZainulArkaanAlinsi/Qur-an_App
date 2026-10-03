@@ -8,6 +8,7 @@ import 'package:quran_app_2025/app/app_entry.dart';
 import 'package:quran_app_2025/app/distribution.dart';
 import 'package:quran_app_2025/app/glass/glass_tier.dart';
 import 'package:quran_app_2025/app/sacred_theme.dart';
+import 'package:quran_app_2025/features/prayer/application/prayer_reminders.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:quran_app_2025/services/reminder_service.dart';
 import 'package:quran_app_2025/services/app_update_service.dart';
@@ -51,6 +52,14 @@ Future<void> _startServices() async {
   } on Object catch (error) {
     debugPrint('Sinkronisasi cloud tidak aktif: $error');
   }
+  // Mode lokasi Otomatis: bila sudah pindah > 25 km, jadwal & pengingat
+  // ikut diperbarui. Tidak pernah meminta izin dan tidak menahan splash.
+  unawaited(
+    refreshPrayerLocationIfMoved().catchError((Object error) {
+      debugPrint('Lokasi salat tidak diperbarui: $error');
+      return false;
+    }),
+  );
 }
 
 /// Font yang dibundel berlisensi SIL OFL 1.1; teks lisensinya wajib ikut

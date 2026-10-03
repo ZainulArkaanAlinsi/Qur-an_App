@@ -13,9 +13,9 @@ Kota diketik manual (kota + negara) lalu dikirim ke AlAdhan dengan metode tetap 
 `SegmentedPill`: **Otomatis** | **Pilih kota**
 
 - **Otomatis**
-  - Tombol "Pakai lokasi sekarang". Izin lokasi diminta **saat tombol ditekan** dengan kalimat satu baris: "Lokasi dipakai untuk menghitung jadwal salat. Koordinat dibulatkan ±1 km dan tidak disimpan di server kami."
+  - Tombol "Pakai lokasi sekarang". Izin lokasi diminta **saat tombol ditekan** dengan kalimat satu baris: "Lokasi dipakai untuk menghitung jadwal salat. Koordinat dibulatkan ke kisi ±3 km dan tidak disimpan di server kami." *(diubah 2026-10-03, lihat di bawah)*
   - `Geolocator` (sudah dipakai kiblat), akurasi `LocationAccuracy.low` cukup.
-  - Koordinat dibulatkan **2 desimal** sebelum dikirim ke `api.aladhan.com/v1/timings?latitude=..&longitude=..` (endpoint koordinat). Zona waktu diambil dari `meta.timezone`.
+  - Koordinat dibulatkan ke **kisi 0,025°** (≈ 2,8 km; semula 2 desimal, diganti 2026-10-03 karena 2 desimal termasuk lokasi presisi menurut Play — `docs/decisions.md`) sebelum dikirim ke `api.aladhan.com/v1/timings?latitude=..&longitude=..` (endpoint koordinat). Zona waktu diambil dari `meta.timezone`.
   - Tampilan: "Lokasi sekarang · -6,30, 107,15 · Asia/Jakarta" + "Perbarui".
   - Saat aplikasi dibuka dan mode Otomatis: bila izin masih ada, ambil posisi terakhir (`getLastKnownPosition`); kalau berpindah > 25 km dari yang tersimpan, perbarui diam-diam dan jadwalkan ulang pengingat. Tanpa izin → tetap pakai lokasi tersimpan, tidak meminta izin otomatis.
 - **Pilih kota**: isian kota + negara (perilaku lama, termasuk pesan galat), ditambah daftar 5 kota terakhir dipakai.
@@ -49,7 +49,7 @@ Tidak ikut sinkron cloud.
 
 ## Privasi (wajib diperbarui bersamaan)
 
-- `hosting/public/privacy.html`: tambahkan bahwa mode Otomatis mengirim **koordinat yang dibulatkan ±1 km** ke AlAdhan untuk menghitung jadwal, tidak disimpan oleh MyQuran di server.
+- `hosting/public/privacy.html`: tambahkan bahwa mode Otomatis mengirim **koordinat yang dibulatkan ke kisi ±3 km** ke AlAdhan untuk menghitung jadwal, tidak disimpan oleh MyQuran di server.
 - `docs/PLAY_STORE_RELEASE.md` → Data safety: **Approximate location — dikumpulkan, opsional, tidak dibagikan, tujuan: fungsi aplikasi**. Lokasi presisi tidak dikumpulkan.
 - Izin manifest: `ACCESS_COARSE_LOCATION` cukup untuk salat; `ACCESS_FINE_LOCATION` tetap hanya bila kiblat membutuhkannya (cek manifest sekarang, jangan menambah izin baru tanpa alasan).
 

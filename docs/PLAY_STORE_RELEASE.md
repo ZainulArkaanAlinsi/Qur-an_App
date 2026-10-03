@@ -156,8 +156,18 @@ Sumber: https://support.google.com/googleplay/android-developer/answer/14151465
 | User IDs | Ya, opsional | Tidak | ID pengguna Firebase |
 | App activity (riwayat baca, bookmark, tanggal Sesi hari ini selesai) | Ya, opsional | Tidak | Sinkronisasi antar perangkat |
 | Device or other IDs | Ya, opsional | Tidak | ID perangkat acak untuk sesi baca yang disinkron |
-| Lokasi | Tidak dikumpulkan | — | Kiblat dihitung di perangkat, tidak dikirim |
+| Approximate location | Ya, **opsional** (mulai 1.11: Waktu salat mode Otomatis) | Tidak | Fungsi aplikasi (jadwal salat). Koordinat dibulatkan ke kisi 0,025° (±3 km; sel ≥ 3 km² = definisi *approximate* Play) lalu dikirim ke AlAdhan saat pengguna menekan "Pakai lokasi sekarang"; "tidak dibagikan" mengikuti pengecualian Play *user-initiated action* (pengguna diberi tahu di layar). Kiblat tetap dihitung di perangkat |
+| Precise location | Tidak dikumpulkan | — | Koordinat presisi tidak pernah keluar dari perangkat |
 | Audio (rekaman) | Tidak dikumpulkan | — | Rekaman hafalan dan Sesi hari ini hanya di perangkat, tidak pernah diunggah |
+
+Kapan diubah di Play Console: baris *Approximate location* hanya berlaku untuk build
+yang memuat Waktu salat v6 (1.11, `fitur/v6`). Ubah formulir Data safety **bersamaan**
+dengan unggahan 1.11, dan deploy `hosting/public/privacy.html` versi ini
+(`firebase deploy --only hosting`) di hari yang sama. Build 1.10.x tidak mengirim
+lokasi, jadi formulir & halaman privasi 1.10.1 tetap benar sampai saat itu.
+Sumber definisi: https://support.google.com/googleplay/android-developer/answer/10787469
+(*Approximate location* = area ≥ 3 km²; *sharing* tidak termasuk transfer berdasarkan
+aksi yang dimulai pengguna).
 
 Enkripsi saat transit: **Ya** (HTTPS). Pengguna bisa meminta penghapusan data: **Ya**
 (Saya › kartu profil › Hapus akun & data cloud). Penghapusan juga bisa diminta tanpa

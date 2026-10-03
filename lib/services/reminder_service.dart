@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:quran_app_2025/features/prayer/domain/prayer_settings.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
 
 class ReminderService {
@@ -44,8 +45,7 @@ class ReminderService {
     required Set<String> prayerNames,
     int? quranReminderMinutes,
     int? sessionReminderMinutes,
-    required String city,
-    required String country,
+    required PrayerSettings settings,
   }) async {
     await initialize();
     await _plugin.cancelAll();
@@ -61,11 +61,7 @@ class ReminderService {
       dates.map((date) async {
         if (date == day.gregorianDate) return day;
         try {
-          return await PrayerService.fetch(
-            city: city,
-            country: country,
-            date: date,
-          );
+          return await PrayerService.fetch(settings: settings, date: date);
         } catch (_) {
           return null;
         }

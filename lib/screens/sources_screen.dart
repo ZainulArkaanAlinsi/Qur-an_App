@@ -96,8 +96,8 @@ abstract final class DataSources {
     DataSource(
       name: 'AlAdhan',
       use:
-          'Waktu salat, metode ${PrayerService.methodId} '
-          '(${PrayerService.methodName})',
+          'Waktu salat; bawaan metode ${PrayerService.methodId} '
+          '(${PrayerService.methodName}), bisa diganti di Waktu salat',
       license: 'Gratis, tanpa kunci API',
       url: 'https://aladhan.com',
     ),

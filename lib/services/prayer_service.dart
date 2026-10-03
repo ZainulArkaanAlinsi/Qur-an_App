@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:http/http.dart' as http;
+import 'package:quran_app_2025/features/prayer/domain/prayer_settings.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -161,10 +162,10 @@ class PrayerDay {
 class PrayerService {
   static const prayerNames = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
 
-  /// Metode kalkulasi AlAdhan yang dipakai. Nomor dan namanya mengikuti
-  /// daftar resmi AlAdhan (aladhan.com/calculation-methods); ditampilkan di
-  /// layar salat supaya pengguna tahu jadwalnya dihitung dengan cara apa.
-  static const methodId = 20;
+  /// Metode kalkulasi AlAdhan bawaan. Nomor dan namanya mengikuti daftar
+  /// resmi AlAdhan (aladhan.com/calculation-methods); metode yang dipakai
+  /// sekarang ada di [PrayerSettings.method] (lembar Waktu salat).
+  static const methodId = PrayerSettings.defaultMethod;
   static const methodName = 'Kementerian Agama Republik Indonesia';
 
   /// Prayer times for [date], or for *today in the city* when omitted. The
@@ -176,35 +177,31 @@ class PrayerService {
   /// reached, a kept schedule is returned only if it is for the very same
   /// date ([PrayerDay.fromCache] set); yesterday's times are never shown as
   /// today's.
+  ///
+  /// [settings] menentukan tempat (kota atau koordinat yang dibulatkan),
+  /// metode, mazhab Asar, dan koreksi menit (22-pengaturan-salat.md).
   static Future<PrayerDay> fetch({
-    required String city,
-    required String country,
+    required PrayerSettings settings,
     DateTime? date,
     http.Client? client,
     DateTime Function() clock = DateTime.now,
   }) async {
     try {
-      var day = await _fetchDay(
-        city: city,
-        country: country,
-        date: date,
-        client: client,
-      );
+      var day = await _fetchDay(settings: settings, date: date, client: client);
       if (date == null) {
         final cityToday = cityDate(day.timezone, clock());
         if (cityToday != null && cityToday != day.gregorianDate) {
           day = await _fetchDay(
-            city: city,
-            country: country,
+            settings: settings,
             date: cityToday,
             client: client,
           );
         }
       }
-      await _remember(city, country, day);
+      await _remember(settings, day);
       return day;
     } on Object {
-      final kept = _recall(city, country, date, clock());
+      final kept = _recall(settings, date, clock());
       if (kept != null) return kept;
       rethrow;
     }
@@ -214,9 +211,6 @@ class PrayerService {
   static const methodShort = 'Kemenag RI';
 
   static const _keptDays = 6;
-
-  static String _placeKey(String city, String country) =>
-      '${city.trim().toLowerCase()}|${country.trim().toLowerCase()}';
 
   static Map<String, dynamic> _kept() {
     final raw = SharedPreferencesService.getPrayerCache();
@@ -228,14 +222,12 @@ class PrayerService {
     }
   }
 
-  static Future<void> _remember(
-    String city,
-    String country,
-    PrayerDay day,
-  ) async {
+  /// Kunci simpanan memuat seluruh setelan ([PrayerSettings.cacheKey]),
+  /// supaya ganti metode/Asar/koreksi tidak memakai jadwal lama.
+  static Future<void> _remember(PrayerSettings settings, PrayerDay day) async {
     final kept = _kept();
-    kept['${_placeKey(city, country)}|${PrayerDay.dateKey(day.gregorianDate)}'] =
-        day.toJson();
+    kept['${settings.cacheKey}|${PrayerDay.dateKey(day.gregorianDate)}'] = day
+        .toJson();
     // Hanya beberapa hari terakhir yang disimpan.
     final keys = kept.keys.toList()
       ..sort((a, b) => a.split('|').last.compareTo(b.split('|').last));
@@ -246,12 +238,11 @@ class PrayerService {
   }
 
   static PrayerDay? _recall(
-    String city,
-    String country,
+    PrayerSettings settings,
     DateTime? date,
     DateTime now,
   ) {
-    final place = _placeKey(city, country);
+    final place = settings.cacheKey;
     for (final entry in _kept().entries) {
       if (!entry.key.startsWith('$place|')) continue;
       final PrayerDay day;
@@ -285,20 +276,13 @@ class PrayerService {
   }
 
   static Future<PrayerDay> _fetchDay({
-    required String city,
-    required String country,
+    required PrayerSettings settings,
     DateTime? date,
     http.Client? client,
   }) async {
     final requested = date ?? DateTime.now();
     final day = DateTime(requested.year, requested.month, requested.day);
-    final formattedDate =
-        '${day.day.toString().padLeft(2, '0')}-${day.month.toString().padLeft(2, '0')}-${day.year}';
-    final uri = Uri.https(
-      'api.aladhan.com',
-      '/v1/timingsByCity/$formattedDate',
-      {'city': city, 'country': country, 'method': '$methodId'},
-    );
+    final uri = settings.uriFor(day);
     final response = await (client?.get(uri) ?? http.get(uri)).timeout(
       const Duration(seconds: 12),
     );

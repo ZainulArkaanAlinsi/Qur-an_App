@@ -14,6 +14,7 @@ import 'package:quran_app_2025/features/home/presentation/next_step_card.dart';
 import 'package:quran_app_2025/features/home/presentation/prayer_horizon.dart';
 import 'package:quran_app_2025/features/home/presentation/today_card.dart';
 import 'package:quran_app_2025/features/murottal/application/now_playing_audio.dart';
+import 'package:quran_app_2025/features/prayer/presentation/prayer_settings_sheet.dart';
 import 'package:quran_app_2025/features/session/presentation/session_screen.dart';
 import 'package:quran_app_2025/screens/bookmark_screen.dart';
 import 'package:quran_app_2025/screens/murottal_screen.dart';
@@ -151,7 +152,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     snapshot: snapshot,
                     now: _now,
                     onOpen: () => _push(const PrayerScreen()),
-                    onSetCity: () => _push(const PrayerScreen()),
+                    // Lembar Waktu salat; Beranda memuat ulang sendiri
+                    // lewat PrayerSettingsStore.revision setelah disimpan.
+                    onSetCity: () => unawaited(
+                      showPrayerSettingsSheet(
+                        context,
+                        preview: snapshot.prayer,
+                      ),
+                    ),
+                    onSettings: () => unawaited(
+                      showPrayerSettingsSheet(
+                        context,
+                        preview: snapshot.prayer,
+                      ),
+                    ),
                     onRetry: () => unawaited(_controller.refresh()),
                   ),
                   const SizedBox(height: 14),

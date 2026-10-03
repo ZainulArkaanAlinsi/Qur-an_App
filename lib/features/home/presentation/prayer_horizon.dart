@@ -19,6 +19,7 @@ class PrayerHorizon extends StatefulWidget {
     required this.onOpen,
     required this.onSetCity,
     required this.onRetry,
+    this.onSettings,
   });
 
   final HomeSnapshot snapshot;
@@ -29,6 +30,9 @@ class PrayerHorizon extends StatefulWidget {
 
   /// "Atur kota untuk jadwal salat".
   final VoidCallback onSetCity;
+
+  /// Tahan lama → lembar Waktu salat (22-pengaturan-salat.md, pintu 4).
+  final VoidCallback? onSettings;
 
   /// "Coba lagi" saat jadwal belum dimuat.
   final VoidCallback onRetry;
@@ -95,6 +99,7 @@ class _PrayerHorizonState extends State<PrayerHorizon> {
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
           onTap: model == null ? null : widget.onOpen,
+          onLongPress: widget.onSettings,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             child: child,
