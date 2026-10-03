@@ -23,6 +23,8 @@ MyQuran menjawabnya dengan satu aplikasi gratis tanpa iklan yang **memberi tahu 
 ### Masuk rilis Play pertama (1.10.x, sekarang)
 Fitur 1.10.0 apa adanya: baca (kartu ayat + tajwid), terjemahan, murottal per ayat, sesi hari ini (v5), belajar tahap 1–5, hafalan & murajaah, salat & kiblat, pengingat, sinkron opsional.
 
+Pembaruan 3 Oktober 2026: 1.10.1 hanya sempat di Pengujian internal. Pengujian tertutup langsung memakai 1.11.0 (lihat `docs/decisions.md`).
+
 ### Masuk update selama closed testing (1.11 = v6)
 Beranda v6, dock, Murottal v6, pengaturan waktu salat, pemilih qari v6, liquid glass v4.
 
