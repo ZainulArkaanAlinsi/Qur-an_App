@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:quran_app_2025/app/sacred_tokens.dart';
+import 'package:quran_app_2025/features/murottal/application/player_view_model.dart';
 
 /// Kemajuan murottal per ayat (docs/design/v6/screens/20-murottal.md §4,
 /// 21-dock.md): satu segmen per ayat dalam antrean.
@@ -8,15 +10,18 @@ import 'package:quran_app_2025/app/sacred_tokens.dart';
 ///   [fraction] posisi audio.
 /// - Antrean lebih dari [segmentLimit] ayat: satu bar kontinu supaya tidak
 ///   menjadi garis rapat.
-/// - [mini]: versi dock (tinggi 3, celah 3, tanpa halo). Versi besar yang
-///   bisa diketuk/digeser ditambahkan bersama layar Murottal v6.
-class AyahSegmentTrack extends StatelessWidget {
+/// - [mini]: versi dock (tinggi 3, celah 3, tanpa halo, tidak bisa diketuk).
+/// - [onSelect]: versi Murottal. Ketuk segmen = lompat ke ayat itu; geser =
+///   pilih ayat (haptic per ayat), audio pindah saat jari diangkat.
+class AyahSegmentTrack extends StatefulWidget {
   const AyahSegmentTrack({
     super.key,
     required this.total,
     required this.index,
     required this.fraction,
     this.mini = false,
+    this.onSelect,
+    this.semanticsValue,
   });
 
   /// Jumlah ayat di antrean.
@@ -29,31 +34,103 @@ class AyahSegmentTrack extends StatelessWidget {
   final double fraction;
   final bool mini;
 
+  /// Dipanggil dengan indeks ayat yang dipilih; null = hanya tampilan.
+  final ValueChanged<int>? onSelect;
+
+  /// Label untuk pembaca layar, mis. "Ayat 5 dari 7"; nilainya posisi dalam
+  /// antrean ("5 dari 7") supaya bisa digeser naik/turun.
+  final String? semanticsValue;
+
   /// Batas segmen: lebih dari ini memakai bar kontinu (DATA.md §5.2).
-  static const segmentLimit = 40;
+  static const segmentLimit = PlayerView.segmentLimit;
 
   /// Isi bar kontinu, tidak pernah > 1.
-  static double continuousFill(int total, int index, double fraction) {
-    if (total <= 0) return 0;
-    return ((index + fraction.clamp(0.0, 1.0)) / total).clamp(0.0, 1.0);
+  static double continuousFill(int total, int index, double fraction) =>
+      PlayerView.continuousFill(total, index, fraction);
+
+  @override
+  State<AyahSegmentTrack> createState() => _AyahSegmentTrackState();
+}
+
+class _AyahSegmentTrackState extends State<AyahSegmentTrack> {
+  /// Ayat yang sedang dipilih dengan jari; null bila tidak sedang digeser.
+  int? _dragging;
+
+  int _indexAt(double dx, double width) {
+    if (width <= 0 || widget.total <= 0) return 0;
+    return (dx / width * widget.total).floor().clamp(0, widget.total - 1);
+  }
+
+  void _drag(double dx, double width) {
+    final next = _indexAt(dx, width);
+    if (next == _dragging) return;
+    HapticFeedback.selectionClick();
+    setState(() => _dragging = next);
+  }
+
+  void _release() {
+    final picked = _dragging;
+    setState(() => _dragging = null);
+    if (picked != null) widget.onSelect?.call(picked);
   }
 
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
-    return RepaintBoundary(
+    final total = widget.total;
+    final dragging = _dragging;
+    final track = RepaintBoundary(
       child: CustomPaint(
-        size: Size(double.infinity, mini ? 3 : 7),
+        size: Size(double.infinity, widget.mini ? 3 : 7),
         painter: _TrackPainter(
           total: total,
-          index: index.clamp(0, total > 0 ? total - 1 : 0),
-          fraction: fraction.clamp(0.0, 1.0),
-          gap: mini ? 3 : 4,
-          radius: mini ? 1.5 : 4,
+          index: (dragging ?? widget.index).clamp(0, total > 0 ? total - 1 : 0),
+          fraction: dragging != null ? 0 : widget.fraction.clamp(0.0, 1.0),
+          gap: widget.mini ? 3 : 4,
+          radius: widget.mini ? 1.5 : 4,
           done: tokens.primaryText,
           rest: tokens.surf2,
           active: tokens.gold,
-          halo: mini ? null : tokens.goldSoft,
+          halo: widget.mini ? null : tokens.goldSoft,
+        ),
+      ),
+    );
+    final onSelect = widget.onSelect;
+    if (widget.mini) return track;
+    // Jarak atas/bawah sama dengan versi yang bisa diketuk, supaya tata
+    // letak panel tidak bergeser saat lompat dimatikan (galat, per surah).
+    if (onSelect == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: track,
+      );
+    }
+    String position(int index) => '${index + 1} dari $total';
+    final canIncrease = widget.index < total - 1;
+    final canDecrease = widget.index > 0;
+    return LayoutBuilder(
+      builder: (context, box) => Semantics(
+        label: widget.semanticsValue ?? 'Ayat dalam antrean',
+        value: position(widget.index),
+        increasedValue: canIncrease ? position(widget.index + 1) : null,
+        decreasedValue: canDecrease ? position(widget.index - 1) : null,
+        onIncrease: canIncrease ? () => onSelect(widget.index + 1) : null,
+        onDecrease: canDecrease ? () => onSelect(widget.index - 1) : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: (details) =>
+              onSelect(_indexAt(details.localPosition.dx, box.maxWidth)),
+          onHorizontalDragStart: (details) =>
+              _drag(details.localPosition.dx, box.maxWidth),
+          onHorizontalDragUpdate: (details) =>
+              _drag(details.localPosition.dx, box.maxWidth),
+          onHorizontalDragEnd: (_) => _release(),
+          onHorizontalDragCancel: () => setState(() => _dragging = null),
+          // Bar setinggi 7 terlalu kecil untuk jari; area sentuhnya 31.
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: track,
+          ),
         ),
       ),
     );

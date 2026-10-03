@@ -23,3 +23,6 @@ Satu baris per keputusan: tanggal · keputusan · alasan · rujukan. Keputusan d
 | 2026-10-02 | Tidak ada paket pub baru untuk v6 | Semua kebutuhan dipenuhi paket yang ada | `docs/design/v6/DESIGN.md §8` |
 | 2026-10-02 | Aksi "Murajaah" di Beranda membuka tab Hafalan, tanpa layar antrean murajaah baru | Keputusan pemilik; layar latihan per surah sudah ada | `docs/DATA.md §2.4` |
 | 2026-10-02 | Label langkah sesi di Lintasan memakai label kode: Ulang · Materi · Temukan · Tirukan · Selesai | Keputusan pemilik; satu sumber label dengan layar Sesi | `lib/features/session/domain/session_plan.dart`, `19-beranda.md §4` |
+| 2026-10-03 | `rilis/1.10.1` digabung ke `fitur/v6` sebelum Murottal v6 | Rilis itu sudah mengubah tombol Unduh Murottal; menghindari dua versi & konflik saat v6 masuk `main` | PR #38, commit 70fa7a7 |
+| 2026-10-03 | Ulang ×N (tahan tombol Ulang) berlaku untuk antrean yang sedang dimuat, mulai dari ayat sekarang | Keputusan pemilik; antrean tidak menyusut jadi satu ayat sehingga daftar ayat tetap tampil | `docs/DATA.md §5.2` |
+| 2026-10-03 | Galat dan luring di Murottal memakai satu banner; tanpa deteksi konektivitas | Keputusan pemilik; tidak ada paket baru untuk v6 | `docs/DATA.md §5.2` |

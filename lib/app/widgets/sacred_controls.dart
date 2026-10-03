@@ -113,11 +113,16 @@ class SegmentedPill<T> extends StatelessWidget {
     required this.segments,
     required this.value,
     required this.onChanged,
+    this.capsule = false,
   });
 
   final Map<T, String> segments;
   final T value;
   final ValueChanged<T> onChanged;
+
+  /// Bentuk kapsul v6 (Murottal: Teks | Sampul): latar `surf2`, segmen
+  /// aktif `surf`, label tidak aktif `sec`.
+  final bool capsule;
 
   @override
   Widget build(BuildContext context) {
@@ -126,12 +131,13 @@ class SegmentedPill<T> extends StatelessWidget {
     // dengan dua bayangan (Quran.html, Progres.html, Cari.html).
     // Tinggi minimal 36; ikut membesar pada teks besar supaya label tidak
     // terpotong.
+    final inner = BorderRadius.circular(capsule ? 999 : 9);
     return Container(
       constraints: const BoxConstraints(minHeight: 36),
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: tokens.fill,
-        borderRadius: BorderRadius.circular(12),
+        color: capsule ? tokens.surf2 : tokens.fill,
+        borderRadius: BorderRadius.circular(capsule ? 999 : 12),
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -143,14 +149,14 @@ class SegmentedPill<T> extends StatelessWidget {
                   selected: entry.key == value,
                   button: true,
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(9),
+                    borderRadius: inner,
                     onTap: () => onChanged(entry.key),
                     child: Container(
                       alignment: Alignment.center,
                       decoration: entry.key == value
                           ? BoxDecoration(
-                              color: tokens.segment,
-                              borderRadius: BorderRadius.circular(9),
+                              color: capsule ? tokens.surf : tokens.segment,
+                              borderRadius: inner,
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0x1A000000),
@@ -167,8 +173,8 @@ class SegmentedPill<T> extends StatelessWidget {
                           : null,
                       constraints: const BoxConstraints(minHeight: 30),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: capsule ? 12 : 6,
                           vertical: 3,
                         ),
                         child: FittedBox(
@@ -177,11 +183,16 @@ class SegmentedPill<T> extends StatelessWidget {
                             entry.value,
                             maxLines: 1,
                             softWrap: false,
-                            style:
-                                (entry.key == value
-                                        ? SacredText.segmentActive
-                                        : SacredText.segmentIdle)
-                                    .copyWith(color: tokens.ink),
+                            style: capsule
+                                ? SacredText.segmentCapsule.copyWith(
+                                    color: entry.key == value
+                                        ? tokens.ink
+                                        : tokens.sec,
+                                  )
+                                : (entry.key == value
+                                          ? SacredText.segmentActive
+                                          : SacredText.segmentIdle)
+                                      .copyWith(color: tokens.ink),
                           ),
                         ),
                       ),

@@ -39,8 +39,51 @@ abstract class NowPlayingAudio implements Listenable {
   }
 }
 
+/// Kontrol tambahan untuk layar Murottal (20-murottal.md §5), di atas yang
+/// dibutuhkan dock.
+abstract class MurottalAudio implements NowPlayingAudio {
+  double get speed;
+
+  /// Waktu pemutaran berhenti sendiri, atau null.
+  DateTime? get sleepAt;
+
+  /// Pesan kegagalan terakhir. [QuranAudioService] langsung menutup pemutar
+  /// setelah mengisinya, jadi pendengar harus membacanya saat diberi tahu.
+  String? get error;
+
+  /// Diputar dari satu berkas per surah: posisi ayat tidak diketahui.
+  bool get wholeSurah;
+
+  /// Posisi & durasi ayat yang diputar, dibatasi 10 Hz (20-murottal.md §4).
+  /// Tiap panggilan membuat stream baru: simpan di `State`, jangan dipanggil
+  /// di `build`.
+  Stream<AyahProgress> get progress;
+
+  Future<void> previous();
+
+  /// Lompat ke ayat ke-[index] (0-based) dalam antrean.
+  Future<void> jumpTo(int index);
+  Future<void> setRepeat(AudioRepeat mode);
+  Future<void> playRange({
+    required int surah,
+    required int fromAyah,
+    required int toAyah,
+    int? repeatCount,
+    int? startAyah,
+    Duration? position,
+  });
+
+  /// Memutar [surah] dari [ayah] sampai akhir surah.
+  Future<void> playFrom(int surah, int ayah);
+  Future<void> setSpeed(double value);
+  void setSleepTimer(Duration? after);
+}
+
+/// Posisi di ayat yang diputar.
+typedef AyahProgress = ({Duration position, Duration? duration});
+
 /// [NowPlayingAudio] di atas [QuranAudioService.instance].
-class QuranNowPlayingAudio implements NowPlayingAudio {
+class QuranNowPlayingAudio implements MurottalAudio {
   QuranNowPlayingAudio([QuranAudioService? service])
     : _audio = service ?? QuranAudioService.instance;
 
@@ -55,6 +98,10 @@ class QuranNowPlayingAudio implements NowPlayingAudio {
     _audio.rangePass,
     _audio.rangeTarget,
     _audio.sourceNote,
+    _audio.speed,
+    _audio.sleepAt,
+    _audio.error,
+    _audio.wholeSurah,
   ]);
 
   @override
@@ -117,4 +164,62 @@ class QuranNowPlayingAudio implements NowPlayingAudio {
     await _audio.restore(point);
     if (point.wasPlaying) await _audio.togglePlayPause(resume: true);
   }
+
+  @override
+  double get speed => _audio.speed.value;
+  @override
+  DateTime? get sleepAt => _audio.sleepAt.value;
+  @override
+  String? get error => _audio.error.value;
+  @override
+  bool get wholeSurah => _audio.wholeSurah.value;
+  @override
+  Stream<AyahProgress> get progress async* {
+    Duration? total;
+    final durations = _audio.durationStream.listen((value) => total = value);
+    var last = DateTime.fromMillisecondsSinceEpoch(0);
+    try {
+      await for (final position in _audio.positionStream) {
+        final now = DateTime.now();
+        if (now.difference(last) < const Duration(milliseconds: 100)) continue;
+        last = now;
+        yield (position: position, duration: total);
+      }
+    } finally {
+      await durations.cancel();
+    }
+  }
+
+  @override
+  Future<void> previous() => _audio.previous();
+  @override
+  Future<void> jumpTo(int index) => _audio.jumpTo(index);
+  @override
+  Future<void> setRepeat(AudioRepeat mode) => _audio.setRepeat(mode);
+  @override
+  Future<void> playRange({
+    required int surah,
+    required int fromAyah,
+    required int toAyah,
+    int? repeatCount = 1,
+    int? startAyah,
+    Duration? position,
+  }) => _audio.playRange(
+    surah: surah,
+    fromAyah: fromAyah,
+    toAyah: toAyah,
+    repeatCount: repeatCount,
+    startAyah: startAyah,
+    position: position,
+  );
+  @override
+  Future<void> playFrom(int surah, int ayah) =>
+      // toggle() menjeda bila ayat itu sedang dimuat; di sini selalu putar.
+      _audio.playingVerse.value == '$surah:$ayah'
+      ? _audio.togglePlayPause(resume: true)
+      : _audio.toggle(surah: surah, ayah: ayah);
+  @override
+  Future<void> setSpeed(double value) => _audio.setSpeed(value);
+  @override
+  void setSleepTimer(Duration? after) => _audio.setSleepTimer(after);
 }

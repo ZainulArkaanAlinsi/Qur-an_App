@@ -1012,8 +1012,7 @@ class _ReaderNav extends StatelessWidget {
           ),
           child: Row(
             children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
+              _PressScale(
                 onTap: onBack,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -1040,8 +1039,7 @@ class _ReaderNav extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
+                child: _PressScale(
                   onTap: onJump,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1113,6 +1111,47 @@ class _ReaderNav extends StatelessWidget {
   }
 }
 
+/// Ketukan tanpa ripple Material untuk kontrol di nav kaca
+/// (LIQUID_GLASS rubrik G3): saat ditekan kontrol mengecil sedikit, lalu
+/// kembali. Tanpa gerak bila "kurangi gerak" aktif.
+class _PressScale extends StatefulWidget {
+  const _PressScale({required this.onTap, required this.child});
+
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  State<_PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<_PressScale> {
+  bool _down = false;
+
+  void _press(bool down) {
+    if (_down != down) setState(() => _down = down);
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      onTapDown: (_) => _press(true),
+      onTapUp: (_) => _press(false),
+      onTapCancel: () => _press(false),
+      child: AnimatedScale(
+        scale: _down ? .94 : 1,
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    ),
+  );
+}
+
 /// Tombol bulat berlatar isian lembut, seperti tombol kanan pada nav pembaca.
 class _FillButton extends StatelessWidget {
   const _FillButton({
@@ -1136,9 +1175,8 @@ class _FillButton extends StatelessWidget {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
     return Tooltip(
       message: tooltip,
-      child: InkResponse(
+      child: _PressScale(
         onTap: onTap,
-        radius: 26,
         child: SizedBox.square(
           dimension: 44,
           child: Center(

@@ -67,6 +67,8 @@ void main() {
         'getMurajaahDone',
         'murottal.tampilan',
         'murottal.terjemahan',
+        'getMurottalView',
+        'getMurottalTranslation',
       ]) {
         expect(source, isNot(contains(key)), reason: '$path memuat $key');
       }

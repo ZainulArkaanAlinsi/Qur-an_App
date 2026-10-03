@@ -161,10 +161,17 @@ Turunan untuk UI (`lib/features/murottal/application/player_view_model.dart`):
 | `label` | "Ayat {ayah} dari {lastAyah}" bila antrean mulai dari ayat 1; selain itu "Ayat {ayah} · {index+1} dari {total}" |
 | `segmentMode` | `total ≤ 40` → segmen, selain itu kontinu |
 | `fill` | `(index + pos/dur) / total` (kontinu) atau `pos/dur` untuk segmen aktif |
-| `downloadState` | `AudioDownloadService.isComplete(reciter, surah)` → `tersimpan`; sedang `download(...)` → `mengunduh(p)`; selain itu `belum` |
+| `downloadState` | `AudioDownloadService.isComplete(reciter, surah)` → `tersimpan`; sedang `download(...)` → `mengunduh(p)`; selain itu `belum`. Dihitung oleh `SurahDownloadButton` (builder), bukan view model, supaya hanya ada satu pengunduh |
 | `subtitle` dock | lihat `screens/21-dock.md` |
 
-Posisi di-*throttle* ke 10 Hz sebelum masuk widget.
+Posisi di-*throttle* ke 10 Hz sebelum masuk widget (`MurottalAudio.progress`).
+
+Tafsiran tombol yang disetujui pemilik (2026-10-03):
+- **Ulang** (ketuk): Mati → Ulang ayat (`setRepeat(verse)`) → Ulang rentang = antrean yang sedang dimuat, tanpa batas (`playRange(first, last, repeatCount: null, startAyah: ayat sekarang, position)`) → Mati (`playRange(..., repeatCount: 1, startAyah, position)`). Pindah mode tidak pernah memindah ayat yang sedang didengar.
+- **Ulang** (tahan): 1×/3×/5×/7×/∞ berlaku untuk antrean yang sedang dimuat, mulai dari ayat sekarang (`RangePlan`). Bukan "satu ayat N kali": itu akan menyusutkan antrean dan daftar ayat ikut hilang.
+- **Galat & luring** memakai satu banner: "Murottal belum dapat diputar. Periksa koneksi atau unduh surah ini." + "Coba lagi" (memutar ulang antrean terakhir dari ayat terakhir). Tidak ada deteksi luring terpisah karena tidak ada paket konektivitas (keputusan tanpa paket baru). Pill Unduh tepat di bawah banner.
+- **Diputar per surah** (cadangan terakhir, `QuranAudioService.wholeSurah`): posisi ayat tidak diketahui, jadi daftar tidak menyorot/mengikuti ayat, lompat ayat & Sebelumnya/Berikutnya dimatikan, catatan sumber tampil di panel.
+- **Timer aktif**: pill menampilkan ikon timer + jam berhenti ("10:52"); "Berhenti 10:52" tidak muat di pill sepertiga lebar tanpa terpotong. Kalimat lengkapnya ada di label pembaca layar.
 
 ### 5.3 Aturan audio yang tidak boleh rusak
 

@@ -816,6 +816,29 @@ abstract final class SacredText {
   static TextStyle get ctaLarge => _font(ui, 16, 20, 800);
   static TextStyle get weekDay => _font(ui, 10.5, 13, 700);
 
+  /// Murottal v6 (20-murottal.md): bar atas, chip qari, kapsul Teks|Sampul,
+  /// daftar ayat, panel kontrol.
+  static TextStyle get murottalEyebrow =>
+      _font(ui, 10.5, 13, 800).copyWith(letterSpacing: 10.5 * .12);
+  static TextStyle get murottalTitle => _font(ui, 17, 22, 800);
+  static TextStyle get qariChip => _font(ui, 13, 17, 800);
+  static TextStyle get segmentCapsule => _font(ui, 12.5, 16, 800);
+  static TextStyle get ayahTranslation => _font(ui, 13.5, 21, 500);
+  static TextStyle get ayahTranslationActive => _font(ui, 14, 21.7, 500);
+  static TextStyle get ayahNumber => _font(ui, 11, 14, 800);
+  static TextStyle get playingTag =>
+      _font(ui, 11, 14, 800).copyWith(letterSpacing: .6);
+  static TextStyle get panelLabel => _font(ui, 13, 17, 800);
+  static TextStyle get panelTime => _font(
+    ui,
+    13,
+    17,
+    600,
+  ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+  static TextStyle get transportLabel => _font(ui, 10.5, 13, 800);
+  static TextStyle get transportBadge => _font(ui, 10, 12, 800);
+  static TextStyle get actionPill => _font(ui, 13, 17, 800);
+
   /// [style] dengan ketebalan [weight]. Font dibundel sebagai font variabel,
   /// jadi `copyWith(fontWeight:)` saja tidak mengubah ketebalannya.
   static TextStyle withWeight(TextStyle style, double weight) => style.copyWith(

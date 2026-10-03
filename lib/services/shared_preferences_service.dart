@@ -493,6 +493,21 @@ class SharedPreferencesService {
     ];
   }
 
+  /// Tampilan layar Murottal: `teks` (bawaan) atau `sampul` (DATA.md §4).
+  /// Kunci lokal, tidak ikut sinkron cloud.
+  static String getMurottalView() =>
+      _prefs?.getString('murottal.tampilan') ?? 'teks';
+
+  static Future<void> setMurottalView(String value) async =>
+      _prefs?.setString('murottal.tampilan', value);
+
+  /// Terjemahan di daftar ayat Murottal (bawaan tampil). Tidak ikut sinkron.
+  static bool getMurottalTranslation() =>
+      _prefs?.getBool('murottal.terjemahan') ?? true;
+
+  static Future<void> setMurottalTranslation(bool value) async =>
+      _prefs?.setBool('murottal.terjemahan', value);
+
   /// Menyimpan satu ayat; [item] null menghapus catatannya.
   static Future<void> setAyahMemorization(
     int surah,
