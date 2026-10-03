@@ -1,7 +1,11 @@
-# Rilis ke Google Play — MyQuran 1.10.1 (21)
+# Rilis ke Google Play — MyQuran 1.11.0 (22)
 
-Panduan singkat untuk unggahan pertama ke Play Console. Butir bertanda **wajib** akan
-membuat aplikasi ditolak atau tidak bisa tayang bila dilewati.
+Panduan singkat untuk Play Console. Butir bertanda **wajib** akan membuat aplikasi ditolak
+atau tidak bisa tayang bila dilewati.
+
+**Status 3 Oktober 2026:** 1.10.1 (21) lalu 1.11.0 (22) sudah diunggah ke **Pengujian
+internal**. **Pengujian tertutup** (12 penguji × 14 hari) belum dimulai dan akan memakai
+1.11.0 (22).
 
 ## 1. Build yang diunggah
 
@@ -19,8 +23,19 @@ flutter build appbundle --release
 - Ditandatangani kunci upload dari `android/key.properties`. **Jangan pernah** mengunggah
   build yang ditandatangani kunci debug (Gradle memberi peringatan bila `key.properties`
   tidak ada).
-- Package id `com.zainularkaan.quran`, versionCode 21, versionName 1.10.1,
+- Package id `com.zainularkaan.quran`, versionCode 22, versionName 1.11.0,
   targetSdk 36, minSdk 24.
+
+### Hasil cek build 1.11.0 (3 Oktober 2026, commit `1d31edc`)
+
+- `app-release.aab` 68,1 MB, ditandatangani kunci upload `CN=Ruang Tilawah` (SHA-1
+  `F4:BA:11:D8:…:3A:54`). Play menandatangani ulang dengan kunci app signing Google
+  (§2).
+- Manifest gabungan: versionCode 22, targetSdk 36, minSdk 24. Daftar izin sama persis
+  dengan 1.10.1 di bawah, dan **tidak ada** `REQUEST_INSTALL_PACKAGES`.
+- 16 KB page size: 9 library `.so` lolos (alignment segmen LOAD ≥ 16384), dan
+  `zipalign -c -P 16 -v 4` lolos untuk 86 APK split hasil `bundletool build-apks`.
+- `flutter analyze` bersih, `flutter test` 816 lulus.
 
 ### Hasil cek build 1.10.1 (2 Oktober 2026, Flutter 3.44.8)
 
@@ -128,9 +143,9 @@ Today's session: about 10 minutes a day to review, learn one small step, find it
   - Data safety › *Delete account URL*: `https://quran-app-zainularkaan.web.app/hapus-akun`
     (bisa dipakai tanpa memasang aplikasi, lewat email `zainaril13@gmail.com`)
 
-  Deploy 3 Oktober 2026 dari worktree `rilis/1.10.1`, sehingga yang tayang adalah privasi
-  versi 1.10.1 (tanpa lokasi otomatis). Saat 1.11.0 dirilis, deploy ulang dari
-  `fitur/v6` / `main`.
+  Deploy 3 Oktober 2026. Pertama dari worktree `rilis/1.10.1` untuk 1.10.1, lalu diulang
+  dari `fitur/v6` (sama dengan `main` sesudah PR #39) saat 1.11.0 diunggah. Yang tayang
+  sekarang adalah privasi versi v6, yang menyebut lokasi otomatis untuk Waktu salat.
 - [ ] **Verifikasi developer Android** (lihat bagian 2a). APK MyQuran juga dibagikan
   lewat GitHub Releases, jadi package-nya wajib didaftarkan manual.
 - [x] **Backup keystore** `C:/Users/USER/keystores/ruang-tilawah-release.jks` dan
@@ -161,8 +176,9 @@ Wajib untuk akun developer pribadi baru sebelum bisa mengajukan Production.
 
 1. Play Console › Testing › **Closed testing** › buat track (mis. "Penguji awal").
 2. Tambahkan penguji: daftar email (minimal 12 akun Google) atau satu Google Group.
-3. Unggah `app-release.aab` 1.10.1 (21) ke track itu, isi catatan rilis, kirim untuk
-   ditinjau.
+3. Unggah AAB **1.11.0 (22)** ke track itu. Ini AAB yang sama dengan yang sudah ada di
+   Pengujian internal (keputusan pemilik 3 Oktober 2026: penguji langsung memakai versi
+   baru). Isi catatan rilis, lalu kirim untuk ditinjau.
 4. Setelah disetujui, bagikan *opt-in link* ke penguji. Setiap penguji harus menekan
    "Become a tester", lalu memasang aplikasi dari Play Store.
 5. **Saat mengajukan Production, minimal 12 penguji harus sedang ikut dan sudah ikut
@@ -207,10 +223,9 @@ Sumber: https://support.google.com/googleplay/android-developer/answer/14151465
 | Audio (rekaman) | Tidak dikumpulkan | — | Rekaman hafalan dan Sesi hari ini hanya di perangkat, tidak pernah diunggah |
 
 Kapan diubah di Play Console: baris *Approximate location* hanya berlaku untuk build
-yang memuat Waktu salat v6 (1.11, `fitur/v6`). Ubah formulir Data safety **bersamaan**
-dengan unggahan 1.11, dan deploy `hosting/public/privacy.html` versi ini
-(`firebase deploy --only hosting`) di hari yang sama. Build 1.10.x tidak mengirim
-lokasi, jadi formulir & halaman privasi 1.10.1 tetap benar sampai saat itu.
+yang memuat Waktu salat v6 (1.11). 1.11.0 sudah diunggah dan halaman privasi v6 sudah
+tayang (3 Oktober 2026), jadi formulir Data safety di Play Console **harus** memuat baris
+ini sebelum rilis dikirim ke Pengujian tertutup.
 Sumber definisi: https://support.google.com/googleplay/android-developer/answer/10787469
 (*Approximate location* = area ≥ 3 km²; *sharing* tidak termasuk transfer berdasarkan
 aksi yang dimulai pengguna).
@@ -240,7 +255,12 @@ aplikasi, lewat https://quran-app-zainularkaan.web.app/hapus-akun (email ke
 
 ## 6. Uji di HP sebelum mengirim ke penguji
 
-- [ ] Pasang dari Internal testing (bukan dari kabel) supaya kunci Play ikut teruji.
+- [x] Pasang dari Internal testing (bukan dari kabel) supaya kunci Play ikut teruji.
+  1.10.1 (21) di Samsung SM-A556E: terpasang dari Play (`com.android.vending`) dan
+  login Google berhasil setelah SHA Play didaftarkan (3 Oktober 2026).
+- [ ] Ulangi daftar ini untuk **1.11.0 (22)** dari Internal testing sebelum mengirim ke
+  Pengujian tertutup, terutama: Beranda v6, dock, Murottal ikut ayat, Waktu salat mode
+  Otomatis (izin lokasi), pemilih qari, dan login Google.
 - [ ] Buka pertama kali: splash → onboarding 4 halaman (geser maju/mundur, tombol
   kembali), pilih titik mulai → tab yang benar terbuka.
 - [ ] Buka kedua kali: splash → langsung Beranda (onboarding tidak muncul lagi).
