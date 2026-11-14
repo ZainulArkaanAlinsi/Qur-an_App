@@ -49,9 +49,13 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    ```
 3. Build dan verifikasi tanda tangan:
    ```powershell
-   flutter build apk --release --dart-define=DISTRIBUTION=github
+   flutter build apk --release --target-platform android-arm,android-arm64 --dart-define=DISTRIBUTION=github
    & "$env:LOCALAPPDATA\Android\Sdk\build-tools\<versi>\apksigner.bat" verify --print-certs build\app\outputs\flutter-apk\app-release.apk
    ```
+   `--target-platform android-arm,android-arm64` wajib: tanpa itu Flutter ikut memuat
+   x86_64 dan APK membengkak dari sekitar 47 MB menjadi sekitar 68 MB (`abiFilters` di
+   Gradle saja tidak cukup). `tool/build_release.ps1` sudah memakainya; lebih aman
+   menjalankan skrip itu daripada mengetik perintah manual.
    SHA-256 sertifikat harus sama dengan di atas. `DISTRIBUTION=github` wajib
    untuk APK GitHub (pengunduh pembaruan + izin pasang APK); build Google Play
    memakai `flutter build appbundle --release` tanpa flag itu

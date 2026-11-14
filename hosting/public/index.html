@@ -3,35 +3,170 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MyQuran</title>
-  <meta name="description" content="Aplikasi membaca Al-Qur’an gratis, offline, tanpa iklan.">
-  <link rel="stylesheet" href="style.css">
+  <title>MyQuran: baca, belajar, dan hafalkan Al-Qur’an</title>
+  <meta name="description" content="MyQuran adalah aplikasi Android gratis untuk membaca, belajar tajwid, dan menghafal Al-Qur’an. Tanpa iklan, tanpa pembelian, tetap bisa dibuka tanpa internet.">
+  <meta name="theme-color" content="#003527">
+  <meta property="og:title" content="MyQuran: baca, belajar, dan hafalkan Al-Qur’an">
+  <meta property="og:description" content="Gratis, tanpa iklan, tetap bisa dibuka tanpa internet. Unduh APK Android.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://quran-app-zainularkaan.web.app/img/layar-3.jpg">
+  <link rel="icon" type="image/png" href="img/ikon.png">
+  <link rel="preload" href="fonts/EBGaramond-wght-Latin.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="home.css">
 </head>
 <body>
-  <main>
-    <p class="eyebrow">Aplikasi Android</p>
-    <h1>MyQuran</h1>
-    <p class="muted">Membaca Al-Qur’an dengan tenang: gratis, offline, tanpa iklan.</p>
+  <header class="top">
+    <a class="brand" href="./" aria-label="MyQuran, beranda">
+      <img src="img/ikon.png" alt="" width="32" height="32">
+      <span>MyQuran</span>
+    </a>
+    <nav aria-label="Navigasi halaman">
+      <a href="#fitur">Fitur</a>
+      <a href="#pasang">Cara memasang</a>
+      <a href="#aman">Keamanan</a>
+    </nav>
+  </header>
 
-    <section class="hero">
-      <strong>Unduh APK terbaru</strong>
-      <p>Teks Arab Uthmani dan terjemahan Indonesia tersedia tanpa internet, murottal per
-        ayat, target baca harian, dan sinkronisasi opsional dengan akun Google.</p>
-      <a class="button" href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest">
-        Unduh dari GitHub Releases</a>
+  <main>
+    <section class="hero" aria-labelledby="judul">
+      <div class="hero-text">
+        <p class="eyebrow">Aplikasi Android · Gratis</p>
+        <h1 id="judul">Baca, belajar, dan hafalkan Al-Qur’an dengan tenang.</h1>
+        <p class="lead">MyQuran menyatukan bacaan, murottal, belajar tajwid, hafalan, dan jadwal salat
+          dalam satu aplikasi. Tanpa iklan, tanpa pembelian, dan tetap bisa dibuka tanpa internet.</p>
+
+        <div class="cta">
+          <a id="unduh" class="button" href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest/download/myquran.apk">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+            Unduh APK Android
+          </a>
+          <a class="ghost" href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases/latest">Semua rilis</a>
+        </div>
+        <p class="meta" id="meta">Android 7.0 ke atas · berkas APK</p>
+
+        <ul class="pills" aria-label="Ringkasan">
+          <li>Gratis</li>
+          <li>Tanpa iklan</li>
+          <li>Offline</li>
+          <li>Sumber terbuka (MIT)</li>
+        </ul>
+      </div>
+
+      <div class="hero-art">
+        <picture>
+          <source srcset="img/logo-gelap.png" media="(prefers-color-scheme: dark)">
+          <img src="img/logo.png" alt="Logo MyQuran: buku terbuka dengan tunas daun" width="381" height="383">
+        </picture>
+      </div>
     </section>
 
-    <div class="card">
-      <strong>Cara memasang</strong>
-      <ol>
-        <li>Unduh berkas <code>.apk</code> dari halaman rilis.</li>
-        <li>Buka berkas tersebut dan izinkan pemasangan dari sumber ini bila diminta.</li>
-        <li>Pembaruan diberitahukan di dalam aplikasi; pasang versi baru di atas versi
-          lama tanpa menghapus aplikasi agar data tetap tersimpan.</li>
-      </ol>
-    </div>
+    <section class="shots" aria-label="Tangkapan layar aplikasi">
+      <ul>
+        <li><img loading="lazy" src="img/layar-2.jpg" alt="Kartu ayat dengan tajwid berwarna" width="270" height="480"></li>
+        <li><img loading="lazy" src="img/layar-3.jpg" alt="Beranda: salat berikutnya dan langkah untuk hari ini" width="270" height="480"></li>
+        <li><img loading="lazy" src="img/layar-4.jpg" alt="Belajar membaca dari huruf hijaiyah" width="270" height="480"></li>
+        <li><img loading="lazy" src="img/layar-5.jpg" alt="Hafalan: ziyadah, murajaah, tasmi’" width="270" height="480"></li>
+        <li><img loading="lazy" src="img/layar-6.jpg" alt="Waktu salat dan arah kiblat" width="270" height="480"></li>
+      </ul>
+    </section>
 
-    <p class="back"><a href="privacy.html">Kebijakan privasi</a> · <a href="hapus-akun">Hapus akun</a></p>
+    <section id="fitur" class="block" aria-labelledby="h-fitur">
+      <h2 id="h-fitur">Satu aplikasi, lima kebiasaan</h2>
+      <div class="grid">
+        <article>
+          <h3>Membaca</h3>
+          <p>Kartu per ayat dengan teks Uthmani dan terjemahan Indonesia yang tersimpan di HP. Ketuk huruf
+            bertajwid untuk melihat nama hukumnya.</p>
+        </article>
+        <article>
+          <h3>Murottal</h3>
+          <p>Putar per ayat dan terus berlanjut saat layar mati. Ulangi ayat atau rentang ayat, atur timer tidur,
+            dan unduh per surah.</p>
+        </article>
+        <article>
+          <h3>Belajar</h3>
+          <p>Jalur bertahap dari huruf hijaiyah sampai tajwid, dengan sesi harian sekitar 10 menit.
+            Kamu menilai bacaanmu sendiri; aplikasi tidak menilai.</p>
+        </article>
+        <article>
+          <h3>Hafalan</h3>
+          <p>Ziyadah, murajaah, dan tasmi’ dalam satu tempat. Jadwal murajaah memberi tahu surah yang jatuh tempo.</p>
+        </article>
+        <article>
+          <h3>Salat</h3>
+          <p>Jadwal salat dengan metode Kemenag RI, pengingat tiap waktu, dan arah kiblat dari GPS dan kompas.</p>
+        </article>
+        <article>
+          <h3>Privasi</h3>
+          <p>Tanpa iklan dan tanpa penjualan data. Masuk dengan Google bersifat opsional. Rekaman suaramu
+            tidak pernah diunggah.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="pasang" class="block two" aria-labelledby="h-pasang">
+      <div>
+        <h2 id="h-pasang">Cara memasang di Android</h2>
+        <ol class="steps">
+          <li><strong>Unduh</strong> berkas <code>myquran.apk</code> dari tombol di atas.</li>
+          <li><strong>Buka</strong> berkas itu. Bila Android meminta, izinkan pemasangan dari peramban yang kamu pakai.</li>
+          <li><strong>Selesai.</strong> Pembaruan muncul di dalam aplikasi. Pasang versi baru di atas versi lama,
+            jangan dihapus dulu, supaya progresmu tetap ada.</li>
+        </ol>
+      </div>
+      <aside class="note">
+        <h3>Bagaimana dengan iPhone?</h3>
+        <p>Versi iPhone belum tersedia. Saat ini MyQuran hanya untuk Android.</p>
+        <h3>Google Play</h3>
+        <p>Versi Google Play sedang dalam pengujian tertutup. Sebelum itu rampung, APK dari halaman ini adalah
+          cara resmi untuk memasangnya.</p>
+      </aside>
+    </section>
+
+    <section id="aman" class="block" aria-labelledby="h-aman">
+      <h2 id="h-aman">Pastikan unduhanmu asli</h2>
+      <p class="sub">Aplikasi di luar toko resmi wajib diperiksa. Ini caranya, dan hanya butuh satu menit.</p>
+
+      <div class="hash">
+        <span class="label">SHA-256 berkas <code id="nama-berkas">myquran.apk</code></span>
+        <code id="sha" class="sha" aria-live="polite">Memuat dari GitHub…</code>
+        <button id="salin" class="copy" type="button" hidden>Salin</button>
+      </div>
+
+      <ol class="steps">
+        <li>Di Windows, buka Terminal di folder unduhan lalu jalankan
+          <code>certutil -hashfile myquran.apk SHA256</code>. Di macOS atau Linux:
+          <code>sha256sum myquran.apk</code>.</li>
+        <li>Cocokkan deretan huruf dan angkanya dengan yang tertera di atas. Harus <strong>sama persis</strong>.
+          Kalau berbeda, jangan dipasang.</li>
+        <li>Unduh hanya dari halaman ini atau dari
+          <a href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/releases">GitHub Releases</a> milik repo ini.</li>
+      </ol>
+
+      <p class="sub">Saat memasang, Android atau Play Protect bisa menampilkan peringatan “sumber tidak dikenal”.
+        Itu wajar untuk aplikasi di luar Play Store. Kode sumbernya terbuka untuk diperiksa siapa pun.</p>
+    </section>
+
+    <section class="block license" aria-labelledby="h-lisensi">
+      <h2 id="h-lisensi">Lisensi dan sumber</h2>
+      <ul>
+        <li><strong>Kode aplikasi:</strong> lisensi MIT, terbuka di
+          <a href="https://github.com/ZainulArkaanAlinsi/Qur-an_App">GitHub</a>.</li>
+        <li><strong>Teks Al-Qur’an dan terjemahan:</strong> dari dataset Tanzil, dipakai apa adanya tanpa diubah,
+          dan hanya untuk penggunaan nonkomersial. Karena itu MyQuran tetap gratis dan tanpa iklan.</li>
+        <li><strong>Font:</strong> Amiri, EB Garamond, dan Plus Jakarta Sans, berlisensi SIL Open Font License.</li>
+        <li>Rincian lengkap tiap sumber ada di
+          <a href="https://github.com/ZainulArkaanAlinsi/Qur-an_App/blob/main/docs/DATA_SOURCES_AND_LICENSES.md">dokumen sumber dan lisensi</a>.</li>
+      </ul>
+    </section>
   </main>
+
+  <footer>
+    <p><strong>MyQuran</strong> · proyek pelajar, nonkomersial.</p>
+    <p><a href="privacy">Kebijakan privasi</a> · <a href="hapus-akun">Hapus akun</a> ·
+      <a href="https://github.com/ZainulArkaanAlinsi/Qur-an_App">Kode sumber</a></p>
+  </footer>
+
+  <script src="unduh.js" defer></script>
 </body>
 </html>
