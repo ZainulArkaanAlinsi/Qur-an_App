@@ -901,25 +901,28 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                             setState(() => _focusMode = true),
                                       ),
                                     if (!_focusMode)
-                                      ReaderChips(
-                                        languageLabel: _languageLabel,
-                                        tajweed: _tajweed,
-                                        onLanguage: () =>
-                                            unawaited(_openTranslations()),
-                                        onTajweed: () =>
-                                            _toggleTajweed(content),
-                                      ),
-                                    if (!_focusMode &&
-                                        _tajweed &&
-                                        content.tajweed != null &&
-                                        !SharedPreferencesService.getTajweedHintDone())
-                                      TajweedHint(
-                                        onClose: () {
-                                          unawaited(
-                                            SharedPreferencesService.setTajweedHintDone(),
-                                          );
-                                          setState(() {});
-                                        },
+                                      ReaderPinnedFilters(
+                                        chips: ReaderChips(
+                                          languageLabel: _languageLabel,
+                                          tajweed: _tajweed,
+                                          onLanguage: () =>
+                                              unawaited(_openTranslations()),
+                                          onTajweed: () =>
+                                              _toggleTajweed(content),
+                                        ),
+                                        hint:
+                                            _tajweed &&
+                                                content.tajweed != null &&
+                                                !SharedPreferencesService.getTajweedHintDone()
+                                            ? TajweedHint(
+                                                onClose: () {
+                                                  unawaited(
+                                                    SharedPreferencesService.setTajweedHintDone(),
+                                                  );
+                                                  setState(() {});
+                                                },
+                                              )
+                                            : null,
                                       ),
                                   ],
                                 ),
