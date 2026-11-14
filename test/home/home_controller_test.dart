@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app_2025/features/home/application/home_controller.dart';
 import 'package:quran_app_2025/features/home/domain/home_snapshot.dart';
+import 'package:quran_app_2025/features/learn/data/curriculum_repository.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -118,5 +120,62 @@ void main() {
     expect(controller.snapshot.murajaahDoneToday, 1);
     expect(controller.snapshot.lastRead, isNull);
     controller.dispose();
+  });
+
+  group('"Sesi besok" di Beranda sejalan dengan pelajaran aktif', () {
+    // Temuan 15 November 2026: Beranda menyebut "Sesi besok: Mulai dari mana"
+    // untuk pengguna yang memilih "lancar tajwid", padahal layar sesi dan tab
+    // Belajar memakai pelajaran aktif menurut titik mulai (activeLesson).
+    Map<String, Object?> lesson(String id, int level, int order) => {
+      'id': id,
+      'level': level,
+      'order': order,
+      'title': 'Pelajaran $id',
+      'summary': 'Ringkasan $id',
+      'review': 'published',
+      'provenance': 'Contoh uji',
+      'sources': [
+        {'title': 'Sumber uji'},
+      ],
+      'blocks': <Object?>[],
+    };
+
+    Future<String?> nextLessonIdFor(
+      WidgetTester tester,
+      String startPoint,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'belajar.titikMulai': startPoint,
+      });
+      await SharedPreferencesService.init();
+      final controller = HomeController(
+        clock: () => DateTime(2026, 11, 15, 9),
+        loadPrayer: (_) async => null,
+        loadCurriculum: () async => CurriculumRepository.parse(
+          jsonEncode({
+            'lessons': [
+              lesson('mulai', 0, 1),
+              lesson('huruf', 1, 1),
+              lesson('nun', 10, 1),
+            ],
+          }),
+        ),
+        loadPages: () async => const [],
+      );
+      await controller.start();
+      final id = controller.snapshot.nextLesson?.id;
+      controller.dispose();
+      return id;
+    }
+
+    testWidgets('titik mulai tajwid: pelajaran tahap 10, bukan yang pertama', (
+      tester,
+    ) async {
+      expect(await nextLessonIdFor(tester, 'tajwid'), 'nun');
+    });
+
+    testWidgets('titik mulai nol: pelajaran tahap 1', (tester) async {
+      expect(await nextLessonIdFor(tester, 'nol'), 'huruf');
+    });
   });
 }

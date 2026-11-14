@@ -24,7 +24,7 @@ Berkas: `lib/features/home/domain/home_snapshot.dart`. Dibangun oleh `HomeContro
 | `murajaahDue` | `List<AyahMemorization>` | `dueForReview(all, now)` |
 | `murajaahDoneToday` | `int` | **baru**: kunci `murajaah.selesai.<yyyy-mm-dd>` (§4) |
 | `startPoint` | `StartPoint` | `StartPoint.saved ?? StartPoint.initial` |
-| `nextLesson` | `Lesson?` | `curriculum.nextAfter(done, includeDrafts: showDraftLessons)` (judul untuk "Sesi besok") |
+| `nextLesson` | `Lesson?` | `activeLesson(visible, completedLessons, startLevel: titik mulai)` dari `session_plan.dart` (judul untuk "Sesi besok"; sama dengan layar sesi dan tab Belajar). Sebelum 15 Nov 2026 memakai `curriculum.nextAfter(done)`, yang mengabaikan titik mulai |
 | `prayer` | `PrayerDay?` + status | `PrayerService.fetch(settings: PrayerSettingsStore.load())` (tempat, metode, Asar, koreksi; §8); status `ok / belumDiatur / luring / memuat`. Dimuat ulang juga saat `PrayerSettingsStore.revision` berubah |
 | `nowPlaying` | `AudioQueue?` + `playingVerse` | `QuranAudioService.instance.queue`, `.playingVerse` |
 
