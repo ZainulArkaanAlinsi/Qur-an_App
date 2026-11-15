@@ -1,8 +1,10 @@
 # Paket peninjauan materi tajwid dan panduan rekaman
 
-Folder ini berisi bahan untuk menerbitkan dua hal yang saat ini terkunci di rilis, **dengan cara yang
-sesuai aturan proyek** (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`): materi hukum tajwid tahap 6–16 dan
-contoh bunyi (audio).
+Folder ini berisi bahan untuk **menyelesaikan peninjauan** dua hal, sesuai aturan proyek
+(`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`): materi hukum tajwid tahap 6–16 dan contoh bunyi (audio).
+Sejak 15 November 2026 materi tahap 6–16 sudah tampil di rilis sebagai **draf berlabel** (pengecualian
+pemilik); peninjauan guru yang melepas label itu dan mengubahnya menjadi `published`. Audio contoh masih
+"sedang disiapkan" karena belum ada rekaman.
 
 ## Yang perlu diketahui lebih dulu
 

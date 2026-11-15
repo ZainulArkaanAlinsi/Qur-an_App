@@ -107,7 +107,7 @@ Gratis · tanpa iklan · tanpa pembelian · tetap bisa dipakai tanpa internet
 ## 🤲 Prinsip
 
 - **Teks ayat dan terjemahan tidak pernah diketik ulang, dibuat AI, atau diubah.** Semuanya diambil persis dari dataset berlisensi, dengan sumber dan versi yang disebutkan di aplikasi (*Saya › Sumber & lisensi*).
-- **Materi tajwid tahap lanjut berstatus draf** dan dikunci ("Materi sedang ditinjau") sampai diperiksa guru tajwid.
+- **Materi tajwid tahap lanjut (6–16) berstatus draf dan tampil dengan label DRAF**, disertai pemberitahuan bahwa materinya belum ditinjau guru. Materi itu ditulis dengan bantuan AI dan belum diperiksa guru tajwid; cocokkan dengan gurumu. Penjelasan cara membaca tiap hukum sengaja dikosongkan sampai ditulis guru.
 - **Tidak ada iklan, langganan, pembelian, atau penjualan data.** Aplikasi ini proyek pelajar dan nonkomersial.
 - **Nyaman untuk semua mata:** teks ≥ 4.5 : 1 di terang dan gelap, dukungan teks besar, palet kontras tinggi, dan menghormati pengaturan *kurangi gerak*.
 
@@ -195,7 +195,7 @@ test/          tes unit, widget, dan golden
 ## 🗺️ Sedang dikerjakan
 
 - **Tampilan mushaf 1 dan 2 halaman.** Kode sudah tersambung ke server perantara (`bff/`) dan menyala hanya pada build yang diberi alamatnya. Rilis publik masih menutupnya: menunggu BFF di-deploy, akses produksi Quran Foundation, dan salinan izin tertulis data tata letak.
-- **Materi tajwid tahap lanjut** (mad, tajwid lanjutan, gharib). Sedang ditinjau guru tajwid.
+- **Peninjauan guru untuk materi tajwid tahap lanjut** (mad, tajwid lanjutan, gharib). Materinya sudah tampil sebagai draf berlabel; label dilepas setelah dua guru menyetujuinya.
 - **Efek kaca ("liquid glass") untuk tab bar, nav pembaca, dan pemutar.**
 
 ---

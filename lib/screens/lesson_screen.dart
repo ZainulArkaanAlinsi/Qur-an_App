@@ -21,9 +21,21 @@ import 'package:quran_app_2025/features/tajweed/data/tajweed_repository.dart';
 import 'package:quran_app_2025/features/tajweed/presentation/tajweed_palette.dart';
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 
-/// Apakah materi draf boleh ditampilkan. Rilis: tidak; debug: ya, berlabel
-/// (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`).
-bool get showDraftLessons => kDebugMode;
+/// Pengecualian pemilik 15 November 2026 (`docs/RELIGIOUS_CONTENT_GOVERNANCE.md`):
+/// materi draf tampil di semua build, selalu berlabel DRAF dan dengan
+/// [draftLessonNotice]. Build yang ingin menyembunyikannya memakai
+/// `--dart-define=SHOW_DRAFT_LESSONS=false`.
+const _showDraftLessonsConfig = bool.fromEnvironment(
+  'SHOW_DRAFT_LESSONS',
+  defaultValue: true,
+);
+
+/// Apakah materi draf boleh ditampilkan.
+bool get showDraftLessons => _showDraftLessonsConfig;
+
+/// Pemberitahuan yang menyertai setiap materi draf (layar pelajaran dan sesi).
+const draftLessonNotice =
+    'Materi ini masih draf dan belum ditinjau guru. Cocokkan dengan gurumu.';
 
 /// Widget blok bacaan pelajaran, sama persis dengan halaman bacaan di
 /// [LessonScreen]. Dipakai juga Sesi hari ini supaya materinya tampil sama.
@@ -45,7 +57,7 @@ Widget lessonQuizCard({
   onPick: onPick,
 );
 
-/// Lencana DRAF (debug saja), sama dengan di [LessonScreen].
+/// Lencana DRAF, sama dengan di [LessonScreen].
 Widget lessonDraftBadge() => const _DraftBadge();
 
 /// Pelajaran v2 (docs/design/v2/screens/09-pelajaran.md, V2-Pelajaran.png):
@@ -194,9 +206,12 @@ class _LessonScreenState extends State<LessonScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // Lencana DRAF di pojok kanan atas; materi draf hanya bisa
-              // dibuka di build debug (docs/design/v3/DESIGN.md §6).
-              if (!widget.lesson.isPublished) const _DraftBadge(),
+              // Lencana DRAF di pojok kanan atas, dengan pemberitahuan bahwa
+              // materinya belum ditinjau guru (docs/design/v3/DESIGN.md §6).
+              if (!widget.lesson.isPublished) ...const [
+                _DraftBadge(),
+                _DraftNotice(),
+              ],
               _TopBar(
                 step: _finished ? _total : _step + 1,
                 total: _total,
@@ -677,7 +692,27 @@ class _LetterCard extends StatelessWidget {
   }
 }
 
-/// Lencana DRAF (debug saja) di pojok kanan atas layar pelajaran.
+/// Satu kalimat di bawah lencana DRAF: materi ini belum ditinjau guru.
+class _DraftNotice extends StatelessWidget {
+  const _DraftNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          draftLessonNotice,
+          style: SacredText.rowSubtitle.copyWith(color: tokens.sec),
+        ),
+      ),
+    );
+  }
+}
+
+/// Lencana DRAF di pojok kanan atas layar pelajaran.
 class _DraftBadge extends StatelessWidget {
   const _DraftBadge();
 

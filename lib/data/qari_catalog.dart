@@ -107,14 +107,13 @@ class QariEntry {
   /// Punya sumber berizin dengan identifier yang diketahui.
   bool get granted => sources.any((s) => s.granted && s.ref != null);
 
-  /// Sumber yang bisa diputar sekarang. Rilis: hanya Islamic Network
-  /// (granted). Debug: juga equran.id per ayat. Sumber lain (Quran
-  /// Foundation, QUL, MP3Quran, izin langsung) baru tersambung di 8b/8c.
+  /// Sumber yang bisa diputar sekarang: Islamic Network dan equran.id per
+  /// ayat, masing-masing hanya bila granted (atau [allowPending], untuk
+  /// debug). Sumber lain (Quran Foundation, QUL, MP3Quran, izin langsung)
+  /// belum tersambung di kode (8b/8c), jadi meski granted tidak membuat qari
+  /// tampil di rilis.
   QariSource? playableSource({required bool allowPending}) {
-    for (final id in [
-      AudioSources.islamicNetwork.id,
-      if (allowPending) AudioSources.equran.id,
-    ]) {
+    for (final id in [AudioSources.islamicNetwork.id, AudioSources.equran.id]) {
       for (final source in sources) {
         if (source.source != id || source.ref == null) continue;
         if (!source.granted && !allowPending) continue;
@@ -261,7 +260,8 @@ class QariCatalog {
   /// Rilis: hanya qari dengan sumber granted. Debug: semua.
   List<QariEntry> visible({required bool allowPending}) => [
     for (final entry in entries)
-      if (allowPending || entry.granted) entry,
+      if (allowPending || entry.playableSource(allowPending: false) != null)
+        entry,
   ];
 
   QariEntry? entryFor(Reciter reciter) =>

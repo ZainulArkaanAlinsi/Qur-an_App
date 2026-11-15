@@ -10,6 +10,8 @@ import 'package:quran_app_2025/features/session/domain/session_plan.dart';
 import 'package:quran_app_2025/features/session/domain/verse_picker.dart';
 import 'package:quran_app_2025/features/session/presentation/session_screen.dart';
 import 'package:quran_app_2025/features/session/presentation/session_verse_view.dart';
+import 'package:quran_app_2025/screens/lesson_screen.dart'
+    show draftLessonNotice;
 import 'package:quran_app_2025/services/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -357,10 +359,23 @@ void main() {
     );
   });
 
-  testWidgets('debug: materi draf tampil dengan lencana DRAF', (tester) async {
+  testWidgets('materi draf tampil dengan lencana DRAF', (tester) async {
     final store = await seed(tester);
     await open(tester, store, startLevel: 10, drafts: true);
     expect(find.text('DRAF'), findsOneWidget);
+  });
+
+  testWidgets('langkah materi: materi draf diberi pemberitahuan', (
+    tester,
+  ) async {
+    // Sejak 15 Nov 2026 materi draf juga tampil di rilis; pembaca diberi tahu.
+    final store = await seed(tester);
+    await open(tester, store, startLevel: 10, drafts: true);
+    // Pemanasan boleh dilewati; Lanjut baru aktif setelah soal dijawab.
+    final skip = find.text('Lewati');
+    await tester.tap(skip.evaluate().isNotEmpty ? skip : find.text('Lanjut'));
+    await tester.pumpAndSettle();
+    expect(find.text(draftLessonNotice), findsOneWidget);
   });
 
   test('QuizSession.ask menjaga jawaban benar', () {

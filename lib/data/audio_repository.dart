@@ -112,10 +112,14 @@ class AudioRepository {
 
   /// Audio satu surah penuh: MP3Quran bila qarinya ada di sana, lalu
   /// equran.id. [SourceResult.fromFallback] menandai sumber cadangan.
-  Future<SourceResult<Uri>> surahAudio(Reciter reciter, int surah) {
+  Future<SourceResult<Uri>> surahAudio(
+    Reciter reciter,
+    int surah, {
+    bool allowMp3Quran = true,
+  }) {
     final mp3Id = _mp3QuranSame[reciter.identifier];
     return firstAvailable<Uri>([
-      if (mp3Id != null) () => mp3QuranSurah(mp3Id, surah),
+      if (allowMp3Quran && mp3Id != null) () => mp3QuranSurah(mp3Id, surah),
       () => _reachable(equranSurah(equranQariFor(reciter), surah)),
     ], timeout: timeout);
   }

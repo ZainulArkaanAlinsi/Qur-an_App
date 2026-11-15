@@ -23,8 +23,8 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 | QuranEnc | Terjemahan bahasa lain (unduhan) | Syarat QuranEnc: tanpa diubah, sebut sumber, penerjemah & versi | ✅ Sesuai syarat; konfirmasi diminta | Kirim **surat 07** |
 | fawazahmed0/quran-api | Terjemahan cadangan bila QuranEnc gagal | Kode: Unlicense. **Teks terjemahan tetap milik penerjemahnya** | ⚠️ Risiko sedang | Pertimbangkan mematikan cadangan ini, atau hanya mengizinkan terjemahan yang lisensinya jelas |
 | Islamic Network CDN (alquran.cloud) | Audio per ayat (streaming + simpan di HP) | Hak rekaman milik qari/penerbit; layanan gratis dengan atribusi | ⚠️ Konfirmasi diminta | Kirim **surat 04** |
-| MP3Quran | Audio per surah | Hak rekaman milik qari/penerbit | ⚠️ Izin diminta | Kirim **surat 05** |
-| equran.id | Audio cadangan | Lihat equran.id/terms | ⚠️ Izin diminta | Kirim **surat 06** |
+| MP3Quran | Audio per surah | Hak rekaman milik qari/penerbit | ✅ Izin dinyatakan pemilik, 15 Nov 2026 (bukti tertulis belum disimpan) | Simpan balasan di `docs/lisensi/bukti/`. Lihat `bukti/2026-11-15-pernyataan-pemilik.md` |
+| equran.id | Audio per ayat (4 qari) dan cadangan | Lihat equran.id/terms | ✅ Izin dinyatakan pemilik, 15 Nov 2026 (bukti tertulis belum disimpan) | Simpan balasan di `docs/lisensi/bukti/`. Lihat `bukti/2026-11-15-pernyataan-pemilik.md` |
 | QUL / KFGQPC (tata letak mushaf) | Mushaf 1/2 halaman | Tidak ada lisensi tertulis di QUL | ⚠️ **Pemilik menyatakan izin sudah ada (15 Nov 2026); salinan tertulis belum tersimpan.** Mati bawaan; hidup hanya pada build dengan `BFF_BASE_URL` | Simpan salinan izin di `docs/lisensi/bukti/` (lihat `2026-11-15-pernyataan-pemilik-mushaf.md`). Surat **02** dan **03** tetap jalur resmi |
 | AlAdhan | Jadwal salat | API gratis | ✅ Aman | Atribusi sudah ada |
 | GDELT | Daftar judul berita + tautan | Data terbuka; isi berita milik penerbitnya | ✅ Aman (hanya judul + tautan) | — |

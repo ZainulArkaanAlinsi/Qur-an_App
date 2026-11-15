@@ -6,9 +6,12 @@ huruf, atau contoh ayat sendiri.
 
 ## Status
 
-- `"review": "draft"` hanya tampil di build debug dengan label DRAF. Di rilis,
-  tahapnya terlihat di jalur Belajar tetapi terkunci dengan keterangan
-  "Materi sedang ditinjau".
+- `"review": "draft"` tampil di semua build dengan label DRAF dan pemberitahuan
+  "Materi ini masih draf dan belum ditinjau guru" (pengecualian pemilik
+  15 November 2026; `docs/RELIGIOUS_CONTENT_GOVERNANCE.md`). Build yang ingin
+  menyembunyikannya memakai `--dart-define=SHOW_DRAFT_LESSONS=false`; tahapnya
+  lalu terlihat di jalur Belajar tetapi terkunci dengan keterangan "Materi
+  sedang ditinjau".
 - `"review": "published"` tampil di rilis dan bisa dibuka.
 
 ## Blok isi dan halaman

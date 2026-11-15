@@ -51,6 +51,19 @@ penjelasan cara membaca: teks itu tetap wajib ditulis dan disetujui guru
 tajwid sebelum tampil di rilis. Pengecualian dicabut begitu reviewer
 menyetujui nama dan palet.
 
+**15 November 2026.** Pemilik mengizinkan **materi pelajaran tajwid berstatus draf
+(tahap 6–16)** tampil di build rilis. Syaratnya: setiap materi draf selalu
+berlabel **DRAF** dan disertai pemberitahuan "Materi ini masih draf dan belum
+ditinjau guru. Cocokkan dengan gurumu." (`draftLessonNotice`, layar pelajaran dan
+langkah Materi di sesi harian). Statusnya tetap `draft`: pengecualian ini
+**tidak** mengubahnya menjadi `published` dan **tidak** menghapus aturan dua
+peninjau untuk menghapus label; `test/curriculum_review_gate_test.dart` tetap
+menolak `published`/`approved` tanpa dua peninjau tercatat. Penjelasan cara
+membaca tiap hukum (`tajweed_explanations.json`) **tidak** termasuk dan tetap
+harus ditulis guru, bukan AI. Pengecualian dicabut begitu pemilik atau dua
+peninjau memintanya; build bisa menyembunyikan draf dengan
+`--dart-define=SHOW_DRAFT_LESSONS=false`.
+
 ## Materi belajar membaca
 
 Default: kurikulum orisinal **Belajar Membaca Al-Qur'an** (12 level di PRD),

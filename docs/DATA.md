@@ -199,7 +199,7 @@ Tafsiran tombol yang disetujui pemilik (2026-10-03):
 | --- | --- | --- |
 | Teks & terjemahan | `assets/quran/raw/*` (Tanzil Uthmani 1.0.2, `id.indonesian` 2010-06-04) | `docs/DATA_SOURCES_AND_LICENSES.md` |
 | Tajwid | `tajweed_cpfair_tanzil_v1.0.2.json`, palet di `tajweed_palette.dart` | `docs/TAJWEED_CONTENT.md`, `docs/WARNA_TAJWID.md` |
-| Kurikulum | `assets/learn/curriculum.json` (draf terkunci di rilis) | `docs/LEARN_CONTENT.md`, `docs/RELIGIOUS_CONTENT_GOVERNANCE.md` |
+| Kurikulum | `assets/learn/curriculum.json` (draf tampil berlabel di rilis sejak 15 Nov 2026) | `docs/LEARN_CONTENT.md`, `docs/RELIGIOUS_CONTENT_GOVERNANCE.md` |
 | Sesi harian | `sesi.hari.<tanggal>`, `sesi.riwayatAyat`, `sesi.nilaiDiri`, `sesi.rekamanSemat`, `<documents>/rekaman_sesi/` | `docs/design/v5-sesi-harian/SESI_HARIAN.md §5` |
 | Istiqamah & target | `StreakCalculator`, `ReadingProgressService` | `QURAN_APP_GUIDE_DAN_PROMPT_CODEX.md` |
 | Hafalan | `AyahMemorization` (`surah`, `ayah`, `interval`, `dueOn`) | `lib/features/hafalan/domain/murajaah_schedule.dart` |

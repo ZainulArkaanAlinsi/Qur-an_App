@@ -565,9 +565,9 @@ class QuranAudioService {
             .timeout(_loadTimeout);
       } on Object {
         if (generation != _generation) return;
-        // equran.id & MP3Quran masih berstatus pending: cadangan ini hanya
-        // dipakai di build debug (keputusan 2026-10-03, audio_sources.dart).
-        if (!AudioSources.allowPending) rethrow;
+        // Cadangan equran.id/MP3Quran dipakai bila sumbernya granted (atau di
+        // debug); lihat AudioSources.canUseEquran dan canUseMp3Quran.
+        if (!AudioSources.canUseEquran) rethrow;
         // Cadangan per ayat: equran.id.
         final qari = AudioRepository.equranQariFor(reciter);
         try {
@@ -594,6 +594,7 @@ class QuranAudioService {
           final result = await AudioRepository().surahAudio(
             reciter,
             next.surah,
+            allowMp3Quran: AudioSources.canUseMp3Quran,
           );
           await _player
               .setAudioSources([AudioSource.uri(result.value)])
