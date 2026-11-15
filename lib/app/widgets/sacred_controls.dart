@@ -370,9 +370,17 @@ class SettingsRow extends StatelessWidget {
   /// 16 padding kiri + 32 lencana + 12 jarak: garis pemisah sejajar teks.
   static const separatorInset = 60.0;
 
+  /// Mulai skala teks ini, nilai dipindah ke bawah judul. Di samping judul,
+  /// nilai merebut lebar baris sehingga "Terjemahan" terbaca "Terjem…" pada
+  /// teks 200% (WCAG 1.4.4). Di bawah skala ini tata letak tidak berubah.
+  static const stackedTextScale = 1.3;
+
   @override
   Widget build(BuildContext context) {
     final tokens = Theme.of(context).extension<SacredTokens>()!;
+    final stacked =
+        value != null &&
+        MediaQuery.textScalerOf(context).scale(1) >= stackedTextScale;
     final row = Padding(
       padding: const EdgeInsets.only(left: 16),
       child: Row(
@@ -400,12 +408,21 @@ class SettingsRow extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          maxLines: 1,
+                          maxLines: stacked ? 2 : 1,
                           overflow: TextOverflow.ellipsis,
                           style: SacredText.rowTitle.copyWith(
                             color: tokens.ink,
                           ),
                         ),
+                        if (stacked)
+                          Text(
+                            value!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: SacredText.settingValue.copyWith(
+                              color: tokens.sec,
+                            ),
+                          ),
                         if (subtitle != null)
                           Text(
                             subtitle!,
@@ -418,7 +435,7 @@ class SettingsRow extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (value != null) ...[
+                  if (value != null && !stacked) ...[
                     const SizedBox(width: 10),
                     // Lebar nilai dibatasi, bukan dibagi rata dengan judul,
                     // supaya nilai tetap rata kanan seperti mockup.
