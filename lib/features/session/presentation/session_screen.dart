@@ -790,6 +790,7 @@ class _SessionScreenState extends State<SessionScreen> {
           heading ?? lesson.title,
           eyebrow: 'Langkah 2 dari 5 · Tahap ${lesson.level}',
         ),
+        if (!lesson.isPublished) const _Note(draftLessonNotice),
         ...lessonBlockWidgets(plan.material),
       ];
     }
