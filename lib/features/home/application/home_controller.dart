@@ -11,6 +11,8 @@ import 'package:quran_app_2025/features/murottal/application/now_playing_audio.d
 import 'package:quran_app_2025/features/onboarding/domain/start_point.dart';
 import 'package:quran_app_2025/features/prayer/application/prayer_settings_store.dart';
 import 'package:quran_app_2025/features/session/data/session_store.dart';
+import 'package:quran_app_2025/features/session/domain/session_plan.dart'
+    show activeLesson;
 import 'package:quran_app_2025/screens/lesson_screen.dart'
     show showDraftLessons;
 import 'package:quran_app_2025/services/prayer_service.dart';
@@ -193,10 +195,16 @@ class HomeController extends ChangeNotifier with WidgetsBindingObserver {
       murajaahDue: dueForReview(all, now),
       murajaahDoneToday: SharedPreferencesService.getMurajaahDone(now),
       startPoint: StartPoint.saved ?? StartPoint.initial,
-      nextLesson: curriculum?.nextAfter(
-        SharedPreferencesService.getCompletedLessons(),
-        includeDrafts: showDraftLessons,
-      ),
+      // Sama dengan layar sesi dan tab Belajar: pelajaran pertama yang belum
+      // selesai mulai dari titik mulai pengguna, bukan urutan global (yang
+      // selalu menunjuk pelajaran perkenalan).
+      nextLesson: curriculum == null
+          ? null
+          : activeLesson(
+              visible: curriculum.visible(includeDrafts: showDraftLessons),
+              completedLessons: SharedPreferencesService.getCompletedLessons(),
+              startLevel: (StartPoint.saved ?? StartPoint.initial).level,
+            ),
       prayer: _prayer,
       prayerTomorrow: _prayerTomorrow,
       prayerStatus: _prayerStatus,
