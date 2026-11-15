@@ -13,6 +13,7 @@
   function write(v) { try { window.localStorage.setItem(KEY, v); } catch (e) { /* abaikan */ } }
   function T(key, fallback) { return window.MQ ? window.MQ.t(key, fallback) : fallback; }
 
+  var compact = window.matchMedia ? window.matchMedia('(max-width: 899px)') : { matches: false };
   var motionOn = true;
   var ticking = false;
   var lastY = window.pageYOffset || 0;
@@ -51,8 +52,10 @@
     if (top && sections[0]) top.classList.toggle('scrolled', y > sections[0].el.offsetHeight * 0.6);
     if (!motionOn) return;
 
-    // Layar sempit: gerak lebih kecil supaya ringan dan tidak memusingkan.
-    var k = window.innerWidth < 820 ? 0.55 : 1;
+    // HP dan tablet tegak: gerak dikerjakan CSS (timeline gulir di compositor). Menggerakkan elemen dari
+    // skrip saat gulir sentuh selalu telat satu bingkai dan terlihat patah-patah, jadi di sini berhenti.
+    if (compact.matches) return;
+    var k = 1;
 
     sections.forEach(function (s) {
       if (!s.visible) return;
@@ -158,6 +161,8 @@
 
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule);
+  // Putar HP atau ubah lebar jendela: bersihkan sisa gerak skrip sebelum CSS atau skrip mengambil alih.
+  if (compact.addEventListener) compact.addEventListener('change', function () { resetLayers(); schedule(); });
 
   // Kemiringan HP mengikuti pointer (hanya mouse, hanya saat gerak hidup).
   var hero = sections[0] && sections[0].el;

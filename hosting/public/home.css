@@ -77,7 +77,8 @@ code {
   background: var(--tint);
   padding: 0.12em 0.4em;
   border-radius: 6px;
-  word-break: break-all;
+  word-break: normal;
+  overflow-wrap: anywhere;
   direction: ltr;
   unicode-bidi: isolate;
 }
@@ -209,13 +210,9 @@ main { overflow-x: clip; }
   padding: clamp(96px, 12vw, 132px) 20px clamp(110px, 14vw, 190px);
 }
 /* Gerak hidup: adegan menempel di layar selama 1,5 layar, dan --p (0 sampai 1) menggerakkan semua lapisannya. */
-@media (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) and (min-width: 900px) {
   html.js:not([data-motion="off"]) .hero { height: 250vh; }
   html.js:not([data-motion="off"]) .hero-pin { position: sticky; top: 0; height: 100svh; min-height: 620px; padding: 84px 20px 0; }
-}
-@media (prefers-reduced-motion: no-preference) and (max-width: 860px) {
-  html.js:not([data-motion="off"]) .hero { height: 215vh; }
-  html.js:not([data-motion="off"]) .hero-pin { height: auto; min-height: 100svh; align-items: flex-start; padding: 88px 20px 56px; }
 }
 .sky { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .stars {
@@ -460,7 +457,46 @@ html.js .ln > span { display: inline-block; transform: translateY(112%); animati
 .tap::before { inset: 0; border: 0.8cqw solid rgba(254, 214, 91, 0.95); animation: ripple 3.4s ease-out infinite; }
 .tap::after { inset: 30%; background: rgba(254, 214, 91, 0.92); box-shadow: 0 0 0 0.6cqw rgba(0, 0, 0, 0.16); animation: press 3.4s ease-in-out infinite; }
 
-@media (max-width: 860px) { .fan { width: min(86%, 360px); margin-top: 8px; } }
+/* HP dan tablet tegak. Hero tidak menempel (tingginya lebih dari layar HP, jadi HP di bawahnya terpotong),
+   dan gerak tidak lagi dihitung skrip di main thread: skrip selalu telat satu bingkai dari gulir sentuh,
+   hasilnya patah-patah. Gerak di sini memakai timeline gulir CSS yang berjalan di compositor. */
+@media (max-width: 860px) {
+  .hero-pin { align-items: flex-start; padding: 92px 20px 84px; }
+  h1 { font-size: clamp(34px, 9.6vw, 46px); }
+  .lead { margin-top: 14px; font-size: 16.5px; }
+  .cta { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 24px; }
+  .cta .button, .cta .ghost { justify-content: center; padding-block: 15px; text-align: center; }
+  .meta { font-size: 13.5px; }
+  .fan { width: min(94%, 400px); margin: 30px auto 0; }
+}
+
+@keyframes m-glow { to { translate: 0 -30svh; scale: 1.7; } }
+@keyframes m-khatam { to { translate: 0 9svh; } }
+@keyframes m-dawn { from { opacity: 0; } to { opacity: 0.9; } }
+@keyframes m-far { to { translate: 0 12%; } }
+@keyframes m-near { to { translate: 0 26%; } }
+@keyframes m-left { to { translate: calc(var(--hx) * -13%) -2svh; } }
+@keyframes m-right { to { translate: calc(var(--hx) * 13%) -4svh; } }
+@keyframes m-mid { to { translate: 0 -3svh; scale: 1.07; } }
+@keyframes m-rise { from { translate: 0 11%; } to { translate: 0 0; } }
+@keyframes m-float { from { translate: 0 var(--f, 38px); } to { translate: 0 calc(var(--f, 38px) * -1); } }
+
+@supports (animation-timeline: view()) {
+  @media (max-width: 899px) and (prefers-reduced-motion: no-preference) {
+    html[data-motion="on"] .hero .glow { animation: m-glow linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .hero .khatam { animation: m-khatam linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .hero .dawn { animation: m-dawn linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .hero .skyline.far { animation: m-far linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .hero .skyline.near { animation: m-near linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .d-left { animation: m-left linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .d-right { animation: m-right linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    html[data-motion="on"] .d-mid { animation: m-mid linear both; animation-timeline: scroll(root); animation-range: 0 100svh; }
+    /* Kartu bab dan HP di dalamnya naik pelan saat masuk layar; angka latar melayang. */
+    html[data-motion="on"] .chapter .inline-shot { animation: m-rise linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+    html[data-motion="on"] .chapter .bignum { --f: 46px; animation: m-float linear both; animation-timeline: view(); animation-range: cover; }
+    html[data-motion="on"] .orn, html[data-motion="on"] .orb { --f: 60px; animation: m-float linear both; animation-timeline: view(); animation-range: cover; }
+  }
+}
 
 /* Pita kata */
 .ribbon {
@@ -845,3 +881,32 @@ html[data-motion="off"] .split.ready .w > span { transform: none; }
 .ico { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 14px; border-radius: 15px; background: var(--tint); color: var(--primary); transition: transform 0.4s var(--ease), background-color 0.3s ease; }
 .more article:hover .ico, .values article:hover .ico { transform: rotate(-8deg) scale(1.08); background: var(--gold); color: #003527; }
 .get .skyline.mini { height: clamp(120px, 16vw, 210px); color: #021a13; opacity: 0.92; }
+
+/* Bab fitur di HP: satu kartu per bab, HP mengintip dari tepi bawah kartu. Diletakkan paling akhir
+   supaya menang atas aturan dasar .chapter, .bignum, dan .inline-shot di atas. */
+@media (max-width: 899px) {
+  .chapters { display: grid; gap: 18px; }
+  .chapter { padding: 28px 22px 0; overflow: hidden; border: 1px solid var(--border); border-radius: 28px; background: var(--tint); }
+  .chapter h3 { font-size: 27px; }
+  .chapter p { font-size: 16px; }
+  .bignum { inset-inline-start: auto; inset-inline-end: 14px; top: -4px; margin-top: 0; font-size: 116px; }
+  .inline-shot { width: min(72%, 250px); aspect-ratio: 1 / 1.08; margin: 26px auto 0; overflow: hidden; }
+  .orn { display: none; }
+  .promise h2 { max-width: none; }
+  .facts { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .facts li { padding: 16px 16px 18px; }
+  .facts strong { font-size: 22px; }
+  .facts span { display: block; font-size: 14px; line-height: 1.45; }
+  .get-inner { padding-bottom: 132px; }
+}
+
+/* Tabel sumber di HP: tiap baris jadi satu kartu, supaya kolom lisensi tidak tersembunyi di balik gulir samping. */
+@media (max-width: 700px) {
+  .table-wrap { overflow: visible; border: 0; background: none; }
+  .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap th, .table-wrap td { display: block; min-width: 0; width: auto; }
+  .table-wrap thead { display: none; }
+  .table-wrap tr { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); }
+  .table-wrap tbody th, .table-wrap td { padding: 2px 0; border: 0; }
+  .table-wrap tbody th { margin-bottom: 2px; font-size: 16px; }
+  .table-wrap td:last-child { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 13.5px; }
+}
