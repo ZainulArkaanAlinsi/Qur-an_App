@@ -25,7 +25,7 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 | Islamic Network CDN (alquran.cloud) | Audio per ayat (streaming + simpan di HP) | Hak rekaman milik qari/penerbit; layanan gratis dengan atribusi | ⚠️ Konfirmasi diminta | Kirim **surat 04** |
 | MP3Quran | Audio per surah | Hak rekaman milik qari/penerbit | ✅ Izin dinyatakan pemilik, 15 Nov 2026 (bukti tertulis belum disimpan) | Simpan balasan di `docs/lisensi/bukti/`. Lihat `bukti/2026-11-15-pernyataan-pemilik.md` |
 | equran.id | Audio per ayat (4 qari) dan cadangan | Lihat equran.id/terms | ✅ Izin dinyatakan pemilik, 15 Nov 2026 (bukti tertulis belum disimpan) | Simpan balasan di `docs/lisensi/bukti/`. Lihat `bukti/2026-11-15-pernyataan-pemilik.md` |
-| QUL / KFGQPC (tata letak mushaf) | Mushaf 1/2 halaman | Tidak ada lisensi tertulis di QUL | ⛔ **Tidak dipakai di rilis** (tampil "segera") | Kirim **surat 02** dan **03**. Aktifkan hanya setelah izin |
+| QUL / KFGQPC (tata letak mushaf) | Mushaf 1/2 halaman | Tidak ada lisensi tertulis di QUL | ⚠️ **Pemilik menyatakan izin sudah ada (15 Nov 2026); salinan tertulis belum tersimpan.** Mati bawaan; hidup hanya pada build dengan `BFF_BASE_URL` | Simpan salinan izin di `docs/lisensi/bukti/` (lihat `2026-11-15-pernyataan-pemilik-mushaf.md`). Surat **02** dan **03** tetap jalur resmi |
 | AlAdhan | Jadwal salat | API gratis | ✅ Aman | Atribusi sudah ada |
 | GDELT | Daftar judul berita + tautan | Data terbuka; isi berita milik penerbitnya | ✅ Aman (hanya judul + tautan) | — |
 | Font Plus Jakarta Sans, EB Garamond, Amiri, Amiri Quran | Tampilan | SIL OFL 1.1 | ✅ Aman | Teks lisensi ikut di halaman lisensi aplikasi |
@@ -38,7 +38,9 @@ Dasar hukum Indonesia: UU No. 28 Tahun 2014 tentang Hak Cipta.
 - Teks ayat dan terjemahan ditampilkan **persis** dari dataset, tanpa diketik ulang.
 - Halaman *Saya › Sumber & lisensi* menyebut nama, versi, lisensi, dan tautan tiap sumber.
 - Tanpa iklan, tanpa pembelian, dan tanpa penjualan data (syarat nonkomersial).
-- Mushaf 1/2 halaman **dikunci** di rilis sampai lisensi tata letak ada.
+- Mushaf 1/2 halaman **dikunci bawaan** di rilis. Sejak 15 Nov 2026 kodenya bisa
+  dinyalakan per build lewat alamat BFF, tetapi rilis publik tidak menyalakannya
+  sebelum BFF di-deploy dan akses produksi Quran Foundation disetujui.
 - Audio tidak dibundel di APK; hanya diputar atau disimpan di HP pengguna.
 
 ## Yang perlu diperhatikan

@@ -32,7 +32,7 @@ Beranda v6, dock, Murottal v6, pengaturan waktu salat, pemilih qari v6, liquid g
 Materi tajwid tahap 6–16 tampil dengan label DRAF dan pemberitahuan "belum ditinjau guru". Statusnya tetap `draft` sampai dua guru bersanad menyetujuinya.
 
 ### Tidak masuk (dikunci sampai ada izin/peninjau)
-Mode mushaf 1/2 halaman (izin KFGQPC + QUL sudah dinyatakan pemilik; menunggu server perantara dan kredensial), qari yang sumbernya belum tersambung di kode, rekaman bunyi huruf (menunggu guru), penjelasan cara membaca tiap hukum (harus ditulis guru).
+Mode mushaf 1/2 halaman (izin KFGQPC + QUL sudah dinyatakan pemilik dan kode bisa menyala per build lewat alamat BFF sejak 15 Nov 2026, tetapi rilis publik menutupnya sampai BFF di-deploy, akses produksi Quran Foundation disetujui, dan salinan izin tersimpan), qari yang sumbernya belum tersambung di kode, rekaman bunyi huruf (menunggu guru), penjelasan cara membaca tiap hukum (harus ditulis guru).
 
 ### Bukan tujuan
 Iklan, langganan, pembelian dalam aplikasi; skor bacaan otomatis/AI; tafsir buatan AI; forum; fadhilah/amalan tanpa dalil shahih.

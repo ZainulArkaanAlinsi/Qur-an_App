@@ -3,6 +3,7 @@ import 'package:quran_app_2025/app/sacred_tokens.dart';
 import 'package:quran_app_2025/app/widgets/sacred_buttons.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/core/app_version.dart';
+import 'package:quran_app_2025/core/bff/bff_client.dart';
 import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/features/onboarding/presentation/brand_art.dart';
 import 'package:quran_app_2025/services/prayer_service.dart';
@@ -89,6 +90,18 @@ abstract final class DataSources {
       version: 'API v2',
       license: 'Sebut sumber · hak cipta rekaman milik qari',
       url: 'https://equran.id',
+    ),
+  ];
+
+  /// Tata letak mushaf (mode 1 dan 2 halaman). Hanya tampil bila build diberi
+  /// alamat BFF, karena baru saat itu data ini dipakai.
+  static const layout = [
+    DataSource(
+      name: 'Quran Foundation (quran.com)',
+      use: 'Tata letak halaman mushaf Madinah, lewat server perantara MyQuran',
+      license:
+          'Developer Terms · sebut sumber · tidak disimpan lebih dari 7 hari',
+      url: 'https://quran.foundation',
     ),
   ];
 
@@ -227,6 +240,8 @@ class SourcesScreen extends StatelessWidget {
               _selectedReciter(),
               ...DataSources.audio,
             ]),
+            if (isBffConfigured)
+              _group(context, 'Tata letak mushaf', DataSources.layout),
             _group(context, 'Waktu salat', DataSources.prayer),
             // Teks lisensi SIL OFL 1.1 keempat font ikut dibundel dan
             // tampil di halaman lisensi (docs/design/v3/LISENSI_ASET.md §2).

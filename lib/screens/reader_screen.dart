@@ -22,7 +22,7 @@ import 'package:quran_app_2025/data/translation_repository.dart';
 import 'package:quran_app_2025/app/widgets/sacred_controls.dart';
 import 'package:quran_app_2025/app/widgets/sacred_list.dart';
 import 'package:quran_app_2025/features/murottal/presentation/murottal_sheet.dart';
-import 'package:quran_app_2025/features/mushaf/data/qf_debug_mushaf_source.dart';
+import 'package:quran_app_2025/features/mushaf/data/mushaf_source_factory.dart';
 import 'package:quran_app_2025/features/mushaf/presentation/mushaf_screen.dart';
 import 'package:quran_app_2025/features/reader/presentation/card_parts.dart';
 import 'package:quran_app_2025/features/reader/presentation/reading_mode_sheet.dart';
@@ -41,9 +41,10 @@ import 'package:quran_app_2025/services/quran_audio_service.dart';
 import 'package:quran_app_2025/features/murottal/application/now_playing_audio.dart';
 import 'package:quran_app_2025/features/murottal/presentation/now_playing_row.dart';
 
-/// Mode halaman mushaf memakai data QF langsung hanya di build debug di
-/// perangkat, bukan di rilis dan bukan saat `flutter test` (golden mewakili
-/// tampilan rilis).
+/// Build debug di perangkat boleh memakai data QF langsung (tanpa BFF); bukan
+/// di rilis dan bukan saat `flutter test` (golden mewakili tampilan rilis).
+/// Rilis memakai mode mushaf hanya bila build diberi alamat BFF
+/// (`BFF_BASE_URL`); lihat [mushafModesAvailable].
 final bool debugMushafLayout =
     kDebugMode && !Platform.environment.containsKey('FLUTTER_TEST');
 
@@ -172,10 +173,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
     ReadingMode? picked;
     await showReadingModeSheet(
       context,
-      // Mode halaman mushaf butuh data tata letak yang sah. Sampai izin
-      // lisensinya ada, hanya build debug yang memakai data QF langsung
-      // (docs/DATA_SOURCES_AND_LICENSES.md); rilis menampilkan "segera".
-      available: debugMushafLayout
+      // Mode halaman mushaf butuh data tata letak yang sah, yang di rilis
+      // datang dari BFF. Tanpa BFF dikonfigurasi, rilis menampilkan "segera"
+      // (docs/lisensi/bukti/2026-11-15-pernyataan-pemilik-mushaf.md).
+      available: mushafModesAvailable(debugLayout: debugMushafLayout)
           ? const {ReadingMode.cards, ReadingMode.onePage, ReadingMode.twoPages}
           : const {ReadingMode.cards},
       onMode: (mode) => picked = mode,
@@ -206,7 +207,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   /// Membuka mushaf di halaman ayat yang sedang dibaca (peta halaman
-  /// Tanzil). Hanya dipanggil bila ada sumber tata letak (build debug).
+  /// Tanzil). Hanya dipanggil bila ada sumber tata letak (BFF, atau build
+  /// debug).
   Future<void> _openMushaf(
     _ReaderContent content, {
     required bool twoPages,
@@ -219,7 +221,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
         page = boundary.number;
       }
     }
-    final source = QfDebugMushafSource();
+    final source = createMushafSource(debugLayout: debugMushafLayout);
+    if (source == null) return;
     try {
       await Navigator.of(context).push(
         MaterialPageRoute<void>(
