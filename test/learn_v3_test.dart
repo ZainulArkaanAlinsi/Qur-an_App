@@ -116,6 +116,8 @@ void main() {
         ),
       );
       expect(find.text('DRAF'), findsOneWidget);
+      // Sejak 15 Nov 2026 materi draf tampil di rilis; pembacanya diberi tahu.
+      expect(find.text(draftLessonNotice), findsOneWidget);
 
       await pump(
         tester,
@@ -128,6 +130,7 @@ void main() {
         ),
       );
       expect(find.text('DRAF'), findsNothing);
+      expect(find.text(draftLessonNotice), findsNothing);
     });
 
     for (final scale in [1.0, 2.0]) {
