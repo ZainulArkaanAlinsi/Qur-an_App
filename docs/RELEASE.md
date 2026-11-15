@@ -56,6 +56,11 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    x86_64 dan APK membengkak dari sekitar 47 MB menjadi sekitar 68 MB (`abiFilters` di
    Gradle saja tidak cukup). `tool/build_release.ps1` sudah memakainya; lebih aman
    menjalankan skrip itu daripada mengetik perintah manual.
+   Mode mushaf 1/2 halaman hanya hidup bila build diberi alamat BFF:
+   `$env:MYQURAN_BFF_URL = 'https://...'` sebelum `tool/build_release.ps1`
+   (skrip menambahkan `--dart-define=BFF_BASE_URL`). Tanpa variabel itu mode
+   mushaf tetap tertutup. Jangan mengisinya sebelum BFF di-deploy dan akses
+   produksi Quran Foundation disetujui (lihat `bff/README.md`).
    SHA-256 sertifikat harus sama dengan di atas. `DISTRIBUTION=github` wajib
    untuk APK GitHub (pengunduh pembaruan + izin pasang APK); build Google Play
    memakai `flutter build appbundle --release` tanpa flag itu

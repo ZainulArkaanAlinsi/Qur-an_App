@@ -5,7 +5,10 @@ masuk aplikasi Flutter**. Dokumentasi provider menyatakan alur client
 credentials tidak boleh dipakai aplikasi mobile, dan Developer Terms meminta
 secret hanya hidup di server.
 
-Status: kerangka Fase 0. Belum dipakai aplikasi dan belum di-deploy.
+Status: server Node (Hono + `@hono/node-server`, cache di memori), **belum
+di-deploy**. Aplikasi sudah bisa memanggilnya lewat `BFF_BASE_URL` (lihat
+"Menyambungkan ke aplikasi"), tetapi rilis publik tetap menutup mode mushaf
+sampai alamat BFF yang hidup diberikan saat build.
 
 ## Jalankan lokal
 
@@ -57,11 +60,40 @@ menyaring kata milik halaman yang benar.
   pesan provider tidak diteruskan apa adanya.
 - **Log tanpa identitas.** Hanya metode, rute, status, dan durasi.
 
+## Menyambungkan ke aplikasi
+
+Aplikasi membaca alamat BFF dari `--dart-define=BFF_BASE_URL=<https://...>`
+(`lib/core/bff/bff_client.dart`). Tanpa nilai itu:
+
+- build rilis: mode mushaf 1/2 halaman tetap tertutup ("segera");
+- build debug: layar mushaf memanggil api.quran.com langsung (tanpa kredensial,
+  hanya untuk pengembangan).
+
+Dengan nilai itu, build mana pun memakai BFF (`createMushafSource` di
+`lib/features/mushaf/data/mushaf_source_factory.dart`) dan Sumber & Lisensi
+menampilkan kredit tata letak mushaf.
+
+Untuk APK GitHub, isi variabel lingkungan sebelum menjalankan skrip rilis:
+
+```powershell
+$env:MYQURAN_BFF_URL = 'https://alamat-bff-anda'
+pwsh tool/build_release.ps1
+```
+
+Skrip menolak alamat yang bukan `https://`. Alamat itu publik dan aman berada
+di APK; `QF_CLIENT_ID` dan `QF_CLIENT_SECRET` hanya ada di server.
+
+Batas yang berlaku sampai akses produksi Quran Foundation disetujui: lingkungan
+**prelive** hanya berisi Al-Fatihah dan Al-Baqarah, jadi halaman mushaf lain
+gagal dimuat (aplikasi menampilkan pesan gagal, bukan layar kosong). Jangan
+menyalakan mode mushaf untuk pengguna sebelum itu.
+
 ## Belum dikerjakan
 
-- Deploy (kandidat: Cloud Run atau Render) dan secret manager.
-- Klien Dart di aplikasi; saat ini layar debug masih memanggil api.quran.com
-  langsung.
+- Deploy (kandidat: Cloud Run atau Render) dan secret manager. Server ini
+  proses Node biasa, bukan Cloudflare Workers; catatan lama di
+  `docs/decisions.md` (2026-10-02) menyebut Workers dan tidak sesuai kode.
+- Akses produksi Quran Foundation (dataset penuh).
 - Audio, terjemahan, tafsir, dan Content Sync.
 - Cache bersama antar-instance (sekarang per proses).
 

@@ -34,8 +34,27 @@ if (Test-Path $outDir) {
 # DISTRIBUTION=github: APK ini untuk GitHub Releases, jadi pengunduh pembaruan
 # dan izin pasang APK ikut. Build Google Play (appbundle) tidak memakainya;
 # lihat lib/app/distribution.dart dan docs/PLAY_STORE_RELEASE.md.
+#
+# Mode mushaf 1 dan 2 halaman (opsional). Hanya hidup bila build diberi alamat
+# server perantara (BFF) milik sendiri. Alamat itu publik; rahasia penyedia data
+# hanya ada di server dan tidak pernah masuk APK. Tanpa variabel ini, mode
+# mushaf tetap tertutup ("segera") seperti rilis sebelumnya.
+#   $env:MYQURAN_BFF_URL = 'https://bff.contoh.com'
+$defines = @('--dart-define=DISTRIBUTION=github')
+$bffUrl = $env:MYQURAN_BFF_URL
+if ($bffUrl) {
+    $bffUrl = $bffUrl.Trim().TrimEnd('/')
+    if ($bffUrl -notmatch '^https://[^\s/]+(/[^\s]*)?$') {
+        throw "MYQURAN_BFF_URL harus alamat https tanpa spasi, mis. https://bff.contoh.com (diterima: $bffUrl)"
+    }
+    $defines += "--dart-define=BFF_BASE_URL=$bffUrl"
+    Write-Host "BFF aktif: $bffUrl (mode mushaf hidup di APK ini)"
+} else {
+    Write-Host 'BFF tidak diisi: mode mushaf tetap tertutup'
+}
+
 Write-Host "Build rilis GitHub versi $version (arm + arm64)"
-flutter build apk --release --target-platform android-arm,android-arm64 --dart-define=DISTRIBUTION=github
+flutter build apk --release --target-platform android-arm,android-arm64 @defines
 if ($LASTEXITCODE -ne 0) { throw 'flutter build apk gagal' }
 
 $built = Join-Path $outDir 'app-release.apk'

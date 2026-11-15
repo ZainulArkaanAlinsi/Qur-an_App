@@ -194,7 +194,7 @@ test/          tes unit, widget, dan golden
 
 ## 🗺️ Sedang dikerjakan
 
-- **Tampilan mushaf 1 dan 2 halaman.** Menunggu izin tertulis untuk data tata letak Mushaf Madinah.
+- **Tampilan mushaf 1 dan 2 halaman.** Kode sudah tersambung ke server perantara (`bff/`) dan menyala hanya pada build yang diberi alamatnya. Rilis publik masih menutupnya: menunggu BFF di-deploy, akses produksi Quran Foundation, dan salinan izin tertulis data tata letak.
 - **Materi tajwid tahap lanjut** (mad, tajwid lanjutan, gharib). Sedang ditinjau guru tajwid.
 - **Efek kaca ("liquid glass") untuk tab bar, nav pembaca, dan pemutar.**
 
