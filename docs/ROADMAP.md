@@ -7,7 +7,7 @@ lulus fase aktif terpenuhi. Definition of Done umum ada di
 ## Pekerjaan tertunda dari v1.1.x
 
 - [ ] Uji v1.1.2 di perangkat Android nyata (sync, audio latar, pengingat).
-- [ ] Backup keystore rilis ke tempat aman di luar laptop.
+- [ ] Backup keystore rilis ke tempat aman di luar laptop (jalankan `tool/backup_keystore.ps1`, lalu salin arsipnya ke flashdisk dan cloud pribadi).
 
 ## Fase 0 — fondasi dan validasi (AKTIF)
 
