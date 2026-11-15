@@ -14,6 +14,8 @@ internal). Centang setelah dicoba. Kalau gagal, tulis model HP, versi Android, d
 
 ## 2. Murottal dan layar mati (Android 12 ke atas)
 - [ ] Putar satu surah, matikan layar 10 menit lebih. Audio terus jalan.
+  (Emulator Pixel 9 Pro, Android 16, 14 Nov 2026: lulus 5,5 menit dengan layar mati. HP asli dan
+  durasi 10 menit lebih belum diuji, termasuk penghemat baterai Samsung One UI.)
 - [ ] Kontrol di notifikasi dan layar kunci: putar/jeda, berikutnya, sebelumnya.
 - [ ] Headset Bluetooth: tombol putar/jeda bekerja.
 - [ ] Panggilan masuk: audio berhenti, lalu pulih setelah panggilan selesai.
