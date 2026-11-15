@@ -25,7 +25,8 @@ void main() {
 
   test('(a) mode rilis tidak pernah menampilkan qari tanpa sumber granted', () {
     final release = catalog.visible(allowPending: false);
-    expect(release, hasLength(17));
+    // 17 dari Islamic Network + 4 dari equran.id (granted sejak 15 Nov 2026).
+    expect(release, hasLength(21));
     for (final entry in release) {
       expect(
         entry.sources.any((s) => s.granted && s.ref != null),
@@ -39,10 +40,7 @@ void main() {
         expect(entry.granted, isTrue, reason: '${filter.name} ${entry.id}');
       }
     }
-    expect(
-      ids(catalog.popularNow(allowPending: false)),
-      isNot(contains('yasser')),
-    );
+    expect(ids(catalog.popularNow(allowPending: false)), contains('yasser'));
     // Debug: semua 35.
     expect(catalog.visible(allowPending: true), hasLength(35));
   });
@@ -62,7 +60,7 @@ void main() {
         for (final s in AudioSources.all)
           if (s.granted) s.id,
       ],
-      ['islamic_network'],
+      ['islamic_network', 'equran', 'quran_foundation', 'qul', 'mp3quran'],
     );
   });
 
@@ -85,24 +83,37 @@ void main() {
         'akhdar',
         'ayyoub',
         'parhizgar',
+        // equran.id, granted sejak 15 Nov 2026: urutan kurasi katalog.
+        'yasser',
+        'juhany',
+        'ibrahim_dossari',
+        'qasim',
       ],
     );
     // "Populer sekarang": urutan daftar `populer`, hanya yang tampil.
+    // Mengikuti daftar `populer` di katalog; Yasser dan Al-Juhany kini tampil
+    // karena equran.id granted.
     expect(ids(catalog.popularNow(allowPending: false)), [
+      'yasser',
       'alafasy',
       'maher',
+      'juhany',
       'sudais',
       'hanirifai',
     ]);
     expect(ids(catalog.filtered(QariFilter.populer, allowPending: false)), [
+      'yasser',
       'alafasy',
       'maher',
+      'juhany',
       'sudais',
       'hanirifai',
     ]);
     // Debug: yang menunggu izin dulu, lalu A–Z.
     final debug = catalog.filtered(QariFilter.adem, allowPending: true);
-    expect(debug.first.name, 'Abdul Muhsin Al-Qasim');
+    // Abdul Muhsin Al-Qasim kini granted (equran.id), jadi yang pertama menunggu izin berikutnya.
+    expect(debug.first.name, 'Ali Jaber');
+    expect(debug.first.granted, isFalse);
     expect(debug.indexWhere((e) => e.granted), greaterThan(0));
     expect(debug.skipWhile((e) => !e.granted).every((e) => e.granted), isTrue);
     // Pencarian nama Latin, tanpa peduli huruf besar.
@@ -167,9 +178,9 @@ void main() {
     expect(defaultReciter.downloadable, isTrue);
   });
 
-  test('debug: equran.id bisa diputar; rilis tidak', () {
+  test('equran.id bisa diputar di rilis maupun debug', () {
     final yasser = catalog.entries.firstWhere((e) => e.id == 'yasser');
-    expect(yasser.toReciter(allowPending: false), isNull);
+    expect(yasser.toReciter(allowPending: false), isNotNull);
     final reciter = yasser.toReciter(allowPending: true)!;
     expect(reciter.provider, AudioProvider.equran);
     expect(
@@ -177,6 +188,41 @@ void main() {
       'https://cdn.equran.id/audio-partial/Yasser-Al-Dosari/001001.mp3',
     );
     expect(reciter.downloadable, isFalse);
+  });
+
+  test(
+    'granted tidak cukup: qari tanpa sumber yang tersambung tidak tampil',
+    () {
+      // MP3Quran, QUL, dan Quran Foundation berstatus granted tetapi belum punya
+      // jalur pemutaran di kode (8b/8c). Qari yang hanya bergantung pada mereka
+      // tidak boleh muncul di rilis sebagai entri yang tak bisa diputar.
+      final stranded = [
+        for (final e in catalog.entries)
+          if (e.granted && e.playableSource(allowPending: false) == null) e,
+      ];
+      expect(stranded, isNotEmpty, reason: 'ada qari yang menunggu sumbernya');
+      final release = ids(catalog.visible(allowPending: false));
+      for (final entry in stranded) {
+        expect(release, isNot(contains(entry.id)), reason: entry.id);
+        expect(entry.toReciter(allowPending: false), isNull, reason: entry.id);
+      }
+      for (final id in release) {
+        final entry = catalog.entries.firstWhere((e) => e.id == id);
+        expect(
+          entry.toReciter(allowPending: false),
+          isNotNull,
+          reason: 'tampil di rilis tetapi tak bisa diputar: $id',
+        );
+      }
+    },
+  );
+
+  test('cadangan equran.id dan MP3Quran aktif di rilis karena granted', () {
+    AudioSources.debugAllowPending = false; // meniru build rilis
+    addTearDown(() => AudioSources.debugAllowPending = null);
+    expect(AudioSources.allowPending, isFalse);
+    expect(AudioSources.canUseEquran, isTrue);
+    expect(AudioSources.canUseMp3Quran, isTrue);
   });
 
   test('nama Arab dari daftar alquran.cloud lewat ref', () {

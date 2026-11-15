@@ -32,6 +32,13 @@ class AudioSourceInfo {
 /// Registri izin. **Sumber kebenaran status** (bukan JSON katalog): status
 /// diubah hanya setelah bukti izin disimpan di `docs/lisensi/bukti/`, dalam
 /// commit tersendiri yang menyebut buktinya. Tes memastikan JSON sama.
+///
+/// 15 November 2026: equran.id, Quran Foundation, QUL/Tarteel, dan MP3Quran
+/// berstatus granted atas pernyataan pemilik
+/// (`docs/lisensi/bukti/2026-11-15-pernyataan-pemilik.md`). Status granted
+/// hanya soal izin: yang benar-benar bisa diputar ditentukan
+/// `QariEntry.playableSource`, dan baru Islamic Network serta equran.id yang
+/// tersambung.
 abstract final class AudioSources {
   static const islamicNetwork = AudioSourceInfo(
     id: 'islamic_network',
@@ -42,25 +49,25 @@ abstract final class AudioSources {
   static const equran = AudioSourceInfo(
     id: 'equran',
     name: 'equran.id',
-    status: LicenseStatus.pending,
+    status: LicenseStatus.granted,
     perAyat: true,
   );
   static const quranFoundation = AudioSourceInfo(
     id: 'quran_foundation',
     name: 'Quran Foundation (quran.com) lewat bff/',
-    status: LicenseStatus.pending,
+    status: LicenseStatus.granted,
     perAyat: true,
     downloadable: false,
   );
   static const qul = AudioSourceInfo(
     id: 'qul',
     name: 'QUL / Tarteel',
-    status: LicenseStatus.pending,
+    status: LicenseStatus.granted,
   );
   static const mp3quran = AudioSourceInfo(
     id: 'mp3quran',
     name: 'MP3Quran',
-    status: LicenseStatus.pending,
+    status: LicenseStatus.granted,
     perAyat: false,
   );
   static const direct = AudioSourceInfo(
@@ -82,9 +89,13 @@ abstract final class AudioSources {
       all.where((source) => source.id == id).firstOrNull;
 
   /// Sumber berstatus pending ikut dipakai hanya di build debug: daftar
-  /// qari "MENUNGGU IZIN" dan cadangan equran.id/MP3Quran saat CDN utama
-  /// gagal. Build rilis hanya memakai sumber granted (keputusan 2026-10-03).
+  /// qari "MENUNGGU IZIN". Build rilis hanya memakai sumber granted.
   static bool get allowPending => debugAllowPending ?? kDebugMode;
+
+  /// Cadangan saat CDN utama gagal: dipakai bila sumbernya granted (atau di
+  /// debug). Sebelum 15 Nov 2026 hanya debug (keputusan 2026-10-03).
+  static bool get canUseEquran => allowPending || equran.granted;
+  static bool get canUseMp3Quran => allowPending || mp3quran.granted;
 
   /// Hanya untuk tes: meniru build rilis (false) atau debug (true).
   @visibleForTesting
