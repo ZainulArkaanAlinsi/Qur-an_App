@@ -73,6 +73,10 @@ peringatan; APK seperti itu tidak boleh dibagikan.
    selalu langsung mengunduh APK rilis terbaru; tautan ini dipakai di surat
    izin (`docs/lisensi/`), jadi jangan lupa aset ini atau tautannya mati.
    Rilis harus berstatus *latest* (bukan draf atau pra-rilis).
+   Halaman unduh (`hosting/public/`) menampilkan catatan versi rilis ini dan riwayat versi dari GitHub
+   Releases, tanpa perlu deploy ulang. Tulis catatan rilis dengan judul `## Baru di <versi>` di awal dan
+   bagian `## Unduh` di akhir: halaman membuang judul pertama dan semua yang setelah `## Unduh`
+   (tombol dan SHA-256 sudah ada di halaman).
    Tag harus diawali `v` dan berupa angka bertitik agar pemeriksa pembaruan
    di aplikasi dapat membandingkannya.
 
