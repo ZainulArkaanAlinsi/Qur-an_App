@@ -32,29 +32,29 @@
   },
   "equran": {
    "nama": "equran.id",
-   "status": "pending",
+   "status": "granted",
    "perAyat": true,
-   "bukti": null
+   "bukti": "docs/lisensi/bukti/2026-11-15-pernyataan-pemilik.md (pernyataan pemilik; berkas izin tertulis dari pihak sumber belum disimpan)"
   },
   "quran_foundation": {
    "nama": "Quran Foundation (quran.com) lewat bff/",
-   "status": "pending",
+   "status": "granted",
    "perAyat": true,
-   "bukti": null,
+   "bukti": "docs/lisensi/bukti/2026-11-15-pernyataan-pemilik.md (pernyataan pemilik; berkas izin tertulis dari pihak sumber belum disimpan)",
    "syarat": "akses produksi Developer Console + BFF ter-deploy; cache/unduhan maks 7 hari"
   },
   "qul": {
    "nama": "QUL / Tarteel",
-   "status": "pending",
+   "status": "granted",
    "perAyat": null,
-   "bukti": null,
+   "bukti": "docs/lisensi/bukti/2026-11-15-pernyataan-pemilik.md (pernyataan pemilik; berkas izin tertulis dari pihak sumber belum disimpan)",
    "syarat": "issue #768"
   },
   "mp3quran": {
    "nama": "MP3Quran",
-   "status": "pending",
+   "status": "granted",
    "perAyat": false,
-   "bukti": null
+   "bukti": "docs/lisensi/bukti/2026-11-15-pernyataan-pemilik.md (pernyataan pemilik; berkas izin tertulis dari pihak sumber belum disimpan)"
   },
   "langsung": {
    "nama": "Izin langsung dari qari",
