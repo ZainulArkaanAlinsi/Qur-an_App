@@ -469,6 +469,11 @@ html.js .ln > span { display: inline-block; transform: translateY(112%); animati
   .meta { font-size: 13.5px; }
   .fan { width: min(94%, 400px); margin: 30px auto 0; }
 }
+/* Tablet tegak: dua tombol berdampingan, bukan dua batang selebar layar. */
+@media (min-width: 561px) and (max-width: 860px) {
+  .cta { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .cta .button, .cta .ghost { padding-inline: 30px; }
+}
 
 @keyframes m-glow { to { translate: 0 -30svh; scale: 1.7; } }
 @keyframes m-khatam { to { translate: 0 9svh; } }
@@ -909,4 +914,22 @@ html[data-motion="off"] .split.ready .w > span { transform: none; }
   .table-wrap tbody th, .table-wrap td { padding: 2px 0; border: 0; }
   .table-wrap tbody th { margin-bottom: 2px; font-size: 16px; }
   .table-wrap td:last-child { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 13.5px; }
+}
+
+/* Sasaran sentuh: tombol bahasa dan tema di bilah atas, salin, tautan footer dan tabel sumber
+   (WCAG 2.2 AA minimal 24 px; tombol utama tetap lebih besar). */
+.lang button { min-height: 32px; }
+.theme { width: 36px; height: 36px; }
+.copy { padding: 10px 18px; }
+.links { gap: 0 22px; }
+.links a { display: inline-block; padding: 10px 0; }
+@media (max-width: 700px) {
+  .table-wrap td a { display: inline-block; padding: 4px 0; }
+}
+
+/* HP sangat sempit (320 px): bilah atas dipadatkan supaya tombol Unduh tidak terpotong. */
+@media (max-width: 340px) {
+  .top { padding-inline: 12px; gap: 6px; }
+  .tools { gap: 6px; }
+  .top-cta { padding: 9px 14px; }
 }

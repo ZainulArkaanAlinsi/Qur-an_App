@@ -105,6 +105,8 @@
     if (!releases) return;
     var rel = releases[latestIdx];
     var apk = apkOf(rel);
+    // Nama berkas di langkah pasang dan perintah SHA-256 harus sama dengan berkas yang benar-benar terunduh.
+    if (apk && apk.name) all('.js-apk').forEach(function (el) { el.textContent = apk.name; });
     var parts = [];
     if (rel.tag_name) parts.push(T('meta.ver', 'Versi {v}', { v: rel.tag_name.replace(/^v/, '') }));
     if (apk && apk.size) parts.push(formatSize(apk.size));
@@ -206,9 +208,6 @@
       }
       paintMeta();
       paintNotes();
-
-      var nameEl = $('nama-berkas');
-      if (nameEl) nameEl.textContent = apk.name;
 
       var digest = (apk.digest || '').replace(/^sha256:/, '');
       if (shaEl && /^[0-9a-f]{64}$/i.test(digest)) {
