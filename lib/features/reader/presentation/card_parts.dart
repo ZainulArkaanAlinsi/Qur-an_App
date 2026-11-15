@@ -232,6 +232,31 @@ class _Chip extends StatelessWidget {
   );
 }
 
+/// Pil filter dan petunjuk tajwid yang menempel di atas daftar ayat.
+///
+/// Latarnya solid sewarna halaman (bukan kaca): daftar ayat bergulir di
+/// bawahnya, dan tanpa latar teks Arab tembus lalu bertumpuk dengan tulisan
+/// petunjuk. Saat daftar di posisi paling atas, warnanya sama dengan halaman,
+/// jadi tampilannya tidak berubah.
+class ReaderPinnedFilters extends StatelessWidget {
+  const ReaderPinnedFilters({super.key, required this.chips, this.hint});
+
+  final Widget chips;
+  final Widget? hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = Theme.of(context).extension<SacredTokens>()!;
+    return SizedBox(
+      width: double.infinity,
+      child: ColoredBox(
+        color: tokens.bg,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [chips, ?hint]),
+      ),
+    );
+  }
+}
+
 /// Petunjuk untuk pembaca awam: huruf berwarna bisa diketuk.
 class TajweedHint extends StatelessWidget {
   const TajweedHint({super.key, required this.onClose});
