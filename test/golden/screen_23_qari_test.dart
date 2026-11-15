@@ -110,11 +110,12 @@ void main() {
         'Adem',
         'Ali Al-Hudhaify',
         if (debug) ...[
-          'Abdul Muhsin Al-Qasim',
+          // Abdul Muhsin Al-Qasim kini granted (equran.id); Ali Jaber yang pertama menunggu.
+          'Ali Jaber',
           'MENUNGGU IZIN',
           'semua sumber',
         ] else ...[
-          'ADEM · 8 QARI',
+          'ADEM · 12 QARI', // 8 dari Islamic Network + 4 dari equran.id
           'Maher Al-Muaiqly',
           'Haramain',
           'berizin',
@@ -165,7 +166,9 @@ void main() {
     ) async {
       await open(tester, filter: 'populer');
       expect(find.text('Mishary Rashid Alafasy'), findsOneWidget);
-      expect(find.text('Yasser Al-Dosari'), findsNothing);
+      // Yasser tampil sejak equran.id granted (15 Nov 2026) dan bisa diputar.
+      expect(find.text('Yasser Al-Dosari'), findsOneWidget);
+      // Rilis tidak pernah menampilkan label menunggu izin.
       expect(find.text('MENUNGGU IZIN'), findsNothing);
     });
 
